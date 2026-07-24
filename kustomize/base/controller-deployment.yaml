@@ -21,7 +21,7 @@ spec:
       serviceAccountName: kube-workspaces-controller
       containers:
         - name: controller
-          image: kubeworkspaces/controller:latest
+          image: ghcr.io/kube-workspaces/controller:latest
           imagePullPolicy: Always
           args:
             - --leader-elect

@@ -3,7 +3,7 @@ replicaCount: 1
 
 controller:
   image:
-    repository: kubeworkspaces/controller
+    repository: ghcr.io/kube-workspaces/controller
     tag: latest
     pullPolicy: Always
   resources:
@@ -16,7 +16,7 @@ controller:
 
 api:
   image:
-    repository: kubeworkspaces/api
+    repository: ghcr.io/kube-workspaces/api
     tag: latest
     pullPolicy: Always
   resources:
@@ -32,7 +32,7 @@ api:
 
 proxy:
   image:
-    repository: kubeworkspaces/proxy
+    repository: ghcr.io/kube-workspaces/proxy
     tag: latest
     pullPolicy: Always
   resources:
@@ -51,7 +51,7 @@ proxy:
 
 frontend:
   image:
-    repository: kubeworkspaces/frontend
+    repository: ghcr.io/kube-workspaces/frontend
     tag: latest
     pullPolicy: Always
   resources:

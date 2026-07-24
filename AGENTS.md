@@ -8,10 +8,10 @@ Deployment manifests, documentation, and operational tooling for the kube-worksp
 
 | Repository | Description | Docker Image |
 |-----------|-------------|--------------|
-| [kube-workspaces/controller](https://github.com/kube-workspaces/controller) | Kubernetes controller (kubebuilder) | `kubeworkspaces/controller` |
-| [kube-workspaces/api](https://github.com/kube-workspaces/api) | REST API service (Goa v3) | `kubeworkspaces/api` |
-| [kube-workspaces/proxy](https://github.com/kube-workspaces/proxy) | Workspace reverse proxy | `kubeworkspaces/proxy` |
-| [kube-workspaces/frontend](https://github.com/kube-workspaces/frontend) | Next.js frontend | `kubeworkspaces/frontend` |
+| [kube-workspaces/controller](https://github.com/kube-workspaces/controller) | Kubernetes controller (kubebuilder) | `ghcr.io/kube-workspaces/controller` |
+| [kube-workspaces/api](https://github.com/kube-workspaces/api) | REST API service (Goa v3) | `ghcr.io/kube-workspaces/api` |
+| [kube-workspaces/proxy](https://github.com/kube-workspaces/proxy) | Workspace reverse proxy | `ghcr.io/kube-workspaces/proxy` |
+| [kube-workspaces/frontend](https://github.com/kube-workspaces/frontend) | Next.js frontend | `ghcr.io/kube-workspaces/frontend` |
 
 ## Structure
 
@@ -58,7 +58,7 @@ All target `kube-workspaces-system` namespace.
 - CRD is too large for client-side apply. Always use `kubectl apply --server-side` or `ServerSideApply=true`.
 - Images are defined as `Image` CRs (cluster-scoped). Default images in `images.yaml`.
 - CRD YAML files in `kustomize/crds/` are synced from the controller repo's `config/crd/bases/`.
-- Docker images: `kubeworkspaces/{controller,api,proxy,frontend}` on Docker Hub.
+- Docker images: `ghcr.io/kube-workspaces/{controller,api,proxy,frontend}` on GitHub Container Registry.
 - Image defaults (defaultEnv, defaultArgs, etc.) are applied at workspace creation time only.
 - `defaultEnv` supports `{{namespace}}` and `{{name}}` placeholders.
 - Auth is opt-in (disabled by default). Use Helm `auth.enabled: true` or `make auth-enable`.

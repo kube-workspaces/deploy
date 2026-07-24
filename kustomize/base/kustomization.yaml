@@ -14,14 +14,14 @@ resources:
 
 images:
   - name: kube-workspaces-api
-    newName: docker.io/kubeworkspaces/api
+    newName: ghcr.io/kube-workspaces/api
     newTag: latest
   - name: kube-workspaces-controller
-    newName: docker.io/kubeworkspaces/controller
+    newName: ghcr.io/kube-workspaces/controller
     newTag: latest
   - name: kube-workspaces-frontend
-    newName: docker.io/kubeworkspaces/frontend
+    newName: ghcr.io/kube-workspaces/frontend
     newTag: latest
   - name: kube-workspaces-proxy
-    newName: docker.io/kubeworkspaces/proxy
+    newName: ghcr.io/kube-workspaces/proxy
     newTag: latest

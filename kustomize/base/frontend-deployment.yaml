@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: kubeworkspaces/frontend:latest
+          image: ghcr.io/kube-workspaces/frontend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3000

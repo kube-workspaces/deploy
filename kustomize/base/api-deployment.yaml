@@ -21,7 +21,7 @@ spec:
       serviceAccountName: kube-workspaces-controller
       containers:
         - name: api
-          image: kubeworkspaces/api:latest
+          image: ghcr.io/kube-workspaces/api:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
