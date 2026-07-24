@@ -11,7 +11,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: workspaces.fordham.id.au
+  - host: workspaces.example.com
     http:
       paths:
       # API paths that don't conflict with frontend page routes
@@ -51,7 +51,7 @@ spec:
             name: kube-workspaces-frontend
             port:
               number: 80
-  - host: api.workspaces.fordham.id.au
+  - host: api.workspaces.example.com
     http:
       paths:
       - path: /
@@ -63,8 +63,8 @@ spec:
               number: 80
   tls:
   - hosts:
-    - workspaces.fordham.id.au
-    - api.workspaces.fordham.id.au
+    - workspaces.example.com
+    - api.workspaces.example.com
     secretName: kube-workspaces-tls
 ---
 # API ingress with path rewrite: /api/* → /*
@@ -81,7 +81,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: workspaces.fordham.id.au
+  - host: workspaces.example.com
     http:
       paths:
       - path: /api(/|$)(.*)
@@ -93,5 +93,5 @@ spec:
               number: 80
   tls:
   - hosts:
-    - workspaces.fordham.id.au
+    - workspaces.example.com
     secretName: kube-workspaces-tls

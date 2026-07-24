@@ -40,7 +40,7 @@ spec:
             periodSeconds: 5
           env:
             - name: ALLOWED_ORIGINS
-              value: "https://workspaces.fordham.id.au,http://localhost:3000"
+              value: "https://workspaces.example.com,http://localhost:3000"
             - name: PATH_PREFIX
               value: "/proxy"
           resources:

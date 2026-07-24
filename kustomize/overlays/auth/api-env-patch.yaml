@@ -11,8 +11,8 @@ spec:
         - name: api
           env:
             - name: EXTERNAL_HOST
-              value: "api.workspaces.fordham.id.au"
+              value: "api.workspaces.example.com"
             - name: ALLOWED_ORIGINS
-              value: "https://workspaces.fordham.id.au,http://localhost:3000"
+              value: "https://workspaces.example.com,http://localhost:3000"
             - name: AUTH_CALLBACK_URL
-              value: "https://workspaces.fordham.id.au/auth/callback"
+              value: "https://workspaces.example.com/auth/callback"

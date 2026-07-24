@@ -5,7 +5,7 @@ This document describes how workspace application proxying works in kube-workspa
 All proxy traffic flows through the main host via nginx ingress:
 
 ```
-https://workspaces.fordham.id.au/proxy/{namespace}/{name}/...
+https://workspaces.example.com/proxy/{namespace}/{name}/...
 ```
 
 The `kw-session` cookie (same domain) provides authentication automatically.
@@ -19,12 +19,12 @@ When a user opens a workspace application (e.g. code-server, filebrowser, a VNC 
 ### URL Format
 
 ```
-https://workspaces.fordham.id.au/proxy/{namespace}/{name}/{path}
+https://workspaces.example.com/proxy/{namespace}/{name}/{path}
 ```
 
 Example:
 ```
-https://workspaces.fordham.id.au/proxy/chris/my-codeserver/
+https://workspaces.example.com/proxy/user1/my-codeserver/
 ```
 
 The request flows through nginx ingress (`/proxy` path) to the proxy service. The proxy validates the `kw-session` cookie, checks namespace access, then forwards to the workspace pod.
@@ -39,7 +39,7 @@ The request flows through nginx ingress (`/proxy` path) to the proxy service. Th
 │ (kw-session cookie sent automatically)              │
 └───────────────────────────┬─────────────────────────┘
                             │
-                            │ https://workspaces.fordham.id.au/proxy/{ns}/{name}/...
+                            │ https://workspaces.example.com/proxy/{ns}/{name}/...
                             ▼
 ┌─────────────────────────────────────────────────────┐
 │ Nginx Ingress                                       │
@@ -342,8 +342,8 @@ Both return `{"status":"ok"}` with HTTP 200. Health checks bypass auth.
 The proxy includes logging middleware that records every non-health request:
 
 ```
-2024/01/15 10:30:42 GET /proxy/chris/my-code/ → 200 (45ms)
-2024/01/15 10:30:43 GET /proxy/chris/my-code/static/app.js → 200 (12ms)
+2024/01/15 10:30:42 GET /proxy/user1/my-code/ → 200 (45ms)
+2024/01/15 10:30:43 GET /proxy/user1/my-code/static/app.js → 200 (12ms)
 ```
 
 Logged fields: method, path, status code, duration. Health check endpoints (`/healthz`, `/readyz`) are excluded to reduce noise.
@@ -402,7 +402,7 @@ This means:
 
 ### Dedicated API Subdomain
 
-A second host rule routes `api.workspaces.fordham.id.au` directly to the API with no path rewriting.
+A second host rule routes `api.workspaces.example.com` directly to the API with no path rewriting.
 
 ---
 
@@ -440,7 +440,7 @@ export function getProxyUrl(namespace: string, name: string, path: string): stri
 }
 ```
 
-Example: `getProxyUrl("chris", "my-code", "/")` → `/proxy/chris/my-code/`
+Example: `getProxyUrl("user1", "my-code", "/")` → `/proxy/user1/my-code/`
 
 The `kw-session` cookie is sent automatically because the proxy is on the same domain.
 
@@ -713,7 +713,7 @@ spec:
 
 For example, a workspace `my-code` in namespace `chris` with a process on port 8000 produces:
 ```
-/proxy/chris/my-code/proxy/8000/
+/proxy/user1/my-code/proxy/8000/
 ```
 
 **code-server also supports `/absproxy/<port>/`** which passes the full path (including the prefix) to the target process. Use `proxy` (not `absproxy`) for most applications.
@@ -915,10 +915,10 @@ Proxy routing:
 ### Opening code-server with authentication
 
 ```
-1. User clicks "Open" on workspace "my-code" in namespace "chris"
-2. Frontend calls getProxyUrl("chris", "my-code", "/")
-3. Generates: /proxy/chris/my-code/
-4. Browser navigates to https://workspaces.fordham.id.au/proxy/chris/my-code/
+1. User clicks "Open" on workspace "my-code" in namespace "user1"
+2. Frontend calls getProxyUrl("user1", "my-code", "/")
+3. Generates: /proxy/user1/my-code/
+4. Browser navigates to https://workspaces.example.com/proxy/user1/my-code/
    (kw-session cookie sent automatically — same domain)
 
 5. Nginx ingress: /proxy prefix → kube-workspaces-proxy service
@@ -927,15 +927,15 @@ Proxy routing:
 6. Proxy auth middleware:
    - Reads kw-session cookie
    - Validates HMAC-SHA256 signature
-   - Token valid, user email: chris@example.com
+   - Token valid, user email: user@example.com
    - Checks adminEmails → not admin, check namespace access
-   - Looks up User CR → personalNamespace: "chris"
-   - UserHasNamespaceAccess(user, "chris") → true (personal NS)
+   - Looks up User CR → personalNamespace: "user1"
+   - UserHasNamespaceAccess(user, "user1") → true (personal NS)
    - Pass through ✓
 
-7. Proxy handler: path is /proxy/chris/my-code/ → strips prefix
-8. Parses: namespace=chris, name=my-code, rest=/
-9. GetWorkspaceImage("chris", "my-code") → "codercom/code-server:latest"
+7. Proxy handler: path is /proxy/user1/my-code/ → strips prefix
+8. Parses: namespace=user1, name=my-code, rest=/
+9. GetWorkspaceImage("user1", "my-code") → "codercom/code-server:latest"
 10. GetImageProxyConfig("codercom/code-server:latest") → {needsNoopSW, rewriteHostAbsolutePaths}
 11. Target: http://my-code.chris.svc.cluster.local:80/
 
@@ -944,7 +944,7 @@ Proxy routing:
 
 14. Pod returns HTML
 15. ModifyResponse: rewrites remoteAuthority, serverBasePath, rootEndpoint
-16. Location headers rewritten to stay under /proxy/chris/my-code/
+16. Location headers rewritten to stay under /proxy/user1/my-code/
 17. Response returned to browser
 
 18. code-server loads, subsequent requests go through same auth flow
@@ -954,7 +954,7 @@ Proxy routing:
 ### Unauthenticated access attempt
 
 ```
-1. Attacker navigates to https://workspaces.fordham.id.au/proxy/chris/my-code/
+1. Attacker navigates to https://workspaces.example.com/proxy/user1/my-code/
 2. No kw-session cookie present
 3. Proxy auth middleware → 401 {"error":"Unauthorized","message":"authentication required"}
 ```
@@ -962,11 +962,11 @@ Proxy routing:
 ### Unauthorized namespace access
 
 ```
-1. User "bob" navigates to /proxy/chris/my-code/ (not bob's namespace)
+1. User "bob" navigates to /proxy/user1/my-code/ (not bob's namespace)
 2. kw-session cookie valid for bob@example.com
 3. Proxy looks up User CR for bob → personalNamespace: "bob", namespaceAccess: []
-4. UserHasNamespaceAccess(bob, "chris") → false
-5. 403 {"error":"Forbidden","message":"no access to namespace chris"}
+4. UserHasNamespaceAccess(bob, "user1") → false
+5. 403 {"error":"Forbidden","message":"no access to namespace user1"}
 ```
 
 ---
@@ -1045,7 +1045,7 @@ When auth is disabled (default), the proxy passes all requests through without c
 
 | Aspect | Local Dev | Production |
 |--------|-----------|------------|
-| Access URL | `http://localhost:8091/proxy/{ns}/{name}/...` | `https://workspaces.fordham.id.au/proxy/{ns}/{name}/...` |
+| Access URL | `http://localhost:8091/proxy/{ns}/{name}/...` | `https://workspaces.example.com/proxy/{ns}/{name}/...` |
 | TLS | None | cert-manager + nginx |
 | Auth | Usually disabled (no AuthConfig) | Enabled (kw-session cookie) |
 | WebSocket | Direct (no proxy) | Via nginx (3600s timeout) |

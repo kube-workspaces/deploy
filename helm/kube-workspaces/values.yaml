@@ -28,7 +28,7 @@ api:
       memory: 128Mi
   port: 8080
   externalHost: ""
-  allowedOrigins: "https://workspaces.fordham.id.au,http://localhost:3000"
+  allowedOrigins: "https://workspaces.example.com,http://localhost:3000"
 
 proxy:
   image:
@@ -43,7 +43,7 @@ proxy:
       cpu: 50m
       memory: 64Mi
   port: 8080
-  allowedOrigins: "https://workspaces.fordham.id.au,http://localhost:3000"
+  allowedOrigins: "https://workspaces.example.com,http://localhost:3000"
   # Path prefix for proxy routes. Always "/proxy" (single-mode).
   pathPrefix: "/proxy"
   service:
