@@ -2,28 +2,61 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in this project, please report it responsibly.
+If you discover a security vulnerability in Kube Workspaces, please report it responsibly. **Do not open a public GitHub issue for security vulnerabilities.**
 
-**Do NOT open a public GitHub issue for security vulnerabilities.**
+### How to Report
 
-Instead, please email security concerns to: security@kubeworkspaces.io
+Email: **security@kubeworkspaces.io**
 
-You should receive a response within 72 hours. If the issue is confirmed, we will release a patch as soon as possible depending on complexity.
+Alternatively, use [GitHub's private vulnerability reporting](https://github.com/kube-workspaces/controller/security/advisories/new) on the relevant repository.
+
+### What to Include
+
+- Description of the vulnerability
+- Steps to reproduce
+- Affected component(s): controller, api, proxy, frontend
+- Impact assessment (what an attacker could achieve)
+- Any suggested fix (optional)
+
+### Response Timeline
+
+- **Acknowledgement:** Within 48 hours
+- **Initial assessment:** Within 7 days
+- **Fix timeline:** Depends on severity, typically within 30 days for critical issues
+
+### Scope
+
+The following are in scope:
+
+- Authentication bypass (OIDC flow, session validation, cookie handling)
+- Authorization bypass (namespace access, role escalation)
+- Proxy request smuggling or path traversal
+- CRD injection or privilege escalation via workspace specs
+- Information disclosure (secrets, tokens, user data)
+- Denial of service against the control plane components
+
+### Out of Scope
+
+- Vulnerabilities in workspace container images themselves (these are user-configured)
+- Issues requiring physical access to the cluster nodes
+- Social engineering attacks
+- Vulnerabilities in dependencies that are already publicly disclosed (open a regular issue instead)
 
 ## Supported Versions
 
 | Version | Supported |
 |---------|-----------|
-| latest main | Yes |
-| Previous releases | Best effort |
+| Latest release | Yes |
+| Previous minor | Best effort |
+| Older | No |
 
-## Security Best Practices
+## Security Architecture
 
-When deploying Kube Workspaces:
+Kube Workspaces handles sensitive operations:
 
-- Always use TLS for ingress
-- Rotate the session signing key periodically
-- Use network policies to restrict pod-to-pod communication
-- Enable RBAC and limit namespace access
-- Keep container images updated
-- Use `readOnlyRootFilesystem: true` in production deployments
+- **Authentication:** OIDC-based with HMAC-SHA256 signed session cookies
+- **Authorization:** CRD-based roles (admin/editor/viewer) with namespace-level access control
+- **Proxy:** Routes browser traffic to workspace pods with session validation
+- **No database:** All state in Kubernetes CRDs and Secrets (encrypted at rest via cluster config)
+
+For architecture details, see the [proxy documentation](docs/proxy.md) and [authentication documentation](docs/authentication.md).
