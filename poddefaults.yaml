@@ -1,0 +1,92 @@
+---
+# Example PodDefault: inject shared storage volume into all workspaces
+# This provides a common /shared directory backed by a PVC.
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: PodDefault
+metadata:
+  name: shared-storage
+  namespace: default
+spec:
+  desc: "Mount shared NFS storage at /shared"
+  volumes:
+    - name: shared-data
+      persistentVolumeClaim:
+        claimName: shared-workspace-data
+  volumeMounts:
+    - name: shared-data
+      mountPath: /shared
+---
+# Example PodDefault: inject HTTP proxy settings into all workspaces
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: PodDefault
+metadata:
+  name: http-proxy
+  namespace: default
+spec:
+  desc: "Configure HTTP proxy environment variables"
+  env:
+    - name: HTTP_PROXY
+      value: "http://proxy.internal:3128"
+    - name: HTTPS_PROXY
+      value: "http://proxy.internal:3128"
+    - name: NO_PROXY
+      value: "localhost,127.0.0.1,.cluster.local,.svc"
+---
+# Example PodDefault: inject CA certificates volume
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: PodDefault
+metadata:
+  name: custom-ca-certs
+  namespace: default
+spec:
+  desc: "Mount custom CA certificates from ConfigMap"
+  volumes:
+    - name: ca-certs
+      configMap:
+        name: custom-ca-certificates
+  volumeMounts:
+    - name: ca-certs
+      mountPath: /etc/ssl/certs/custom
+      readOnly: true
+  env:
+    - name: SSL_CERT_DIR
+      value: "/etc/ssl/certs:/etc/ssl/certs/custom"
+---
+# Example PodDefault: inject git credentials (Secret) for IDE workspaces only
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: PodDefault
+metadata:
+  name: git-credentials
+  namespace: default
+spec:
+  desc: "Mount git credentials for IDE workspaces"
+  selector:
+    matchLabels:
+      workspace-type: ide
+  volumes:
+    - name: git-creds
+      secret:
+        secretName: git-credentials
+        defaultMode: 256  # 0400
+  volumeMounts:
+    - name: git-creds
+      mountPath: /home/coder/.git-credentials
+      readOnly: true
+  env:
+    - name: GIT_ASKPASS
+      value: "/bin/true"
+---
+# Example PodDefault: set a custom service account for workspaces that need cloud access
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: PodDefault
+metadata:
+  name: cloud-access
+  namespace: default
+spec:
+  desc: "Use cloud-access service account for cloud SDK workspaces"
+  selector:
+    matchLabels:
+      cloud-access: "true"
+  serviceAccountName: workspace-cloud-access
+  annotations:
+    iam.gke.io/gcp-service-account: "workspace-sa@my-project.iam.gserviceaccount.com"

@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - rbac.yaml
+  - workspace-roles.yaml
+  - controller-deployment.yaml
+  - api-deployment.yaml
+  - proxy-rbac.yaml
+  - proxy-deployment.yaml
+  - frontend-deployment.yaml
+  - ingress.yaml
+
+images:
+  - name: kube-workspaces-api
+    newName: docker.io/kubeworkspaces/api
+    newTag: latest
+  - name: kube-workspaces-controller
+    newName: docker.io/kubeworkspaces/controller
+    newTag: latest
+  - name: kube-workspaces-frontend
+    newName: docker.io/kubeworkspaces/frontend
+    newTag: latest
+  - name: kube-workspaces-proxy
+    newName: docker.io/kubeworkspaces/proxy
+    newTag: latest

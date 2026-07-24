@@ -1,0 +1,97 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kube-workspaces
+  namespace: kube-workspaces-system
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    # WebSocket support for proxied workspaces (code-server, VNC, etc.)
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: workspaces.fordham.id.au
+    http:
+      paths:
+      # API paths that don't conflict with frontend page routes
+      - path: /v1
+        pathType: Prefix
+        backend:
+          service:
+            name: kube-workspaces-api
+            port:
+              number: 80
+      - path: /auth
+        pathType: Prefix
+        backend:
+          service:
+            name: kube-workspaces-api
+            port:
+              number: 80
+      - path: /openapi
+        pathType: Prefix
+        backend:
+          service:
+            name: kube-workspaces-api
+            port:
+              number: 80
+      - path: /proxy
+        pathType: Prefix
+        backend:
+          service:
+            name: kube-workspaces-proxy
+            port:
+              number: 80
+      # Frontend catches everything else (including /admin, /workspaces, /volumes pages)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kube-workspaces-frontend
+            port:
+              number: 80
+  - host: api.workspaces.fordham.id.au
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kube-workspaces-api
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - workspaces.fordham.id.au
+    - api.workspaces.fordham.id.au
+    secretName: kube-workspaces-tls
+---
+# API ingress with path rewrite: /api/* → /*
+# Frontend uses API_BASE="/api" so all API calls (including /api/admin/*)
+# go through this ingress, avoiding conflicts with frontend page routes.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kube-workspaces-api
+  namespace: kube-workspaces-system
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: workspaces.fordham.id.au
+    http:
+      paths:
+      - path: /api(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: kube-workspaces-api
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - workspaces.fordham.id.au
+    secretName: kube-workspaces-tls

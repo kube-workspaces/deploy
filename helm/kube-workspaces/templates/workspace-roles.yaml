@@ -1,0 +1,61 @@
+{{- if .Values.workspaceRoles.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: workspace-admin-role
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auth
+rules:
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["workspaces"]
+    verbs: ["*"]
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["workspaces/status"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "services", "events"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: workspace-editor-role
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auth
+rules:
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["workspaces"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["workspaces/status"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "services", "events"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: workspace-viewer-role
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auth
+rules:
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["workspaces"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["workspaces/status"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "services", "events"]
+    verbs: ["get", "list", "watch"]
+{{- end }}

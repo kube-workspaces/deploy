@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-workspaces-controller
+  namespace: kube-workspaces-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kube-workspaces-manager
+rules:
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["workspaces", "workspaces/status", "workspaces/finalizers"]
+    verbs: ["*"]
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["images"]
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["poddefaults"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["users", "users/status", "users/finalizers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["authconfigs", "authconfigs/status", "authconfigs/finalizers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["platformconfigs", "platformconfigs/status", "platformconfigs/finalizers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["services", "pods", "pods/log", "pods/exec", "events", "persistentvolumeclaims", "namespaces"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["resourcequotas"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["rolebindings"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterrolebindings"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["*"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-workspaces-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kube-workspaces-manager
+subjects:
+  - kind: ServiceAccount
+    name: kube-workspaces-controller
+    namespace: kube-workspaces-system

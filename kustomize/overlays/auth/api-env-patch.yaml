@@ -1,0 +1,18 @@
+# Strategic merge patch to add AUTH_CALLBACK_URL env var to the API deployment.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-workspaces-api
+  namespace: kube-workspaces-system
+spec:
+  template:
+    spec:
+      containers:
+        - name: api
+          env:
+            - name: EXTERNAL_HOST
+              value: "api.workspaces.fordham.id.au"
+            - name: ALLOWED_ORIGINS
+              value: "https://workspaces.fordham.id.au,http://localhost:3000"
+            - name: AUTH_CALLBACK_URL
+              value: "https://workspaces.fordham.id.au/auth/callback"

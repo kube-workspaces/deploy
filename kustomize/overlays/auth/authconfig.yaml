@@ -1,0 +1,34 @@
+# AuthConfig CR - the singleton that enables authentication.
+# Edit the values below to match your OIDC provider configuration.
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: AuthConfig
+metadata:
+  name: default
+spec:
+  enabled: true
+  oidc:
+    issuerURL: "https://dex.example.com"       # CHANGEME: Your OIDC issuer URL
+    clientID: "kube-workspaces"                 # CHANGEME: Your OAuth2 client ID
+    clientSecret:
+      name: "kube-workspaces-oidc"
+      key: "client-secret"
+    scopes:
+      - "openid"
+      - "email"
+      - "profile"
+    usernameClaim: "email"
+  session:
+    signingKey:
+      name: "kube-workspaces-session"
+      key: "signing-key"
+    tokenExpiry: "24h"
+    refreshExpiry: "7d"
+  personalNamespaces:
+    enabled: true
+    template: "{{username}}"
+  registration:
+    autoProvision: true
+    defaultRole: "editor"
+    requireApproval: false
+  adminEmails:
+    - "admin@example.com"                       # CHANGEME: Your admin email(s)

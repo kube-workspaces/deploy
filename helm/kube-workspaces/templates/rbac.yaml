@@ -1,0 +1,77 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "kube-workspaces.serviceAccountName" . }}
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "kube-workspaces.fullname" . }}-manager
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["workspaces", "workspaces/status", "workspaces/finalizers"]
+    verbs: ["*"]
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["images"]
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["poddefaults"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["users", "users/status", "users/finalizers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["authconfigs", "authconfigs/status", "authconfigs/finalizers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["kubeworkspaces.io"]
+    resources: ["platformconfigs", "platformconfigs/status", "platformconfigs/finalizers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["services", "pods", "pods/log", "pods/exec", "events", "persistentvolumeclaims", "namespaces"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["resourcequotas"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["rolebindings"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterrolebindings"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "kube-workspaces.fullname" . }}-manager
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "kube-workspaces.fullname" . }}-manager
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "kube-workspaces.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}

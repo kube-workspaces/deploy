@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - crd.yaml
+  - kubeworkspaces.io_users.yaml
+  - kubeworkspaces.io_authconfigs.yaml
+  - kubeworkspaces.io_platformconfigs.yaml
+  - kubeworkspaces.io_poddefaults.yaml

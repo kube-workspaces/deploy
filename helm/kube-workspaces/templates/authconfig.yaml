@@ -1,0 +1,75 @@
+{{- if .Values.auth.enabled }}
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: AuthConfig
+metadata:
+  name: default
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+spec:
+  enabled: true
+  {{- if and .Values.auth.oidc .Values.auth.oidc.issuerURL }}
+  oidc:
+    issuerURL: {{ .Values.auth.oidc.issuerURL | quote }}
+    clientID: {{ .Values.auth.oidc.clientID | quote }}
+    clientSecret:
+      name: {{ .Values.auth.oidc.clientSecret.secretName | quote }}
+      key: {{ .Values.auth.oidc.clientSecret.secretKey | quote }}
+    {{- if .Values.auth.oidc.scopes }}
+    scopes:
+      {{- toYaml .Values.auth.oidc.scopes | nindent 6 }}
+    {{- end }}
+    {{- if .Values.auth.oidc.usernameClaim }}
+    usernameClaim: {{ .Values.auth.oidc.usernameClaim | quote }}
+    {{- end }}
+    {{- if .Values.auth.oidc.groupsClaim }}
+    groupsClaim: {{ .Values.auth.oidc.groupsClaim | quote }}
+    {{- end }}
+  {{- end }}
+  session:
+    signingKey:
+      name: {{ .Values.auth.session.signingKey.secretName | quote }}
+      key: {{ .Values.auth.session.signingKey.secretKey | quote }}
+    {{- if .Values.auth.session.tokenExpiry }}
+    tokenExpiry: {{ .Values.auth.session.tokenExpiry | quote }}
+    {{- end }}
+    {{- if .Values.auth.session.refreshExpiry }}
+    refreshExpiry: {{ .Values.auth.session.refreshExpiry | quote }}
+    {{- end }}
+  {{- if .Values.auth.personalNamespaces }}
+  personalNamespaces:
+    enabled: {{ .Values.auth.personalNamespaces.enabled }}
+    {{- if .Values.auth.personalNamespaces.template }}
+    template: {{ .Values.auth.personalNamespaces.template | quote }}
+    {{- end }}
+    {{- if .Values.auth.personalNamespaces.labels }}
+    labels:
+      {{- toYaml .Values.auth.personalNamespaces.labels | nindent 6 }}
+    {{- end }}
+    {{- if .Values.auth.personalNamespaces.annotations }}
+    annotations:
+      {{- toYaml .Values.auth.personalNamespaces.annotations | nindent 6 }}
+    {{- end }}
+    {{- if .Values.auth.personalNamespaces.resourceQuota }}
+    resourceQuota:
+      {{- toYaml .Values.auth.personalNamespaces.resourceQuota | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.auth.registration }}
+  registration:
+    autoProvision: {{ .Values.auth.registration.autoProvision }}
+    defaultRole: {{ .Values.auth.registration.defaultRole | quote }}
+    {{- if .Values.auth.registration.allowedDomains }}
+    allowedDomains:
+      {{- toYaml .Values.auth.registration.allowedDomains | nindent 6 }}
+    {{- end }}
+    {{- if .Values.auth.registration.allowedEmails }}
+    allowedEmails:
+      {{- toYaml .Values.auth.registration.allowedEmails | nindent 6 }}
+    {{- end }}
+    requireApproval: {{ .Values.auth.registration.requireApproval }}
+  {{- end }}
+  {{- if .Values.auth.adminEmails }}
+  adminEmails:
+    {{- toYaml .Values.auth.adminEmails | nindent 4 }}
+  {{- end }}
+{{- end }}

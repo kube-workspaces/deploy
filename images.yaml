@@ -1,0 +1,1025 @@
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: code-server
+spec:
+  defaultArgs:
+  - --bind-addr
+  - 0.0.0.0:8080
+  - --auth
+  - none
+  defaultEnv:
+  - name: VSCODE_PROXY_URI
+    value: /proxy/{{namespace}}/{{name}}/proxy/{{port}}/
+  defaultPath: /
+  defaultPort: 8080
+  description: Browser-based VS Code experience
+  category: IDE
+  tags:
+  - code
+  - vscode
+  - editor
+  displayName: Code Server (VS Code)
+  homepageURL: https://github.com/coder/code-server
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/code-server.png
+  image: codercom/code-server:latest
+  imageHomepageURL: https://hub.docker.com/r/codercom/code-server
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+  sourceURL: https://github.com/coder/code-server
+  defaultUser: coder
+  defaultHomedir: /home/coder
+  defaultUID: 1000
+  defaultInitContainers:
+    - name: volume-permissions
+      image: busybox:1.37
+      command: ["sh", "-c", "chown -R {{uid}}:{{uid}} /home/coder"]
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: debian-desktop
+spec:
+  defaultPath: /vnc.html?resize=remote
+  defaultPort: 6901
+  description: Debian desktop in a container with web access via TigerVNC and websockify.
+  category: Desktop
+  tags:
+  - vnc
+  - linux
+  - debian
+  displayName: Debian Desktop
+  homepageURL: https://github.com/flaccid/container-debian-desktop/blob/main/README.md
+  icon: https://raw.githubusercontent.com/flaccid/container-debian-desktop/refs/heads/main/config/openlogo-debianV2.svg
+  image: flaccid/debian-desktop:latest
+  imageHomepageURL: https://hub.docker.com/r/flaccid/debian-desktop
+  privileged: false
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    audioPort: 6902
+  additionalPorts:
+    - name: audio
+      port: 6902
+  sourceURL: https://github.com/flaccid/container-debian-desktop
+  defaultUser: admin
+  defaultHomedir: /home/admin
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: filebrowser
+spec:
+  defaultPath: /
+  defaultPort: 80
+  description: Web-based file manager — browse, upload, download, delete, rename,
+    and edit files through a clean web interface. Perfect for managing persistent
+    volumes.
+  category: Tool
+  tags:
+  - files
+  - storage
+  displayName: File Browser
+  homepageURL: https://filebrowser.org
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/filebrowser.svg
+  image: filebrowser/filebrowser:latest
+  imageHomepageURL: https://hub.docker.com/r/filebrowser/filebrowser
+  defaultEnv:
+    - name: FB_BASE_URL
+      value: /proxy/{{namespace}}/{{name}}
+  defaultUID: 1000
+  defaultInitContainers:
+    - name: volume-permissions
+      image: busybox:1.37
+      command: ["sh", "-c", "chown -R {{uid}}:{{uid}} /srv"]
+  proxyConfig:
+    needsNoopSW: true
+    preservePathPrefix: true
+    rewriteHostAbsolutePaths: true
+  sourceURL: https://github.com/filebrowser/filebrowser
+  defaultHomedir: /srv
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: firefox
+spec:
+  defaultEnv:
+  - name: SUBFOLDER
+    value: /proxy/{{namespace}}/{{name}}/
+  defaultPath: /
+  defaultPort: 3000
+  description: Mozilla Firefox browser streamed via KasmVNC. Isolated browser session
+    in a container with full web access.
+  category: Browser
+  tags:
+  - vnc
+  - web
+  displayName: Firefox Browser
+  homepageURL: https://github.com/linuxserver/docker-firefox
+  icon: https://cdn.simpleicons.org/firefox/FF7139
+  image: linuxserver/firefox:latest
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/firefox
+  defaultSharedMemory: true
+  proxyConfig:
+    needsNoopSW: true
+    preservePathPrefix: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/linuxserver/docker-webtop
+  defaultUser: abc
+  defaultHomedir: /config
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: doom
+spec:
+  defaultCredentials:
+    password: password
+    username: kasm_user
+  defaultEnv:
+  - name: VNC_PW
+    value: password
+  defaultPath: /
+  defaultPort: 6901
+  description: Play classic DOOM in the browser via KasmVNC. Chocolate Doom engine
+    with full shareware WAD included.
+  category: Game
+  tags:
+  - vnc
+  - retro
+  displayName: DOOM
+  homepageURL: https://github.com/kasmtech/workspaces-images
+  icon: https://upload.wikimedia.org/wikipedia/en/5/57/Doom_cover_art.jpg
+  image: kasmweb/doom:1.19.0-rolling-daily
+  imageHomepageURL: https://hub.docker.com/r/kasmweb/doom
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    tlsInsecure: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/kasmtech/workspaces-images
+  defaultUser: kasm_user
+  defaultHomedir: /home/kasm_user
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: pacman
+spec:
+  defaultPath: /
+  defaultPort: 80
+  description: Classic Pac-Man arcade game running entirely in the browser with sound
+    effects. Self-contained, no network required to play.
+  category: Game
+  tags:
+  - arcade
+  - retro
+  displayName: Pac-Man (HTML5)
+  homepageURL: https://github.com/platzhersh/pacman-canvas
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="#FFD700"/><path d="M12 12L22 6V18z" fill="#1a1a2e"/><circle cx="10" cy="7" r="1.5" fill="#1a1a2e"/></svg>'
+  image: uzyexe/pacman:latest
+  imageHomepageURL: https://hub.docker.com/r/uzyexe/pacman
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: game-2048
+spec:
+  defaultPath: /
+  defaultPort: 80
+  description: Addictive sliding puzzle game. Combine tiles to reach 2048. Works on
+    keyboard and touch.
+  category: Game
+  tags:
+  - puzzle
+  displayName: "2048"
+  homepageURL: https://github.com/gabrielecirulli/2048
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3" fill="#edc22e"/><text x="12" y="16" font-family="sans-serif" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">2048</text></svg>'
+  image: cnrock/2048:latest
+  imageHomepageURL: https://hub.docker.com/r/cnrock/2048
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: tetris
+spec:
+  defaultPath: /
+  defaultPort: 80
+  description: Classic Tetris with keyboard controls and FPS stats overlay. Fully
+    self-contained.
+  category: Game
+  tags:
+  - arcade
+  - retro
+  displayName: Tetris
+  homepageURL: https://github.com/jakesgordon/javascript-tetris
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="2" width="5" height="5" fill="#00f0f0"/><rect x="9" y="2" width="5" height="5" fill="#00f0f0"/><rect x="9" y="7" width="5" height="5" fill="#00f0f0"/><rect x="14" y="7" width="5" height="5" fill="#00f0f0"/></svg>'
+  image: uzyexe/tetris:latest
+  imageHomepageURL: https://hub.docker.com/r/uzyexe/tetris
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: wordle
+spec:
+  defaultPath: /
+  defaultPort: 80
+  description: Daily word-guessing game. 6 attempts to guess a 5-letter word with
+    color-coded feedback.
+  category: Game
+  tags:
+  - puzzle
+  - word
+  displayName: Wordle
+  homepageURL: https://github.com/cwackerfuss/react-wordle
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="2" y="8" width="5" height="5" rx="0.5" fill="#6aaa64"/><rect x="8" y="8" width="5" height="5" rx="0.5" fill="#c9b458"/><rect x="14" y="8" width="5" height="5" rx="0.5" fill="#6aaa64"/><rect x="2" y="14" width="5" height="5" rx="0.5" fill="#787c7e"/><rect x="8" y="14" width="5" height="5" rx="0.5" fill="#6aaa64"/><rect x="14" y="14" width="5" height="5" rx="0.5" fill="#787c7e"/></svg>'
+  image: modem7/wordle:legacy
+  imageHomepageURL: https://hub.docker.com/r/modem7/wordle
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: snake
+spec:
+  defaultPath: /
+  defaultPort: 80
+  description: Classic Snake game on HTML5 canvas. Arrow keys to control. Single
+    self-contained HTML file.
+  category: Game
+  tags:
+  - arcade
+  - retro
+  displayName: Snake
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12h4v3h4v-3h4v-3h4v3h2" stroke="#4caf50" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="21" cy="9" r="1.5" fill="#4caf50"/></svg>'
+  image: jmartej204/snake-game:latest
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: chromium
+spec:
+  defaultPath: /
+  defaultPort: 3000
+  description: Chromium browser in a container with KasmVNC web access. Full browser
+    with extensions support.
+  category: Browser
+  tags:
+  - vnc
+  - web
+  displayName: Chromium Browser
+  homepageURL: https://github.com/nicholasgasior/docker-chromium
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/chromium.png
+  image: linuxserver/chromium:latest
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/chromium
+  sourceURL: https://github.com/linuxserver/docker-chromium
+  defaultSharedMemory: true
+  defaultEnv:
+  - name: SUBFOLDER
+    value: /proxy/{{namespace}}/{{name}}/
+  proxyConfig:
+    needsNoopSW: true
+    preservePathPrefix: true
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: tor-browser
+spec:
+  defaultPath: /
+  defaultPort: 6901
+  description: Tor Browser for anonymous browsing via KasmVNC. Routes all traffic
+    through the Tor network.
+  category: Browser
+  tags:
+  - vnc
+  - privacy
+  displayName: Tor Browser
+  homepageURL: https://www.torproject.org
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/tor.png
+  image: kasmweb/tor-browser:1.18.0
+  imageHomepageURL: https://hub.docker.com/r/kasmweb/tor-browser
+  sourceURL: https://github.com/kasmtech/workspaces-images
+  defaultEnv:
+  - name: VNC_PW
+    value: password
+  defaultCredentials:
+    username: kasm_user
+    password: password
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    tlsInsecure: true
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: jlesage-firefox
+spec:
+  defaultPath: /
+  defaultPort: 5800
+  description: Lightweight Firefox browser with noVNC web UI (~300MB). Includes clipboard
+    sync, audio, and file manager.
+  category: Browser
+  tags:
+  - vnc
+  - web
+  displayName: Firefox (Lightweight)
+  homepageURL: https://www.mozilla.org/firefox/
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/firefox.png
+  image: jlesage/firefox:latest
+  imageHomepageURL: https://hub.docker.com/r/jlesage/firefox
+  sourceURL: https://github.com/jlesage/docker-firefox
+  defaultEnv:
+  - name: WEB_AUDIO
+    value: "1"
+  - name: KEEP_APP_RUNNING
+    value: "1"
+  proxyConfig:
+    rewriteHostAbsolutePaths: true
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: jlesage-chromium
+spec:
+  defaultPath: /
+  defaultPort: 5800
+  description: Lightweight Chromium browser with noVNC web UI (~370MB). Includes clipboard
+    sync, audio, and file manager.
+  category: Browser
+  tags:
+  - vnc
+  - web
+  displayName: Chromium (Lightweight)
+  homepageURL: https://www.chromium.org
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/chromium.png
+  image: jlesage/chromium:latest
+  imageHomepageURL: https://hub.docker.com/r/jlesage/chromium
+  sourceURL: https://github.com/jlesage/docker-chromium
+  defaultEnv:
+  - name: WEB_AUDIO
+    value: "1"
+  - name: KEEP_APP_RUNNING
+    value: "1"
+  proxyConfig:
+    rewriteHostAbsolutePaths: true
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: adminer
+spec:
+  defaultPath: /
+  defaultPort: 8080
+  description: Lightweight database management in a single PHP file. Supports MySQL,
+    PostgreSQL, SQLite, MS SQL, Oracle, and MongoDB.
+  category: Tool
+  tags:
+  - database
+  - admin
+  displayName: Adminer (Database Manager)
+  homepageURL: https://www.adminer.org
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/adminer.svg
+  image: adminer:latest
+  imageHomepageURL: https://hub.docker.com/_/adminer
+  proxyConfig:
+    rewriteHostAbsolutePaths: true
+  sourceURL: https://github.com/vrana/adminer
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: drawio
+spec:
+  defaultPath: /
+  defaultPort: 8080
+  description: Self-hosted draw.io (diagrams.net) for creating flowcharts, UML diagrams,
+    network diagrams, org charts, and more. Full-featured diagramming tool.
+  category: Productivity
+  displayName: draw.io (Diagrams)
+  homepageURL: https://www.drawio.com
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/diagrams-net.svg
+  image: jgraph/drawio:latest
+  imageHomepageURL: https://hub.docker.com/r/jgraph/drawio
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+  sourceURL: https://github.com/jgraph/drawio
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: trilium-notes
+spec:
+  defaultPath: /
+  defaultPort: 8080
+  description: Hierarchical note-taking app with rich text, code blocks, mind maps,
+    relation maps, and scripting. Personal knowledge base with powerful search.
+  category: Productivity
+  displayName: Trilium Notes
+  homepageURL: https://triliumnext.github.io/Docs/
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/trilium.svg
+  image: triliumnext/trilium:v0.104.0
+  imageHomepageURL: https://hub.docker.com/r/triliumnext/trilium
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+  sourceURL: https://github.com/TriliumNext/Notes
+  defaultHomedir: /home/node
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: grafana
+spec:
+  defaultEnv:
+  - name: GF_SERVER_ROOT_URL
+    value: /proxy/{{namespace}}/{{name}}/
+  - name: GF_SERVER_SERVE_FROM_SUB_PATH
+    value: "true"
+  - name: GF_AUTH_ANONYMOUS_ENABLED
+    value: "true"
+  - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+    value: Admin
+  defaultPath: /
+  defaultPort: 3000
+  description: Industry-standard observability dashboard. Visualize metrics from Prometheus,
+    Loki, InfluxDB, Elasticsearch, and dozens of other data sources.
+  category: Tool
+  tags:
+  - monitoring
+  - dashboards
+  displayName: Grafana
+  homepageURL: https://grafana.com
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/grafana.svg
+  image: grafana/grafana:latest
+  imageHomepageURL: https://hub.docker.com/r/grafana/grafana
+  proxyConfig:
+    preservePathPrefix: true
+  sourceURL: https://github.com/grafana/grafana
+  defaultUID: 472
+  defaultHomedir: /var/lib/grafana
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: cyberchef
+spec:
+  defaultPath: /
+  defaultPort: 8000
+  description: "GCHQ's CyberChef — The Cyber Swiss Army Knife. Encoding, decoding,
+    encryption, compression, hashing, and hundreds of data manipulation operations
+    in the browser."
+  category: Tool
+  displayName: CyberChef
+  homepageURL: https://gchq.github.io/CyberChef
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/cyberchef.svg
+  image: mpepping/cyberchef:latest
+  imageHomepageURL: https://hub.docker.com/r/mpepping/cyberchef
+  proxyConfig:
+    rewriteHostAbsolutePaths: true
+  sourceURL: https://github.com/gchq/CyberChef
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: thelounge
+spec:
+  defaultPath: /
+  defaultPort: 9000
+  description: Modern self-hosted web IRC client. Always connected, multi-user support,
+    push notifications, file uploads, and link previews.
+  category: Productivity
+  displayName: The Lounge (IRC)
+  homepageURL: https://thelounge.chat
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/thelounge.svg
+  image: linuxserver/thelounge:latest
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/thelounge
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+  sourceURL: https://github.com/thelounge/thelounge
+  defaultUser: abc
+  defaultHomedir: /config
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: excalidraw
+spec:
+  defaultPath: /
+  defaultPort: 80
+  description: Virtual collaborative whiteboard for sketching diagrams, wireframes,
+    and hand-drawn style illustrations. Simple, intuitive, and open source.
+  category: Productivity
+  displayName: Excalidraw (Whiteboard)
+  homepageURL: https://excalidraw.com
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/excalidraw.svg
+  image: excalidraw/excalidraw:latest
+  imageHomepageURL: https://hub.docker.com/r/excalidraw/excalidraw
+  proxyConfig:
+    rewriteHostAbsolutePaths: true
+  sourceURL: https://github.com/excalidraw/excalidraw
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: stirling-pdf
+spec:
+  defaultPath: /
+  defaultPort: 8080
+  description: Powerful self-hosted PDF manipulation tool. Merge, split, rotate, convert,
+    compress, sign, add watermarks, OCR, and dozens more PDF operations.
+  category: Tool
+  displayName: Stirling PDF
+  homepageURL: https://stirlingpdf.io
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/stirling-pdf.svg
+  image: stirlingtools/stirling-pdf:latest
+  imageHomepageURL: https://hub.docker.com/r/stirlingtools/stirling-pdf
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+  sourceURL: https://github.com/Stirling-Tools/Stirling-PDF
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: jupyter-datascience
+spec:
+  defaultEnv:
+  - name: JUPYTER_ENABLE_LAB
+    value: 'yes'
+  defaultPath: /lab
+  defaultPort: 8888
+  description: JupyterLab with Python, R, Julia, and data science libraries (pandas,
+    numpy, scipy, matplotlib, scikit-learn, tensorflow).
+  category: IDE
+  tags:
+  - python
+  - datascience
+  - jupyter
+  displayName: Jupyter Data Science
+  homepageURL: https://jupyter.org
+  icon: https://cdn.simpleicons.org/jupyter/F37626
+  image: jupyter/datascience-notebook:latest
+  imageHomepageURL: https://hub.docker.com/r/jupyter/datascience-notebook
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+  sourceURL: https://github.com/jupyter/docker-stacks
+  defaultUser: jovyan
+  defaultHomedir: /home/jovyan
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: kasm
+spec:
+  defaultEnv:
+  - name: KASM_PORT
+    value: '3000'
+  defaultPath: /
+  defaultPort: 3000
+  description: Full Kasm Workspaces platform with Docker-in-Docker. Requires privileged
+    mode. Access the setup wizard first, then the main interface.
+  category: Desktop
+  tags:
+  - vnc
+  - linux
+  displayName: Kasm Workspaces
+  homepageURL: https://kasmweb.com
+  icon: https://cdn.simpleicons.org/linuxserver/DA3B8A
+  image: linuxserver/kasm:1.19.0
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/kasm
+  privileged: true
+  defaultSharedMemory: true
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    tlsInsecure: true
+  sourceURL: https://github.com/linuxserver/docker-kasm
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: kasm-desktop-deluxe
+spec:
+  defaultCredentials:
+    password: password
+    username: kasm_user
+  defaultEnv:
+  - name: VNC_PW
+    value: password
+  defaultPath: /
+  defaultPort: 6901
+  description: Extended Kasm desktop with additional applications and tools pre-installed.
+    Ubuntu desktop via KasmVNC with office suite, dev tools, and media apps.
+  category: Desktop
+  tags:
+  - vnc
+  - linux
+  - ubuntu
+  displayName: Kasm Desktop Deluxe
+  homepageURL: https://kasmweb.com
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kasm.svg
+  image: kasmweb/desktop-deluxe:1.19.0
+  imageHomepageURL: https://hub.docker.com/r/kasmweb/desktop-deluxe
+  privileged: true
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    tlsInsecure: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/kasmtech
+  defaultUser: kasm_user
+  defaultHomedir: /home/kasm_user
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: kasmweb-chrome
+spec:
+  defaultCredentials:
+    password: password
+    username: kasm_user
+  defaultEnv:
+  - name: VNC_PW
+    value: password
+  defaultPath: /
+  defaultPort: 6901
+  description: Chrome browser streamed via KasmVNC
+  category: Browser
+  displayName: Kasm Chrome
+  homepageURL: https://kasmweb.com
+  icon: https://cdn.simpleicons.org/googlechrome/4285F4
+  image: kasmweb/chrome:1.19.0
+  imageHomepageURL: https://hub.docker.com/r/kasmweb/chrome
+  privileged: true
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    tlsInsecure: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/kasmtech
+  defaultUser: kasm_user
+  defaultHomedir: /home/kasm_user
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: kasmweb-desktop
+spec:
+  defaultCredentials:
+    password: password
+    username: kasm_user
+  defaultEnv:
+  - name: VNC_PW
+    value: password
+  defaultPath: /
+  defaultPort: 6901
+  description: Ubuntu desktop streamed via KasmVNC
+  category: Desktop
+  displayName: Kasm Desktop
+  homepageURL: https://kasmweb.com
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kasm.svg
+  image: kasmweb/desktop:1.19.0
+  imageHomepageURL: https://hub.docker.com/r/kasmweb/desktop
+  privileged: true
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    tlsInsecure: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/kasmtech
+  defaultUser: kasm_user
+  defaultHomedir: /home/kasm_user
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: openvscode-server
+spec:
+  defaultEnv:
+  - name: VSCODE_PROXY_URI
+    value: /proxy/{{namespace}}/{{name}}/proxy/{{port}}/
+  defaultPath: /
+  defaultPort: 3000
+  description: Open-source VS Code server by Gitpod. Lightweight browser-based IDE
+    with extensions marketplace.
+  category: IDE
+  tags:
+  - code
+  - vscode
+  - editor
+  displayName: OpenVSCode Server
+  homepageURL: https://github.com/gitpod-io/openvscode-server
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vscode.svg
+  image: gitpod/openvscode-server:latest
+  imageHomepageURL: https://hub.docker.com/r/gitpod/openvscode-server
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+  sourceURL: https://github.com/gitpod-io/openvscode-server
+  defaultUser: openvscode-server
+  defaultHomedir: /home/workspace
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: rdesktop-ubuntu-xfce
+spec:
+  defaultEnv:
+  - name: SUBFOLDER
+    value: /proxy/{{namespace}}/{{name}}/
+  defaultPath: /
+  defaultPort: 3000
+  description: Ubuntu desktop with XFCE accessible via RDP and a browser-based Guacamole
+    client. Full persistent desktop environment.
+  category: Desktop
+  displayName: Ubuntu XFCE RDP Desktop
+  homepageURL: https://github.com/linuxserver/docker-rdesktop
+  icon: https://cdn.simpleicons.org/ubuntu/E95420
+  image: linuxserver/rdesktop:ubuntu-xfce
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/rdesktop
+  defaultSharedMemory: true
+  proxyConfig:
+    needsNoopSW: true
+    preservePathPrefix: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/linuxserver/docker-rdesktop
+  defaultUser: abc
+  defaultHomedir: /config
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: ttyd
+spec:
+  defaultPath: /
+  defaultPort: 7681
+  description: Share your terminal over the web. Lightweight web-based terminal emulator
+    — run any CLI app in a browser.
+  category: Tool
+  displayName: ttyd Web Terminal
+  homepageURL: https://github.com/tsl0922/ttyd
+  icon: 💻
+  image: tsl0922/ttyd:latest
+  imageHomepageURL: https://hub.docker.com/r/tsl0922/ttyd
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+  sourceURL: https://github.com/tsl0922/ttyd
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: webtop-alpine-kde
+spec:
+  defaultEnv:
+  - name: SUBFOLDER
+    value: /proxy/{{namespace}}/{{name}}/
+  defaultPath: /
+  defaultPort: 3000
+  description: Lightweight Alpine Linux with KDE Plasma desktop via KasmVNC. Minimal
+    footprint with a modern desktop environment.
+  category: Desktop
+  tags:
+  - vnc
+  - linux
+  - alpine
+  - kde
+  displayName: Alpine KDE Desktop
+  homepageURL: https://github.com/linuxserver/docker-webtop
+  icon: https://cdn.simpleicons.org/alpinelinux/0D597F
+  image: linuxserver/webtop:alpine-kde
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/webtop
+  defaultSharedMemory: true
+  proxyConfig:
+    needsNoopSW: true
+    preservePathPrefix: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/linuxserver/docker-webtop
+  defaultUser: abc
+  defaultHomedir: /config
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: webtop-arch-kde
+spec:
+  defaultEnv:
+  - name: SUBFOLDER
+    value: /proxy/{{namespace}}/{{name}}/
+  defaultPath: /
+  defaultPort: 3000
+  description: Arch Linux with KDE Plasma desktop via KasmVNC. Bleeding-edge rolling
+    release with a modern desktop environment.
+  category: Desktop
+  tags:
+  - vnc
+  - linux
+  - arch
+  - kde
+  displayName: Arch Linux KDE Desktop
+  homepageURL: https://github.com/linuxserver/docker-webtop
+  icon: https://cdn.simpleicons.org/archlinux/1793D1
+  image: linuxserver/webtop:arch-kde
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/webtop
+  defaultSharedMemory: true
+  proxyConfig:
+    needsNoopSW: true
+    preservePathPrefix: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/linuxserver/docker-webtop
+  defaultUser: abc
+  defaultHomedir: /config
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: webtop-ubuntu-xfce
+spec:
+  defaultEnv:
+  - name: SUBFOLDER
+    value: /proxy/{{namespace}}/{{name}}/
+  defaultPath: /
+  defaultPort: 3000
+  description: Full Ubuntu desktop with XFCE in the browser via KasmVNC. Includes
+    common desktop apps (Firefox, LibreOffice, file manager).
+  category: Desktop
+  tags:
+  - vnc
+  - linux
+  - ubuntu
+  - xfce
+  displayName: Ubuntu XFCE Desktop
+  homepageURL: https://github.com/linuxserver/docker-webtop
+  icon: https://cdn.simpleicons.org/ubuntu/E95420
+  image: linuxserver/webtop:ubuntu-xfce
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/webtop
+  defaultSharedMemory: true
+  proxyConfig:
+    needsNoopSW: true
+    preservePathPrefix: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/linuxserver/docker-webtop
+  defaultUser: abc
+  defaultHomedir: /config
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: rstudio
+spec:
+  defaultPath: /
+  defaultPort: 8787
+  description: Full-featured R IDE in the browser. Includes R console, script editor,
+    package manager, and plot viewer.
+  category: IDE
+  tags:
+  - R
+  - datascience
+  - statistics
+  displayName: RStudio Server
+  homepageURL: https://posit.co/products/open-source/rstudio/
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/rstudio.png
+  image: rocker/rstudio:latest
+  imageHomepageURL: https://hub.docker.com/r/rocker/rstudio
+  sourceURL: https://github.com/rocker-org/rocker-versioned2
+  defaultEnv:
+  - name: DISABLE_AUTH
+    value: "true"
+  defaultUser: rstudio
+  defaultHomedir: /home/rstudio
+  defaultUID: 1000
+  proxyConfig:
+    rewriteHostAbsolutePaths: true
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: zeppelin
+spec:
+  defaultPath: /
+  defaultPort: 8080
+  description: Multi-language data analytics notebook. Supports Spark, SQL, Python,
+    R, Scala, and Flink interpreters.
+  category: IDE
+  tags:
+  - datascience
+  - spark
+  - sql
+  - python
+  displayName: Apache Zeppelin
+  homepageURL: https://zeppelin.apache.org
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16l-2 3H6L4 6zm0 5h16l-2 3H6L4 11zm2 5h12l-1.5 2.5H7.5L6 16z" fill="#3071a9"/></svg>'
+  image: apache/zeppelin:0.12.1
+  imageHomepageURL: https://hub.docker.com/r/apache/zeppelin
+  sourceURL: https://github.com/apache/zeppelin
+  defaultEnv:
+  - name: ZEPPELIN_SERVER_CONTEXT_PATH
+    value: /proxy/{{namespace}}/{{name}}/
+  - name: ZEPPELIN_ADDR
+    value: 0.0.0.0
+  proxyConfig:
+    preservePathPrefix: true
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: vscodium
+spec:
+  defaultPath: /
+  defaultPort: 3000
+  description: VSCodium (open-source VS Code without telemetry) as a full desktop
+    app via KasmVNC. Supports all VS Code extensions.
+  category: IDE
+  tags:
+  - code
+  - vscode
+  - editor
+  displayName: VSCodium
+  homepageURL: https://vscodium.com
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 0L5.8 9.3 2.3 6.8 0 8v8l2.3 1.2 3.5-2.5L17.5 24 24 21.4V2.6L17.5 0zm-1 4.4v15.2l-8.5-7.6 8.5-7.6z" fill="#2f80ed"/></svg>'
+  image: linuxserver/vscodium:latest
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/vscodium
+  sourceURL: https://github.com/linuxserver/docker-vscodium
+  defaultSharedMemory: true
+  defaultEnv:
+  - name: SUBFOLDER
+    value: /proxy/{{namespace}}/{{name}}/
+  proxyConfig:
+    needsNoopSW: true
+    preservePathPrefix: true
+  defaultUser: abc
+  defaultHomedir: /config
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: libreoffice
+spec:
+  defaultPath: /
+  defaultPort: 3000
+  description: Full LibreOffice suite (Writer, Calc, Impress, Draw) in the browser
+    via KasmVNC. Edit documents, spreadsheets, and presentations.
+  category: Productivity
+  tags:
+  - office
+  - documents
+  displayName: LibreOffice
+  homepageURL: https://www.libreoffice.org
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="#18A303" d="M349.1 0c-5-.1-9.8 3-11.8 7.5-1.9 4.5-.8 10.1 2.7 13.5l106.4 106.6c3.4 3.4 9 4.6 13.5 2.8s7.7-6.5 7.8-11.3V12.3C467.7 5.9 461.8 0 455.2 0z"/><path fill="#18A303" d="M56.8 0C49.9.1 44.4 5.7 44.4 12.6v486.8c0 6.9 5.5 12.5 12.4 12.6h398.3c7 0 12.6-5.6 12.6-12.6V185.9c0-3.4-1.3-6.6-3.7-9L291.7 3.8c-2.3-2.4-5.6-3.8-9-3.9H56.8z"/><path fill="#fff" d="M69.4 25.2h208.1l165 165.8v295.8H69.4z"/></svg>'
+  image: linuxserver/libreoffice:latest
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/libreoffice
+  sourceURL: https://github.com/linuxserver/docker-libreoffice
+  defaultSharedMemory: true
+  defaultEnv:
+  - name: SUBFOLDER
+    value: /proxy/{{namespace}}/{{name}}/
+  proxyConfig:
+    needsNoopSW: true
+    preservePathPrefix: true
+  defaultUser: abc
+  defaultHomedir: /config
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: obsidian
+spec:
+  defaultPath: /
+  defaultPort: 3000
+  description: Obsidian knowledge base and markdown editor via KasmVNC. Linked notes,
+    graph view, and plugin ecosystem.
+  category: Productivity
+  tags:
+  - notes
+  - markdown
+  - knowledge
+  displayName: Obsidian
+  homepageURL: https://obsidian.md
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/obsidian.png
+  image: linuxserver/obsidian:latest
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/obsidian
+  sourceURL: https://github.com/linuxserver/docker-obsidian
+  defaultSharedMemory: true
+  defaultEnv:
+  - name: SUBFOLDER
+    value: /proxy/{{namespace}}/{{name}}/
+  proxyConfig:
+    needsNoopSW: true
+    preservePathPrefix: true
+  defaultUser: abc
+  defaultHomedir: /config

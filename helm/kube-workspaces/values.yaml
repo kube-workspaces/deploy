@@ -1,0 +1,263 @@
+# Default values for kube-workspaces
+replicaCount: 1
+
+controller:
+  image:
+    repository: kubeworkspaces/controller
+    tag: latest
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 64Mi
+
+api:
+  image:
+    repository: kubeworkspaces/api
+    tag: latest
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  port: 8080
+  externalHost: ""
+  allowedOrigins: "https://workspaces.fordham.id.au,http://localhost:3000"
+
+proxy:
+  image:
+    repository: kubeworkspaces/proxy
+    tag: latest
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  port: 8080
+  allowedOrigins: "https://workspaces.fordham.id.au,http://localhost:3000"
+  # Path prefix for proxy routes. Always "/proxy" (single-mode).
+  pathPrefix: "/proxy"
+  service:
+    type: ClusterIP
+
+frontend:
+  image:
+    repository: kubeworkspaces/frontend
+    tag: latest
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  port: 3000
+  externalApiUrl: ""
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: workspaces.local
+      paths:
+        - path: /proxy
+          pathType: Prefix
+          backend:
+            serviceName: kube-workspaces-api
+            servicePort: 80
+        - path: /auth
+          pathType: Prefix
+          backend:
+            serviceName: kube-workspaces-api
+            servicePort: 80
+        - path: /
+          pathType: Prefix
+          backend:
+            serviceName: kube-workspaces-frontend
+            servicePort: 80
+  tls: []
+
+# Default namespace for workspaces
+workspaceNamespace: workspaces
+
+# Available workspace images (become Image CRs)
+images:
+  - name: "Code Server (VS Code)"
+    image: "codercom/code-server:latest"
+    description: "Browser-based VS Code experience"
+    defaultPort: 8080
+    defaultPath: "/"
+    icon: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/code-server.png"
+    homepageURL: "https://github.com/coder/code-server"
+    sourceURL: "https://github.com/coder/code-server"
+    defaultArgs:
+      - "--bind-addr"
+      - "0.0.0.0:8080"
+      - "--auth"
+      - "none"
+    defaultEnv:
+      - name: VSCODE_PROXY_URI
+        value: "/proxy/{{namespace}}/{{name}}"
+    proxyConfig:
+      needsNoopSW: true
+      rewriteHostAbsolutePaths: true
+  - name: "Debian Desktop"
+    image: "flaccid/debian-desktop:latest"
+    description: "Full Linux desktop via noVNC"
+    defaultPort: 6901
+    defaultPath: "/vnc.html?resize=remote"
+    icon: "https://cdn.simpleicons.org/debian/A81D33"
+    homepageURL: "https://www.debian.org"
+    sourceURL: "https://salsa.debian.org/debian/debian"
+    proxyConfig:
+      needsNoopSW: true
+      websocketPaths:
+        - "/websockify"
+      rewriteHostAbsolutePaths: true
+      tlsInsecure: true
+  - name: "Kasm Desktop"
+    image: "kasmweb/desktop:1.19.0"
+    description: "Ubuntu desktop streamed via KasmVNC"
+    defaultPort: 6901
+    defaultPath: "/"
+    icon: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kasm.svg"
+    defaultCredentials:
+      username: "kasm-user"
+      password: "password"
+    proxyConfig:
+      needsNoopSW: true
+      websocketPaths:
+        - "/websockify"
+      rewriteHostAbsolutePaths: true
+      tlsInsecure: true
+  - name: "Kasm Chrome"
+    image: "kasmweb/chrome:1.19.0"
+    description: "Chrome browser streamed via KasmVNC"
+    defaultPort: 6901
+    defaultPath: "/"
+    icon: "https://cdn.simpleicons.org/googlechrome/4285F4"
+    privileged: true
+    homepageURL: "https://kasmweb.com"
+    sourceURL: "https://github.com/kasmtech"
+    defaultEnv:
+      - name: VNC_PW
+        value: "password"
+    defaultCredentials:
+      username: "kasm-user"
+      password: "password"
+    proxyConfig:
+      needsNoopSW: true
+      websocketPaths:
+        - "/websockify"
+      rewriteHostAbsolutePaths: true
+      tlsInsecure: true
+  - name: "Kasm Workspaces"
+    image: "linuxserver/kasm:1.19.0"
+    description: "Full Kasm Workspaces platform with Docker-in-Docker. Requires privileged mode. Access the setup wizard first, then the main interface."
+    defaultPort: 3000
+    defaultPath: "/"
+    icon: "https://cdn.simpleicons.org/linuxserver/DA3B8A"
+    privileged: true
+    homepageURL: "https://kasmweb.com"
+    sourceURL: "https://github.com/linuxserver/docker-kasm"
+    defaultEnv:
+      - name: KASM_PORT
+        value: "3000"
+    proxyConfig:
+      needsNoopSW: true
+      rewriteHostAbsolutePaths: true
+      tlsInsecure: true
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+# Authentication configuration (opt-in, disabled by default)
+auth:
+  enabled: false
+  # Override the OIDC callback URL (e.g. when the API is behind a different host than the frontend)
+  callbackURL: ""
+  oidc:
+    issuerURL: ""
+    clientID: ""
+    clientSecret:
+      # If true, Helm will create the Secret containing the OIDC client secret
+      create: false
+      secretName: "kube-workspaces-oidc"
+      secretKey: "client-secret"
+      # The client secret value (only used when create=true)
+      value: ""
+    scopes:
+      - "openid"
+      - "email"
+      - "profile"
+    usernameClaim: "email"
+  session:
+    signingKey:
+      # If true, Helm will create the Secret with an auto-generated signing key
+      create: true
+      secretName: "kube-workspaces-session"
+      secretKey: "signing-key"
+      # Provide an explicit value, or leave empty for auto-generation
+      value: ""
+    tokenExpiry: "24h"
+    refreshExpiry: "7d"
+  personalNamespaces:
+    enabled: false
+    template: "{{username}}"
+    labels: {}
+    annotations: {}
+    resourceQuota: {}
+  registration:
+    autoProvision: true
+    defaultRole: "editor"
+    allowedDomains: []
+    allowedEmails: []
+    requireApproval: false
+  adminEmails: []
+
+# Install workspace RBAC ClusterRoles (used by User controller for RoleBindings)
+workspaceRoles:
+  create: true
+
+# Bundled Dex OIDC provider (optional).
+# Set dex.enabled=true and configure connectors to use Dex as the OIDC provider.
+# When enabled, auth.oidc.issuerURL should point to the Dex service URL.
+dex:
+  enabled: false
+  # Override Dex values below. See https://github.com/dexidp/helm-charts for full reference.
+  # Example configuration:
+  # config:
+  #   issuer: "https://dex.example.com"
+  #   storage:
+  #     type: kubernetes
+  #     config:
+  #       inCluster: true
+  #   web:
+  #     http: 0.0.0.0:5556
+  #   staticClients:
+  #     - id: kube-workspaces
+  #       name: Kube Workspaces
+  #       secret: <your-client-secret>
+  #       redirectURIs:
+  #         - "https://workspaces.example.com/auth/callback"
+  #   connectors:
+  #     - type: github
+  #       id: github
+  #       name: GitHub
+  #       config:
+  #         clientID: <github-oauth-app-client-id>
+  #         clientSecret: <github-oauth-app-client-secret>
+  #         redirectURI: "https://dex.example.com/callback"

@@ -1,0 +1,43 @@
+{{- range .Values.images }}
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: {{ .name | lower | replace " " "-" }}
+spec:
+  image: {{ .image }}
+  displayName: {{ .name | quote }}
+  description: {{ .description | quote }}
+  defaultPort: {{ .defaultPort }}
+  {{- if .defaultPath }}
+  defaultPath: {{ .defaultPath | quote }}
+  {{- end }}
+  {{- if .icon }}
+  icon: {{ .icon | quote }}
+  {{- end }}
+  {{- if .homepageURL }}
+  homepageURL: {{ .homepageURL | quote }}
+  {{- end }}
+  {{- if .sourceURL }}
+  sourceURL: {{ .sourceURL | quote }}
+  {{- end }}
+  {{- if .privileged }}
+  privileged: {{ .privileged }}
+  {{- end }}
+  {{- if .defaultArgs }}
+  defaultArgs:
+    {{- toYaml .defaultArgs | nindent 4 }}
+  {{- end }}
+  {{- if .defaultEnv }}
+  defaultEnv:
+    {{- toYaml .defaultEnv | nindent 4 }}
+  {{- end }}
+  {{- if .defaultCredentials }}
+  defaultCredentials:
+    {{- toYaml .defaultCredentials | nindent 4 }}
+  {{- end }}
+  {{- if .proxyConfig }}
+  proxyConfig:
+    {{- toYaml .proxyConfig | nindent 4 }}
+  {{- end }}
+{{- end }}
