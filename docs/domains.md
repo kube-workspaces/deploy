@@ -1,9 +1,9 @@
 # Customizing your domain (hostname)
 
-By default the manifests use the placeholder domains `workspaces.example.com` and
-`api.workspaces.example.com`. These are **not issued by real ACME providers** (they
-are reserved by [RFC 2606](https://datatracker.ietf.org/doc/html/rfc2606)), so you
-must override them with your own hostnames before going to production.
+By default the manifests use the placeholder domain `workspaces.example.com`.
+This is **not issued by real ACME providers** (it is reserved by
+[RFC 2606](https://datatracker.ietf.org/doc/html/rfc2606)), so you must
+override it with your own hostname before going to production.
 
 There are two supported ways to set your hostname, depending on how you deploy.
 
@@ -17,20 +17,44 @@ The Helm chart exposes every hostname-dependent value. The values that matter:
 
 | Value | Default | Purpose |
 |-------|---------|---------|
-| `api.externalHost` | `""` | Sets `EXTERNAL_HOST` on the API (OpenAPI server URL) |
+| `api.externalHost` | `""` | `Host` header forwarded to proxied workspace backends |
 | `api.allowedOrigins` | `https://workspaces.example.com,...` | CORS allow-list for the API |
 | `proxy.allowedOrigins` | `https://workspaces.example.com,...` | CORS allow-list for the proxy |
 | `auth.callbackURL` | `""` | Optional override of the OIDC callback URL |
 | `ingress.hosts` | `workspaces.local` | Ingress rules (host → paths) |
 | `ingress.tls` | `[]` | TLS hosts + secret name |
 | `ingress.className` | `""` | e.g. `traefik`, `nginx` |
-| `ingress.annotations` | `{}` | e.g. `cert-manager.io/cluster-issuer` |
+| `ingress.annotations` | `{}` | e.g. `cert-manager.io/cluster-issuer` or traefik middleware |
 
-Example `values.yaml` for a two-host deployment (main host + dedicated API host):
+The recommended deployment model is **single-host**: frontend, API, and proxy
+are all served from one domain. The frontend defaults to calling the API at
+`/api` on the same origin (the `API_BASE` is baked into the frontend image at
+build time and defaults to `/api`). A reverse-proxy strips the `/api` prefix
+before forwarding to the API service.
+
+The API sets a host-only `kw-session` cookie — this means single-host keeps the
+cookie on one origin and avoids cross-origin cookie issues.
+
+**Traefik ingress controllers** need a `StripPrefix` middleware to strip `/api`
+before the API service handles the request:
+
+```yaml
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: kube-workspaces-strip-api
+  namespace: kube-workspaces-system
+spec:
+  stripPrefix:
+    prefixes:
+      - /api
+```
+
+With the middleware in place, configure the Helm values:
 
 ```yaml
 api:
-  externalHost: "api.workspaces.example.com"
+  externalHost: "workspaces.example.com"
   allowedOrigins: "https://workspaces.example.com,http://localhost:3000"
 proxy:
   allowedOrigins: "https://workspaces.example.com,http://localhost:3000"
@@ -38,10 +62,15 @@ ingress:
   enabled: true
   className: traefik
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-production
+    traefik.ingress.kubernetes.io/router.middlewares: kube-workspaces-system-kube-workspaces-strip-api@kubernetescrd
   hosts:
     - host: workspaces.example.com
       paths:
+        - path: /api
+          pathType: Prefix
+          backend:
+            serviceName: kube-workspaces-api
+            servicePort: 80
         - path: /v1
           pathType: Prefix
           backend:
@@ -67,18 +96,6 @@ ingress:
           backend:
             serviceName: kube-workspaces-frontend
             servicePort: 80
-    - host: api.workspaces.example.com
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            serviceName: kube-workspaces-api
-            servicePort: 80
-  tls:
-    - hosts:
-        - workspaces.example.com
-        - api.workspaces.example.com
-      secretName: kube-workspaces-tls
 ```
 
 Install with:
@@ -111,11 +128,11 @@ spec:
       helm:
         values: |
           api:
-            externalHost: "api.workspaces.example.com"
+            externalHost: "workspaces.example.com"
           ingress:
             enabled: true
             className: traefik
-            # ... hosts / tls as above
+            # ... hosts as above (single-host with /api route)
           images: []
     - repoURL: https://github.com/kube-workspaces/deploy.git
       targetRevision: main
@@ -135,6 +152,39 @@ Notes:
   curated image catalog), to stop the chart's default images from rendering.
 - ArgoCD renders the chart with `helm template` and applies the output as plain
   manifests — it does not create a Helm release, so `helm list` won't show it.
+- The middleware YAML should be applied before the Ingress references it, or
+  managed by a separate ArgoCD Application (the Ingress will still route
+  correctly even if the middleware is missing for a short time).
+
+### Two-host setup (alternative)
+
+If you prefer a separate API host (`api.workspaces.example.com`), you need a
+frontend image built with `NEXT_PUBLIC_API_URL=https://api.workspaces.example.com`
+baked in at build time. The default image on ghcr.io is not built with this
+value. When using a custom-built image, set `frontend.externalApiUrl` in the
+Helm values and use these ingress rules:
+
+```yaml
+api:
+  externalHost: "api.workspaces.example.com"
+ingress:
+  hosts:
+    - host: workspaces.example.com
+      paths:
+        - path: /v1
+          pathType: Prefix
+          backend:
+            serviceName: kube-workspaces-api
+            servicePort: 80
+        # ... /auth, /openapi, /proxy, /
+    - host: api.workspaces.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            serviceName: kube-workspaces-api
+            servicePort: 80
+```
 
 ## Kustomize
 
