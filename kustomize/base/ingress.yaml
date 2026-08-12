@@ -5,11 +5,8 @@ metadata:
   namespace: kube-workspaces-system
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-production
-    # WebSocket support for proxied workspaces (code-server, VNC, etc.)
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   rules:
   - host: workspaces.example.com
     http:
@@ -65,33 +62,4 @@ spec:
   - hosts:
     - workspaces.example.com
     - api.workspaces.example.com
-    secretName: kube-workspaces-tls
----
-# API ingress with path rewrite: /api/* → /*
-# Frontend uses API_BASE="/api" so all API calls (including /api/admin/*)
-# go through this ingress, avoiding conflicts with frontend page routes.
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: kube-workspaces-api
-  namespace: kube-workspaces-system
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/use-regex: "true"
-spec:
-  ingressClassName: nginx
-  rules:
-  - host: workspaces.example.com
-    http:
-      paths:
-      - path: /api(/|$)(.*)
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: kube-workspaces-api
-            port:
-              number: 80
-  tls:
-  - hosts:
-    - workspaces.example.com
     secretName: kube-workspaces-tls

@@ -2,7 +2,7 @@
 
 This document describes how workspace application proxying works in kube-workspaces. The proxy is a **standalone service** (`proxy/`) deployed independently from the API, with **session-based authentication** and **namespace access control**.
 
-All proxy traffic flows through the main host via nginx ingress:
+All proxy traffic flows through the main host via the cluster's ingress controller (e.g. nginx or Traefik):
 
 ```
 https://workspaces.example.com/proxy/{namespace}/{name}/...
@@ -27,7 +27,7 @@ Example:
 https://workspaces.example.com/proxy/user1/my-codeserver/
 ```
 
-The request flows through nginx ingress (`/proxy` path) to the proxy service. The proxy validates the `kw-session` cookie, checks namespace access, then forwards to the workspace pod.
+The request flows through the ingress controller (`/proxy` path) to the proxy service. The proxy validates the `kw-session` cookie, checks namespace access, then forwards to the workspace pod.
 
 ---
 
@@ -42,9 +42,9 @@ The request flows through nginx ingress (`/proxy` path) to the proxy service. Th
                             │ https://workspaces.example.com/proxy/{ns}/{name}/...
                             ▼
 ┌─────────────────────────────────────────────────────┐
-│ Nginx Ingress                                       │
+│ Ingress Controller (e.g. nginx/Traefik)             │
 │ (/proxy → kube-workspaces-proxy service)            │
-│ WebSocket timeout: 3600s                            │
+│ WebSocket timeouts enabled                          │
 └───────────────────────────┬─────────────────────────┘
                             │
                             ▼
@@ -83,7 +83,7 @@ The proxy enforces the same auth model as the API:
 ### Auth Flow
 
 1. User navigates to `/proxy/{namespace}/{name}/...`
-2. Nginx forwards to proxy service
+2. Ingress forwards to proxy service
 3. Proxy auth middleware:
    - Reads `kw-session` cookie (or `Authorization: Bearer` header)
    - If no token → **401 Unauthorized**
@@ -214,11 +214,15 @@ http://{workspace-name}.{namespace}.svc.cluster.local:80/{rest}
 
 WebSocket connections are handled transparently by `httputil.ReverseProxy`. The proxy preserves `Connection` and `Upgrade` headers when an upgrade is requested. The `FlushInterval: -1` setting enables streaming for long-lived connections.
 
-The nginx ingress is configured with extended timeouts for WebSocket:
-```yaml
-nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-```
+Because WebSocket connections can be long-lived, configure your ingress controller to allow extended timeouts. The exact mechanism depends on the controller:
+
+- **nginx ingress**: set `proxy-read-timeout`/`proxy-send-timeout` annotations:
+  ```yaml
+  nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+  nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  ```
+- **Traefik**: WebSocket upgrades bypass the HTTP router timeouts, so no extra configuration is required.
+- **Other controllers**: consult your controller's docs for long-lived/WebSocket connection settings.
 
 ### Request Header Modifications
 
@@ -354,9 +358,9 @@ The proxy handles `SIGINT` and `SIGTERM` with a 30-second graceful shutdown wind
 
 ---
 
-## Nginx Ingress
+## Ingress
 
-Two Ingress resources handle routing (`deploy/kustomize/base/ingress.yaml`):
+The Ingress resource handles routing (`kustomize/base/ingress.yaml`). The manifests declare `ingressClassName` and a `cert-manager.io/cluster-issuer` annotation, so they work with any Ingress controller (nginx, Traefik, etc.) — just set `ingressClassName` to the controller installed in your cluster.
 
 ### Primary Ingress (`kube-workspaces`)
 
@@ -370,31 +374,15 @@ Direct path-based routing without rewriting:
 | `/proxy` | **Proxy** | Workspace reverse proxy (auth-enabled) |
 | `/` (catch-all) | Frontend | Next.js app |
 
-Annotations:
-- `proxy-read-timeout: 3600` — WebSocket support
-- `proxy-send-timeout: 3600` — WebSocket support
+Annotation:
 - `cert-manager.io/cluster-issuer: letsencrypt-production`
 
-### API Ingress (`kube-workspaces-api`)
-
-Regex-based path rewriting:
-
-```yaml
-annotations:
-  nginx.ingress.kubernetes.io/rewrite-target: /$2
-  nginx.ingress.kubernetes.io/use-regex: "true"
-path: /api(/|$)(.*)
-```
-
-This means:
-- `/api/v1/workspaces` → API receives `/v1/workspaces`
-- `/api/admin/users` → API receives `/admin/users`
+> **WebSocket note:** if using nginx ingress, add `proxy-read-timeout`/`proxy-send-timeout` annotations (see the [WebSocket Support](#websocket-support) section). Traefik handles WebSocket upgrades without additional annotations.
 
 ### Routing Summary
 
 | Browser URL | Routed to | Service receives |
 |-------------|-----------|------------------|
-| `/api/v1/workspaces` | API (rewrite) | `/v1/workspaces` |
 | `/proxy/ns/name/path` | Proxy (direct) | `/proxy/ns/name/path` |
 | `/v1/workspaces` | API (direct) | `/v1/workspaces` |
 | `/workspaces` | Frontend | N/A |
@@ -422,7 +410,7 @@ Workspace apps served under `/proxy/ns/name/...` may use absolute paths like `/s
 4. Proxy file inspects the `Referer` header
 5. Extracts the proxy prefix: `/api/proxy/ns/name`
 6. Responds with **308 Permanent Redirect** to `/api/proxy/ns/name/static/app.js`
-7. Browser follows redirect → nginx routes to proxy service
+7. Browser follows redirect → ingress routes to proxy service
 
 **Exclusions** (not redirected):
 - `/_next/*` — Next.js internals
@@ -450,7 +438,7 @@ The custom dev server replicates production routing for local development:
 
 **Proxied paths:** `/api/*`, `/auth/*`, `/proxy/*` → API (default `http://localhost:8090`)
 
-**Path rewriting:** `/api/...` is stripped to `/...` before forwarding (same as nginx `rewrite-target: /$2`)
+**Path rewriting:** `/api/...` is stripped to `/...` before forwarding (mirrors the ingress-level rewrite used by controllers like nginx: `rewrite-target: /$2`).
 
 ### Production Server (`frontend/server-prod.mjs`)
 
@@ -921,8 +909,8 @@ Proxy routing:
 4. Browser navigates to https://workspaces.example.com/proxy/user1/my-code/
    (kw-session cookie sent automatically — same domain)
 
-5. Nginx ingress: /proxy prefix → kube-workspaces-proxy service
-   (proxy-read-timeout: 3600 for WebSocket support)
+5. Ingress controller: /proxy prefix → kube-workspaces-proxy service
+   (timeouts configured for WebSocket support — see WebSocket section)
 
 6. Proxy auth middleware:
    - Reads kw-session cookie
@@ -948,7 +936,7 @@ Proxy routing:
 17. Response returned to browser
 
 18. code-server loads, subsequent requests go through same auth flow
-19. WebSocket connects via nginx (timeout 3600s)
+19. WebSocket connects via ingress (long-lived timeouts)
 ```
 
 ### Unauthenticated access attempt
@@ -1012,7 +1000,7 @@ helm install kube-workspaces deploy/helm/kube-workspaces/ \
 
 ### Service Configuration
 
-The proxy Service is type `ClusterIP` (accessed via nginx ingress only):
+The proxy Service is type `ClusterIP` (accessed via the ingress only):
 
 ```yaml
 spec:
@@ -1046,9 +1034,9 @@ When auth is disabled (default), the proxy passes all requests through without c
 | Aspect | Local Dev | Production |
 |--------|-----------|------------|
 | Access URL | `http://localhost:8091/proxy/{ns}/{name}/...` | `https://workspaces.example.com/proxy/{ns}/{name}/...` |
-| TLS | None | cert-manager + nginx |
+| TLS | None | cert-manager + ingress controller |
 | Auth | Usually disabled (no AuthConfig) | Enabled (kw-session cookie) |
-| WebSocket | Direct (no proxy) | Via nginx (3600s timeout) |
+| WebSocket | Direct (no proxy) | Via ingress (long-lived timeouts) |
 | Run command | `make run-proxy` | Deployment |
 
 ---
@@ -1076,11 +1064,12 @@ When auth is disabled (default), the proxy passes all requests through without c
 
 ### WebSocket connections fail
 
-1. Verify nginx ingress has timeout annotations (should be set in `ingress.yaml`):
+1. Verify your ingress controller allows long-lived connections. For nginx, this means the timeout annotations in `ingress.yaml`:
    ```yaml
    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
    ```
+   Traefik handles WebSocket upgrades without extra configuration; for other controllers see their docs.
 2. Verify `X-Forwarded-Host` is being passed correctly.
 
 ### ServiceWorker registration errors in console
