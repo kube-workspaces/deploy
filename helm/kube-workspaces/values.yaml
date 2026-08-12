@@ -91,6 +91,13 @@ ingress:
 # Default namespace for workspaces
 workspaceNamespace: workspaces
 
+# Namespace objects created by the chart so that config-management tools
+# (e.g. Argo CD) keep them in the desired state instead of pruning them
+namespaces:
+  create: true
+  # Also create the workspace namespace (workspaceNamespace) alongside the release namespace
+  createWorkspaceNamespace: true
+
 # Available workspace images (become Image CRs)
 images:
   - name: "Code Server (VS Code)"

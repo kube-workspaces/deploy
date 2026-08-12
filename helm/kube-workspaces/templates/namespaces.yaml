@@ -1,0 +1,19 @@
+{{- if .Values.namespaces.create }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Release.Namespace }}
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+    app.kubernetes.io/component: core
+{{- end }}
+{{- if and .Values.namespaces.create .Values.namespaces.createWorkspaceNamespace }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.workspaceNamespace }}
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+    app.kubernetes.io/component: workspaces
+{{- end }}
