@@ -88,7 +88,10 @@ Authentication is disabled by default — no login is required. See [Authenticat
 
 ### Deploy to a Cluster
 
-See [`deploy/README.md`](deploy/README.md) for full deployment instructions including ArgoCD, Helm, and Kustomize options.
+Deployment options (ArgoCD, Helm, Kustomize) are described in [`docs/`](docs/).
+Before going to production, set your own hostnames — see
+[`docs/domains.md`](docs/domains.md) for how to override the placeholder domains
+via Helm values or kustomize patches.
 
 #### Quick deploy with ArgoCD:
 ```bash
