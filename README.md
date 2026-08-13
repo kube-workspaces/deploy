@@ -1,4 +1,4 @@
-# kube-workspaces
+# Kube Workspaces
 
 A Kubernetes-native platform for managing container-based workspaces and desktops via a web UI.
 
@@ -12,15 +12,15 @@ Modelled on the Kubeflow Notebooks architecture but as a standalone, lightweight
                     └──────┬──────┘
                            │
 ┌─────────────┐     ┌──────▼──────┐     ┌─────────────────────────────┐
-│  Frontend   │────▶│  API        │────▶│  Kubernetes API Server      │
+│  Frontend   │────>│     API     │────>│   Kubernetes API Server     │
 │  (Next.js)  │     │  (Goa/Go)   │     │                             │
 └─────────────┘     └─────────────┘     │  ┌─────────────────────┐    │
-                          │             │  │ Workspace CRD       │    │
-                          │             │  │ Image CRD           │    │
-                     ┌────▼────┐        │  │ User CRD            │    │
-                     │  Proxy  │        │  │ AuthConfig CRD      │    │
-                     │  (Go)   │        │  └──────────┬──────────┘    │
-                     └─────────┘        │             │               │
+                           │            │  │ Workspace CRD       │    │
+                           │            │  │ Image CRD           │    │
+                      ┌────▼────┐       │  │ User CRD            │    │
+                      │  Proxy  │       │  │ AuthConfig CRD      │    │
+                      │  (Go)   │       │  └──────────┬──────────┘    │
+                      └─────────┘       │             │               │
                                         │  ┌──────────▼──────────┐    │
                                         │  │ Controller          │    │
                                         │  │ (kubebuilder)       │    │
