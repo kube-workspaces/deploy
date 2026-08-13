@@ -10,32 +10,7 @@ Modelled on the Kubeflow Notebooks architecture but as a standalone, lightweight
 
 ## Architecture
 
-```
-                    ┌─────────────┐
-                    │  Dex/OIDC   │  (optional IdP)
-                    └──────┬──────┘
-                           │
-┌─────────────┐     ┌──────▼──────┐     ┌─────────────────────────────┐
-│  Frontend   │────>│     API     │────>│   Kubernetes API Server     │
-│  (Next.js)  │     │  (Goa/Go)   │     │                             │
-└─────────────┘     └─────────────┘     │  ┌─────────────────────┐    │
-                           │            │  │ Workspace CRD       │    │
-                           │            │  │ Image CRD           │    │
-                      ┌────▼────┐       │  │ User CRD            │    │
-                      │  Proxy  │       │  │ AuthConfig CRD      │    │
-                      │  (Go)   │       │  └──────────┬──────────┘    │
-                      └─────────┘       │             │               │
-                                        │  ┌──────────▼──────────┐    │
-                                        │  │ Controller          │    │
-                                        │  │ (kubebuilder)       │    │
-                                        │  └──────────┬──────────┘    │
-                                        │             │               │
-                                        │  ┌──────────▼────────────┐  │
-                                        │  │ StatefulSet + Service │  │
-                                        │  │ (per workspace)       │  │
-                                        │  └───────────────────────┘  │
-                                        └─────────────────────────────┘
-```
+![Architecture diagram](docs/architecture.svg)
 
 ## Components
 

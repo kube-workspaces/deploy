@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 530" width="860" height="530"
+     font-family="ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+
+  <defs>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1f6feb"/>
+    </marker>
+    <marker id="arr-blue-sm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#388bfd"/>
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6e40c9"/>
+    </marker>
+    <marker id="arr-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#484f58"/>
+    </marker>
+  </defs>
+
+  <!-- Page background -->
+  <rect width="860" height="530" rx="12" fill="#0d1117"/>
+
+  <!-- ═══════════════════════════════════════════════════
+       KUBERNETES API SERVER — outer container
+       ═══════════════════════════════════════════════════ -->
+  <rect x="435" y="36" width="402" height="462" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <!-- header band -->
+  <rect x="435" y="36" width="402" height="36" rx="10" fill="#1c2d4a" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="435" y="54" width="402" height="18" fill="#1c2d4a"/>
+  <text x="636" y="59" text-anchor="middle" font-size="12.5" font-weight="600" fill="#58a6ff" letter-spacing="0.4">Kubernetes API Server</text>
+
+  <!-- – CRDs group – -->
+  <rect x="457" y="88" width="358" height="134" rx="8" fill="#0d1117" stroke="#21262d" stroke-width="1.2"/>
+  <text x="636" y="108" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6e7681" letter-spacing="1">CRDS</text>
+
+  <!-- CRD pills — row 1 -->
+  <rect x="473" y="116" width="152" height="28" rx="6" fill="#161b22" stroke="#21262d" stroke-width="1"/>
+  <text x="549" y="134" text-anchor="middle" font-size="10.5" fill="#c9d1d9">Workspace CRD</text>
+  <rect x="637" y="116" width="152" height="28" rx="6" fill="#161b22" stroke="#21262d" stroke-width="1"/>
+  <text x="713" y="134" text-anchor="middle" font-size="10.5" fill="#c9d1d9">Image CRD</text>
+
+  <!-- CRD pills — row 2 -->
+  <rect x="473" y="154" width="152" height="28" rx="6" fill="#161b22" stroke="#21262d" stroke-width="1"/>
+  <text x="549" y="172" text-anchor="middle" font-size="10.5" fill="#c9d1d9">User CRD</text>
+  <rect x="637" y="154" width="152" height="28" rx="6" fill="#161b22" stroke="#21262d" stroke-width="1"/>
+  <text x="713" y="172" text-anchor="middle" font-size="10.5" fill="#c9d1d9">AuthConfig CRD</text>
+
+  <!-- Arrow CRDs → Controller -->
+  <line x1="636" y1="222" x2="636" y2="256" stroke="#484f58" stroke-width="1.5" marker-end="url(#arr-gray)"/>
+
+  <!-- – Controller – -->
+  <rect x="517" y="256" width="238" height="68" rx="8" fill="#0f2a1a" stroke="#238636" stroke-width="1.2"/>
+  <text x="636" y="280" text-anchor="middle" font-size="12.5" font-weight="600" fill="#3fb950">Controller</text>
+  <text x="636" y="297" text-anchor="middle" font-size="10" fill="#56d364" opacity="0.85">kubebuilder</text>
+
+  <!-- Arrow Controller → Per-Workspace -->
+  <line x1="636" y1="324" x2="636" y2="362" stroke="#484f58" stroke-width="1.5" marker-end="url(#arr-gray)"/>
+
+  <!-- – Per Workspace resources – -->
+  <rect x="457" y="362" width="358" height="118" rx="8" fill="#0d1117" stroke="#21262d" stroke-width="1.2"/>
+  <text x="636" y="382" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6e7681" letter-spacing="1">PER WORKSPACE</text>
+  <rect x="473" y="392" width="152" height="30" rx="6" fill="#161b22" stroke="#21262d" stroke-width="1"/>
+  <text x="549" y="411" text-anchor="middle" font-size="10.5" fill="#c9d1d9">StatefulSet</text>
+  <rect x="637" y="392" width="152" height="30" rx="6" fill="#161b22" stroke="#21262d" stroke-width="1"/>
+  <text x="713" y="411" text-anchor="middle" font-size="10.5" fill="#c9d1d9">Service</text>
+  <!-- PVC note -->
+  <rect x="473" y="432" width="316" height="26" rx="6" fill="#161b22" stroke="#21262d" stroke-width="1"/>
+  <text x="631" y="449" text-anchor="middle" font-size="10" fill="#6e7681">PersistentVolumeClaim (optional)</text>
+
+  <!-- ═══════════════════════════════════════════════════
+       LEFT PANEL — Dex, Frontend, API, Proxy
+       ═══════════════════════════════════════════════════ -->
+
+  <!-- Dex / OIDC -->
+  <rect x="148" y="36" width="178" height="68" rx="8" fill="#1a1230" stroke="#6e40c9" stroke-width="1.2"/>
+  <text x="237" y="64" text-anchor="middle" font-size="12.5" font-weight="600" fill="#a371f7">Dex / OIDC</text>
+  <text x="237" y="82" text-anchor="middle" font-size="10" fill="#8957e5">optional IdP</text>
+
+  <!-- Frontend -->
+  <rect x="22" y="168" width="178" height="68" rx="8" fill="#0f1f3a" stroke="#1f6feb" stroke-width="1.2"/>
+  <text x="111" y="196" text-anchor="middle" font-size="12.5" font-weight="600" fill="#58a6ff">Frontend</text>
+  <text x="111" y="214" text-anchor="middle" font-size="10" fill="#388bfd">Next.js</text>
+
+  <!-- API -->
+  <rect x="148" y="168" width="178" height="68" rx="8" fill="#0f1f3a" stroke="#1f6feb" stroke-width="1.2"/>
+  <text x="237" y="196" text-anchor="middle" font-size="12.5" font-weight="600" fill="#58a6ff">API</text>
+  <text x="237" y="214" text-anchor="middle" font-size="10" fill="#388bfd">Goa / Go</text>
+
+  <!-- Proxy -->
+  <rect x="148" y="306" width="178" height="68" rx="8" fill="#0f1f3a" stroke="#1f6feb" stroke-width="1.2"/>
+  <text x="237" y="334" text-anchor="middle" font-size="12.5" font-weight="600" fill="#58a6ff">Proxy</text>
+  <text x="237" y="352" text-anchor="middle" font-size="10" fill="#388bfd">Go (built into API)</text>
+
+  <!-- ═══════════════════════════════════════════════════
+       ARROWS — left panel
+       ═══════════════════════════════════════════════════ -->
+
+  <!-- Dex → API (dashed purple, auth flow) -->
+  <line x1="237" y1="104" x2="237" y2="168" stroke="#6e40c9" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-purple)"/>
+
+  <!-- Frontend → API -->
+  <line x1="200" y1="202" x2="148" y2="202" stroke="#1f6feb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+  <!-- API → Kubernetes API Server -->
+  <line x1="326" y1="202" x2="435" y2="202" stroke="#1f6feb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+  <!-- API → Proxy -->
+  <line x1="237" y1="236" x2="237" y2="306" stroke="#1f6feb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+  <!-- Proxy → Workspace StatefulSet (dashed, crosses into k8s box) -->
+  <path d="M 326 340 L 400 340 L 400 421 L 457 421" fill="none" stroke="#388bfd" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-blue-sm)"/>
+
+  <!-- ═══════════════════════════════════════════════════
+       LEGEND
+       ═══════════════════════════════════════════════════ -->
+  <rect x="22" y="390" width="272" height="100" rx="8" fill="#161b22" stroke="#21262d" stroke-width="1"/>
+  <text x="38" y="412" font-size="10" font-weight="700" fill="#6e7681" letter-spacing="1">LEGEND</text>
+
+  <line x1="38" y1="430" x2="82" y2="430" stroke="#1f6feb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <text x="92" y="434" font-size="10" fill="#8b949e">API / data flow</text>
+
+  <line x1="38" y1="452" x2="82" y2="452" stroke="#6e40c9" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-purple)"/>
+  <text x="92" y="456" font-size="10" fill="#8b949e">Auth / OIDC flow (optional)</text>
+
+  <line x1="38" y1="472" x2="82" y2="472" stroke="#388bfd" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-blue-sm)"/>
+  <text x="92" y="476" font-size="10" fill="#8b949e">Proxy to workspace</text>
+
+</svg>
