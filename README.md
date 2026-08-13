@@ -4,6 +4,10 @@ A Kubernetes-native platform for managing container-based workspaces and desktop
 
 Modelled on the Kubeflow Notebooks architecture but as a standalone, lightweight solution.
 
+![GitHub Release](https://img.shields.io/github/v/release/kube-workspaces/deploy) ![License](https://img.shields.io/github/license/kube-workspaces/deploy) ![Controller pulls](https://img.shields.io/docker/pulls/ghcr.io/kube-workspaces/controller) ![API pulls](https://img.shields.io/docker/pulls/ghcr.io/kube-workspaces/api) ![Proxy pulls](https://img.shields.io/docker/pulls/ghcr.io/kube-workspaces/proxy) ![Frontend pulls](https://img.shields.io/docker/pulls/ghcr.io/kube-workspaces/frontend)
+
+![Controller CI](https://img.shields.io/github/actions/workflow/status/kube-workspaces/controller/test.yml?label=controller%20CI) ![API CI](https://img.shields.io/github/actions/workflow/status/kube-workspaces/api/ci.yml?label=api%20CI) ![Proxy CI](https://img.shields.io/github/actions/workflow/status/kube-workspaces/proxy/ci.yml?label=proxy%20CI) ![Frontend CI](https://img.shields.io/github/actions/workflow/status/kube-workspaces/frontend/ci.yml?label=frontend%20CI)
+
 ## Architecture
 
 ```
@@ -45,10 +49,10 @@ Modelled on the Kubeflow Notebooks architecture but as a standalone, lightweight
 ## Features
 
 - Full PodSpec flexibility per workspace (like Kubeflow Notebook CRD)
-- Browser-based access to workspaces via built-in reverse proxy (WebSocket support)
-- **Optional authentication** via OIDC (Dex, Okta, Auth0, or any OIDC provider)
-- **Kubernetes-native RBAC** — three roles: admin, editor, viewer
-- **Personal namespaces** — auto-created per user with configurable naming template
+- Browser-based access to workspaces via built-in [reverse proxy](#workspace-proxy) (WebSocket support)
+- **Optional [authentication](#authentication)** via OIDC (Dex, Okta, Auth0, or any OIDC provider)
+- **Kubernetes-native [RBAC](#roles)** — three roles: admin, editor, viewer
+- **[Personal namespaces](#personal-namespaces)** — auto-created per user with configurable naming template
 - **No database required** — all state in CRDs, Secrets, and native RBAC objects
 - Namespace filtering with global selector persisted in localStorage
 - Dark mode with class-based toggle
@@ -61,11 +65,11 @@ Modelled on the Kubeflow Notebooks architecture but as a standalone, lightweight
 
 ### Prerequisites
 
-- Go 1.24+ (controller) and Go 1.26+ (API)
-- Node.js 20+
-- Docker
-- kubectl with access to a Kubernetes cluster
-- kind (for local development)
+- [Go](https://go.dev/dl/) 1.24+ (controller) and Go 1.26+ (API)
+- [Node.js](https://nodejs.org/) 20+
+- [Docker](https://docs.docker.com/get-docker/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/) with access to a Kubernetes cluster
+- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/) (for local development)
 
 ### Local Development
 
@@ -253,7 +257,7 @@ Workspaces are stopped by adding the annotation `kubeworkspaces.io/stopped: "tru
 
 ### Image
 
-Cluster-scoped CRD defining available workspace images with default configuration:
+Cluster-scoped CRD defining available [workspace images](#available-images) with default configuration:
 
 ```yaml
 apiVersion: kubeworkspaces.io/v1alpha1
