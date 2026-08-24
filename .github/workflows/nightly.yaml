@@ -56,6 +56,36 @@ jobs:
         run: make test-deploy-${{ matrix.method }}
 
   # ---------------------------------------------------------------------------
+  # The path existing users actually take. Exercises changed immutable fields,
+  # removed resources and CRD updates applied over existing objects — none of
+  # which a fresh install covers.
+  # ---------------------------------------------------------------------------
+  upgrade:
+    name: Chart upgrade from published
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.3
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+
+      - name: Install kind
+        run: |
+          curl -fsSLo /usr/local/bin/kind \
+            https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64
+          chmod +x /usr/local/bin/kind
+
+      - name: Upgrade newest published chart to the local one
+        run: make test-upgrade
+
+  # ---------------------------------------------------------------------------
   # Do the manifests still work on the Kubernetes versions we claim to support?
   # ---------------------------------------------------------------------------
   k8s-versions:
