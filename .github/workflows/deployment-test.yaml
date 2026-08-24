@@ -73,11 +73,17 @@ jobs:
         with:
           version: v1.31.0
 
+      # Into .bin/ rather than /usr/local/bin: that directory is not writable
+      # on the runner without sudo, and .bin/ is already on PATH via the test
+      # scripts' shared library.
       - name: Install kind
         run: |
-          curl -fsSLo /usr/local/bin/kind \
+          mkdir -p .bin
+          curl -fsSLo .bin/kind \
             https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64
-          chmod +x /usr/local/bin/kind
+          chmod +x .bin/kind
+          echo "$PWD/.bin" >> "$GITHUB_PATH"
+          .bin/kind version
 
       - name: Create cluster
         run: make kind-up
