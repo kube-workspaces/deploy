@@ -413,6 +413,21 @@ kustomize build kustomize/base > "$k_stream" 2>/dev/null
 check_sa_explicit "kustomize" "$k_stream"
 check_sa_explicit "helm" "${RENDER_DIR}/helm-defaults.yaml"
 
+# The two render paths must grant identical effective permissions. They write
+# their rules differently and use different SA names, so a textual diff says
+# nothing — flatten to {group/resource: verbs} and compare that. A divergence
+# here means one install method is more privileged than the other.
+if command -v python3 >/dev/null 2>&1; then
+  if out=$(scripts/compare-rbac.py "$k_stream" "${RENDER_DIR}/helm-defaults.yaml" 2>&1); then
+    pass "kustomize and helm grant equivalent RBAC"
+  else
+    fail "kustomize and helm grant equivalent RBAC"
+    printf '%s\n' "$out" | sed 's/^/     /' >&2
+  fi
+else
+  warn "python3 not available — skipping the RBAC equivalence check"
+fi
+
 endgroup
 
 # ---------------------------------------------------------------------------
