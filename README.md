@@ -82,6 +82,21 @@ helm install kube-workspaces deploy/helm/kube-workspaces/ \
   --namespace kube-workspaces-system --create-namespace
 ```
 
+Installing into a **pre-existing namespace** that is managed elsewhere (e.g. a
+shared namespace provisioned by another tool) requires disabling creation of the
+release namespace, since Helm cannot adopt a namespace it did not create:
+
+```bash
+helm install kube-workspaces oci://ghcr.io/kube-workspaces/charts/kube-workspaces \
+  --namespace my-shared-namespace \
+  --set namespaces.createReleaseNamespace=false
+```
+
+Without this, the install fails with
+`invalid ownership metadata; label validation error: missing key "app.kubernetes.io/managed-by"`.
+The workspace namespace is still created — control it with
+`namespaces.createWorkspaceNamespace`.
+
 #### Quick deploy with Kustomize:
 ```bash
 kubectl apply --server-side -k deploy/kustomize/base/

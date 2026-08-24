@@ -1,4 +1,18 @@
-{{- if .Values.namespaces.create }}
+{{- /*
+  createReleaseNamespace gates the release namespace, createWorkspaceNamespace
+  gates the workspace namespace. They are independent so the chart can create
+  the workspace namespace while installing into a pre-existing, externally
+  managed release namespace (a shared namespace Helm must not take ownership of).
+
+  namespaces.create is retained as a master switch for backwards compatibility:
+  when false, neither namespace is rendered.
+*/ -}}
+{{- $nsCreate := .Values.namespaces.create -}}
+{{- $releaseNs := .Values.namespaces.createReleaseNamespace -}}
+{{- if $releaseNs | kindIs "invalid" -}}
+{{- $releaseNs = true -}}
+{{- end -}}
+{{- if and $nsCreate $releaseNs }}
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -7,8 +21,10 @@ metadata:
     {{- include "kube-workspaces.labels" . | nindent 4 }}
     app.kubernetes.io/component: core
 {{- end }}
-{{- if and .Values.namespaces.create .Values.namespaces.createWorkspaceNamespace }}
+{{- if and $nsCreate .Values.namespaces.createWorkspaceNamespace }}
+{{- if and $nsCreate $releaseNs }}
 ---
+{{- end }}
 apiVersion: v1
 kind: Namespace
 metadata:
