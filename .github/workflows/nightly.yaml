@@ -86,6 +86,26 @@ jobs:
         run: make test-upgrade
 
   # ---------------------------------------------------------------------------
+  # kustomize/base/ingress.yaml pins ingressClassName: traefik, which is inert on
+  # a default kind cluster — the other jobs strip the Ingress out. k3d bundles
+  # Traefik, so this is the only job that exercises that manifest for real.
+  # ---------------------------------------------------------------------------
+  ingress:
+    name: Ingress on k3d + Traefik
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.30.4
+
+      # k3d is installed into .bin/ by the target's own tooling step.
+      - name: Test the real Ingress
+        run: make test-ingress
+
+  # ---------------------------------------------------------------------------
   # Do the manifests still work on the Kubernetes versions we claim to support?
   # ---------------------------------------------------------------------------
   k8s-versions:

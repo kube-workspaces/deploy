@@ -7,7 +7,7 @@
 	test-tools test-lint test-smoke test-e2e test-all test-dump \
 	kind-up kind-down \
 	test-deploy-kustomize test-deploy-helm test-deploy-helm-oci \
-	test-deploy-argocd test-deploy-auth test-upgrade
+	test-deploy-argocd test-deploy-auth test-upgrade test-ingress
 
 # ---------------------------------------------------------------------------
 # Testing
@@ -67,6 +67,13 @@ test-deploy-auth: test-tools
 
 test-upgrade: test-tools
 	@scripts/test-upgrade.sh
+
+# Layer 3: exercise the real Ingress on k3d, which bundles Traefik. This is the
+# only way to test kustomize/base/ingress.yaml, whose hardcoded traefik class is
+# inert on a default kind cluster.
+test-ingress: export INSTALL_K3D=1
+test-ingress: test-tools
+	@scripts/test-ingress.sh
 
 # Everything, in cost order.
 test-all: test-lint

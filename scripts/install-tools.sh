@@ -14,6 +14,7 @@ mkdir -p "$BIN"
 KUBECONFORM_VERSION="${KUBECONFORM_VERSION:-v0.6.7}"
 KUSTOMIZE_VERSION="${KUSTOMIZE_VERSION:-v5.5.0}"
 YQ_VERSION="${YQ_VERSION:-v4.44.3}"
+K3D_VERSION="${K3D_VERSION:-v5.7.4}"
 
 os="$(uname -s | tr '[:upper:]' '[:lower:]')"
 case "$(uname -m)" in
@@ -87,6 +88,26 @@ else
 fi
 
 echo "tools ready in ${BIN}"
+
+# --- k3d --------------------------------------------------------------------
+# Only needed by scripts/test-ingress.sh, which uses k3d because it bundles
+# Traefik and can therefore exercise the real Ingress. Installed on demand.
+if [ -n "${INSTALL_K3D:-}" ]; then
+  if command -v k3d >/dev/null 2>&1 && [ ! -x "$BIN/k3d" ]; then
+    echo "k3d already on PATH ($(k3d version 2>/dev/null | head -1))"
+  elif [ -x "$BIN/k3d" ]; then
+    echo "k3d already installed in .bin/"
+  else
+    echo "installing k3d ${K3D_VERSION} (${os}/${arch})"
+    url="https://github.com/k3d-io/k3d/releases/download/${K3D_VERSION}/k3d-${os}-${arch}"
+    if curl -fsSL -o "$BIN/k3d" "$url"; then
+      chmod +x "$BIN/k3d"
+    else
+      echo "error: could not download k3d from $url" >&2
+      exit 1
+    fi
+  fi
+fi
 
 # --- helm-unittest ----------------------------------------------------------
 # A Helm plugin rather than a standalone binary, so it installs into Helm's
