@@ -39,46 +39,63 @@ Modelled on the Kubeflow Notebooks architecture but as a standalone, lightweight
 
 ### Prerequisites
 
-- [Go](https://go.dev/dl/) 1.24+ (controller) and Go 1.26+ (API)
-- [Node.js](https://nodejs.org/) 20+
-- [Docker](https://docs.docker.com/get-docker/)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/) with access to a Kubernetes cluster
-- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/) (for local development)
+- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/) (for a local cluster)
+- [Helm](https://helm.sh/docs/intro/install/) 3.8+ (only for the Helm install path)
 
-### Local Development
+Building the components from source additionally needs
+[Go](https://go.dev/dl/) 1.24+ (controller) / 1.26+ (API and proxy),
+[Node.js](https://nodejs.org/) 20+ (frontend) and
+[Docker](https://docs.docker.com/get-docker/). See each component repo for
+its own developer workflow — this repo only holds deployment manifests.
 
-1. Create a kind cluster and install the CRDs:
+### Local cluster (kind)
+
+Deploy the published images to a throwaway kind cluster:
+
 ```bash
 kind create cluster
+
+# CRDs must use server-side apply (the Workspace CRD exceeds the
+# client-side annotation size limit)
 make install-crd
+
+make deploy-kustomize
+make port-forward-frontend
 ```
 
-2. Run all components (in separate terminals):
-```bash
-make run-controller   # Terminal 1
-make run-api          # Terminal 2
-make run-frontend     # Terminal 3
-```
+Open <http://localhost:3000>. Authentication is disabled by default, so no
+login is required — see [Authentication](#authentication) to enable it.
 
-3. Open http://localhost:3000 in your browser.
-
-Authentication is disabled by default — no login is required. See [Authentication](#authentication) to enable it.
+To tear it down: `kind delete cluster`.
 
 ### Deploy to a Cluster
 
-Deployment options (ArgoCD, Helm, Kustomize) are described in [`docs/`](docs/).
 Before going to production, set your own hostnames — see
-[`docs/domains.md`](docs/domains.md) for how to override the placeholder domains
-via Helm values or kustomize patches.
+[`docs/domains.md`](docs/domains.md) for how to override the placeholder
+domains via Helm values or kustomize patches.
 
 #### Quick deploy with ArgoCD:
 ```bash
-kubectl apply -f deploy/argocd/application.yaml
+kubectl apply -f argocd/application-crds.yaml
+kubectl apply -f argocd/application.yaml
 ```
+
+Apply the CRDs Application first — the components Application will not sync
+cleanly against missing CRDs. Note that Argo CD syncs from the **git remote**,
+so it deploys the last pushed commit rather than your local working tree.
 
 #### Quick deploy with Helm:
 ```bash
-helm install kube-workspaces deploy/helm/kube-workspaces/ \
+helm install kube-workspaces helm/kube-workspaces/ \
+  --namespace kube-workspaces-system --create-namespace
+```
+
+Or straight from the published chart, without cloning this repo:
+
+```bash
+helm install kube-workspaces \
+  oci://ghcr.io/kube-workspaces/charts/kube-workspaces \
   --namespace kube-workspaces-system --create-namespace
 ```
 
@@ -99,22 +116,41 @@ The workspace namespace is still created — control it with
 
 #### Quick deploy with Kustomize:
 ```bash
-kubectl apply --server-side -k deploy/kustomize/base/
+kubectl apply --server-side -k kustomize/crds/
+kubectl apply --server-side -k kustomize/base/
 ```
 
 ### Docker Images
 
-Build all images:
+Released images are published to GHCR and are what the manifests reference by
+default — you do not need to build anything to deploy:
+
+| Component | Image |
+|-----------|-------|
+| controller | `ghcr.io/kube-workspaces/controller` |
+| api | `ghcr.io/kube-workspaces/api` |
+| proxy | `ghcr.io/kube-workspaces/proxy` |
+| frontend | `ghcr.io/kube-workspaces/frontend` |
+
+To build from source, clone each component repo alongside this one and build
+from its root (each repo has its own `Dockerfile`):
+
 ```bash
-docker build -t kube-workspaces-controller:latest -f controller/Dockerfile controller/
-docker build -t kube-workspaces-api:latest -f api/Dockerfile api/
-docker build -t kube-workspaces-frontend:latest -f frontend/Dockerfile frontend/
+for c in controller api proxy frontend; do
+  docker build -t "kube-workspaces-$c:dev" "../$c"
+done
 ```
 
-For kind clusters, load images:
+For kind clusters, load the locally built images and deploy with the test
+overlay, which switches `imagePullPolicy` to `IfNotPresent` so the loaded
+images are actually used:
+
 ```bash
-kind load docker-image kube-workspaces-controller:latest \
-  kube-workspaces-api:latest kube-workspaces-frontend:latest
+kind load docker-image \
+  kube-workspaces-controller:dev kube-workspaces-api:dev \
+  kube-workspaces-proxy:dev kube-workspaces-frontend:dev
+
+kubectl apply --server-side -k kustomize/overlays/test/
 ```
 
 ## Authentication
@@ -350,13 +386,153 @@ Connect to workspaces via the UI "Connect" button, or directly:
 
 ## LLM Deployment Prompt
 
-Use the following prompt with an LLM coding agent (e.g. Claude, GPT) to deploy kube-workspaces to your current Kubernetes context:
+Prompts for driving an LLM coding agent (Claude Code, Codex, Cursor, …) through
+a deployment. Each one is self-contained, states explicit success criteria, and
+avoids blocking commands so the agent does not hang waiting on a foreground
+process.
 
-> Deploy kube-workspaces to my Kubernetes cluster using the current kubectl context. Clone https://github.com/kube-workspaces/deploy.git, build all three Docker images (controller, api, frontend) from their respective Dockerfiles, load them into the cluster (or push to a registry if not using kind), then apply the Kustomize manifests with `kubectl apply --server-side -k deploy/kustomize/base/`. After deployment, verify all pods in `kube-workspaces-system` are running, then set up port-forwards: frontend on localhost:3000 and API on localhost:8888. Create a sample workspace using the code-server image to verify end-to-end functionality.
+### Deploy to the current kubectl context
 
-For kind clusters specifically:
+> Deploy kube-workspaces to my Kubernetes cluster using the current kubectl
+> context. Do not create or switch clusters — confirm the context first with
+> `kubectl config current-context` and stop and ask me if it is not what I
+> expect.
+>
+> 1. Clone `https://github.com/kube-workspaces/deploy.git` and work from the
+>    repo root.
+> 2. Install the CRDs: `kubectl apply --server-side -k kustomize/crds/`.
+>    Server-side apply is mandatory — the Workspace CRD embeds a full PodSpec
+>    and is ~658 KiB, far over the 256 KiB `last-applied-configuration`
+>    annotation limit, so plain `kubectl apply -f` fails.
+> 3. Install the components: `kubectl apply --server-side -k kustomize/base/`.
+>    The manifests already point at the published `ghcr.io/kube-workspaces/*`
+>    images, so do not build any images.
+> 4. Install the workspace image catalog: `make install-images`. This applies
+>    the cluster-scoped `Image` CRs from `images.yaml`. Skipping this leaves the
+>    UI catalog empty — `kustomize/base` does not create any `Image` CRs.
+>
+> Then verify, and report a pass/fail line for each check:
+>
+> - All six CRDs are Established:
+>   `kubectl wait --for=condition=Established crd/workspaces.kubeworkspaces.io crd/images.kubeworkspaces.io crd/users.kubeworkspaces.io crd/authconfigs.kubeworkspaces.io crd/platformconfigs.kubeworkspaces.io crd/poddefaults.kubeworkspaces.io --timeout=60s`
+> - All four deployments are Available:
+>   `kubectl wait --for=condition=Available deployment --all -n kube-workspaces-system --timeout=300s`
+>   (expect `kube-workspaces-controller`, `-api`, `-proxy`, `-frontend`)
+> - No container has restarted. Every pod must show `0` restarts and no
+>   `CrashLoopBackOff`:
+>   `kubectl get pods -n kube-workspaces-system -o wide`
+> - The API is healthy. Start a **background** port-forward, poll, then kill it:
+>   `kubectl port-forward -n kube-workspaces-system svc/kube-workspaces-api 8888:80 &`
+>   then `curl -fsS http://localhost:8888/healthz` must return `{"status":"ok"}`.
+> - `curl -fsS http://localhost:8888/v1/images` lists the catalog entries you
+>   applied in step 4.
+> - The frontend serves HTML: background-forward
+>   `svc/kube-workspaces-frontend 3000:80` and check
+>   `curl -fsS http://localhost:3000/` returns HTTP 200 with an HTML body. The
+>   frontend has no `/healthz` endpoint — `/` is its probe path.
+>
+> If any deployment fails to become Available, diagnose before continuing:
+> `kubectl describe pod` on the not-ready pod, `kubectl logs` for its
+> containers, and `kubectl get events -n kube-workspaces-system --sort-by=.lastTimestamp`.
+> Report the root cause rather than retrying blindly.
+>
+> Finally, tell me the exact commands to re-open the port-forwards myself, and
+> do not leave any background port-forward processes running.
 
-> Deploy kube-workspaces to my local kind cluster. Clone https://github.com/kube-workspaces/deploy.git, build the Docker images (`docker build -t kube-workspaces-controller:latest -f controller/Dockerfile controller/`, same pattern for api/ and frontend/), load them with `kind load docker-image`, apply manifests with `kubectl apply --server-side -k deploy/kustomize/base/`, wait for rollout, then port-forward the frontend (port 3000) and API (port 8888) services from the `kube-workspaces-system` namespace.
+### Deploy to a local kind cluster
+
+> Deploy kube-workspaces to a local kind cluster.
+>
+> 1. `kind create cluster --name kube-workspaces`
+> 2. Clone `https://github.com/kube-workspaces/deploy.git`, then from the repo
+>    root run `make install-crd && make deploy-kustomize && make install-images`.
+> 3. Wait for readiness:
+>    `kubectl wait --for=condition=Available deployment --all -n kube-workspaces-system --timeout=300s`
+>
+> Verify with a background port-forward (never a foreground one):
+>
+> - `kubectl port-forward -n kube-workspaces-system svc/kube-workspaces-api 8888:80 &`
+>   → `curl -fsS http://localhost:8888/healthz` returns `{"status":"ok"}`
+> - `kubectl port-forward -n kube-workspaces-system svc/kube-workspaces-proxy 8891:80 &`
+>   → `curl -fsS http://localhost:8891/readyz` returns `{"status":"ok"}`
+> - `kubectl port-forward -n kube-workspaces-system svc/kube-workspaces-frontend 3000:80 &`
+>   → `curl -fsS http://localhost:3000/` returns HTTP 200 and HTML
+>
+> Kill every port-forward you started when done. Note that the Ingress in
+> `kustomize/base` hardcodes `ingressClassName: traefik` and a placeholder
+> hostname, so it is inert on a default kind cluster — port-forwarding is the
+> only way in. Do not try to make the Ingress work.
+>
+> Report each check as pass/fail, and finish with the single command I need to
+> delete everything (`kind delete cluster --name kube-workspaces`).
+
+### Verify an end-to-end workspace
+
+Run this after either deployment above to prove the controller and proxy
+actually work, not just that the pods started:
+
+> Using the current kubectl context with kube-workspaces already deployed,
+> create a workspace and verify it end to end.
+>
+> 1. Apply this `Workspace` CR. Note that a raw `Workspace` does **not** need a
+>    matching `Image` CR — `Image` CRs only populate the UI/API catalog and
+>    supply defaults at creation time through the API. Use `traefik/whoami`
+>    rather than a heavyweight IDE image so the pull is a few MB and the check
+>    is fast:
+>
+>    ```yaml
+>    apiVersion: kubeworkspaces.io/v1alpha1
+>    kind: Workspace
+>    metadata:
+>      name: smoke-test
+>      namespace: workspaces
+>    spec:
+>      template:
+>        spec:
+>          containers:
+>            - name: whoami
+>              image: traefik/whoami
+>              ports:
+>                - containerPort: 80
+>                  name: workspace-port
+>    ```
+>
+>    The `workspaces` namespace already exists — `kustomize/base` creates it.
+>
+> 2. Assert the controller reconciled it. It creates a StatefulSet and a Service
+>    both named after the workspace, and the pod is `smoke-test-0`:
+>    - `kubectl rollout status statefulset/smoke-test -n workspaces --timeout=180s`
+>      (prefer this over `kubectl wait --for=jsonpath=...readyReplicas`, which
+>      errors out when the field is not yet present)
+>    - `kubectl get svc smoke-test -n workspaces` — expect port 80 targeting the
+>      container's first port
+>    - `kubectl get workspace smoke-test -n workspaces -o yaml` and confirm
+>      `status.readyReplicas` is 1 and `status.conditions` reports ready
+>
+> 3. Assert the API sees it: background-forward the API to 8888, then
+>    `curl -fsS "http://localhost:8888/v1/workspaces/smoke-test?namespace=workspaces"`
+>    returns 200 with the workspace.
+>
+> 4. Assert the proxy routes to it: background-forward the proxy to 8891, then
+>    `curl -fsS http://localhost:8891/proxy/workspaces/smoke-test/` returns the
+>    whoami response body.
+>
+> 5. Exercise stop/start. Stopping is annotation-driven — the controller scales
+>    the StatefulSet to 0 without deleting the CR:
+>    - `curl -fsS -X POST "http://localhost:8888/v1/workspaces/smoke-test/stop?namespace=workspaces"`
+>      → StatefulSet replicas becomes 0 and the CR gains the
+>      `kubeworkspaces.io/stopped` annotation
+>    - `curl -fsS -X POST "http://localhost:8888/v1/workspaces/smoke-test/start?namespace=workspaces"`
+>      → replicas returns to 1 and the pod becomes Ready again
+>
+> 6. Clean up: `kubectl delete workspace smoke-test -n workspaces`, then confirm
+>    the StatefulSet and Service are garbage-collected via owner references.
+>    Kill all port-forwards.
+>
+> Report every step as pass/fail with the observed value. If a step fails, dump
+> `kubectl describe workspace smoke-test -n workspaces`, the controller logs
+> (`kubectl logs -n kube-workspaces-system deploy/kube-workspaces-controller`),
+> and namespace events before drawing a conclusion.
 
 ## License
 
