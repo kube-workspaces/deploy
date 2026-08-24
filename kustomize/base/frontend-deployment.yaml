@@ -1,3 +1,15 @@
+# Dedicated ServiceAccount with deliberately no Role/ClusterRole bindings.
+# Exists purely so the frontend does not run as 'default'.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-workspaces-frontend
+  namespace: kube-workspaces-system
+  labels:
+    app.kubernetes.io/name: kube-workspaces
+    app.kubernetes.io/component: frontend
+automountServiceAccountToken: false
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,6 +30,11 @@ spec:
         app.kubernetes.io/name: kube-workspaces
         app.kubernetes.io/component: frontend
     spec:
+      # The frontend is a pure UI/proxy server — it has no Kubernetes client and
+      # needs no API access at all. Give it a dedicated ServiceAccount with zero
+      # RBAC bindings rather than inheriting 'default', and do not mount a token.
+      serviceAccountName: kube-workspaces-frontend
+      automountServiceAccountToken: false
       containers:
         - name: frontend
           image: ghcr.io/kube-workspaces/frontend:latest
