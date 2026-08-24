@@ -92,7 +92,21 @@ jobs:
             exit 0
           fi
 
-          # Already published. Did this push actually change the chart?
+          # Already published. Whether that is a problem depends on the trigger.
+          #
+          # On a release, the chart having changed in the tagged commit is normal
+          # and expected — the version was bumped as part of preparing the
+          # release, and the push to main already published it. There is simply
+          # nothing left to do.
+          #
+          # On a push to main, a chart change against an already-published version
+          # means a release is about to be clobbered, which must fail.
+          if [ "${GITHUB_EVENT_NAME}" != "push" ]; then
+            echo "::notice::version ${VERSION} is already published (event: ${GITHUB_EVENT_NAME}) — nothing to do."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           if git rev-parse HEAD~1 >/dev/null 2>&1 \
              && ! git diff --quiet HEAD~1 HEAD -- helm/kube-workspaces/; then
             echo "::error::chart version ${VERSION} is already published to ghcr.io/${repo}, but this push modified helm/kube-workspaces/."
