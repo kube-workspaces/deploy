@@ -1,8 +1,83 @@
 # Deploy repo Makefile - operational targets for kube-workspaces deployment
 
 .PHONY: install-crd install-images pull-images push-images deploy-kustomize deploy-crds \
-	auth-enable auth-disable port-forward-frontend port-forward-api port-forward-proxy \
-	helm-install helm-upgrade helm-template lint-helm sync-helm-crds check-helm-crds
+	deploy-auth auth-enable auth-disable port-forward-frontend port-forward-api \
+	port-forward-proxy helm-install helm-upgrade helm-template lint-helm \
+	sync-helm-crds check-helm-crds \
+	test-tools test-lint test-smoke test-e2e test-all test-dump \
+	kind-up kind-down \
+	test-deploy-kustomize test-deploy-helm test-deploy-helm-oci \
+	test-deploy-argocd test-deploy-auth test-upgrade
+
+# ---------------------------------------------------------------------------
+# Testing
+#
+# Layer 0 (test-lint)       no cluster, seconds
+# Layer 1 (test-deploy-*)   kind cluster, ~4 min per deployment method
+# Layer 2 (test-e2e)        kind cluster, ~10 min, real Workspace lifecycle
+#
+# See docs/testing.md.
+# ---------------------------------------------------------------------------
+
+# Kind cluster name and node image used by every cluster test. Pinning the node
+# image keeps runs reproducible; bump deliberately.
+KIND_CLUSTER ?= kube-workspaces-test
+KIND_NODE_IMAGE ?= kindest/node:v1.31.0
+export KIND_CLUSTER KIND_NODE_IMAGE
+
+# Install pinned test tools into .bin/ (gitignored).
+test-tools:
+	@scripts/install-tools.sh
+
+# Layer 0: static validation, no cluster required.
+test-lint: test-tools
+	@scripts/validate.sh
+
+# Create / delete a reusable local cluster for iterating.
+kind-up:
+	@scripts/kind.sh up
+
+kind-down:
+	@scripts/kind.sh down
+
+# Layer 1: smoke-test whatever is deployed in the current kubectl context.
+test-smoke:
+	@scripts/smoke.sh
+
+# Layer 2: full workspace lifecycle against the current context.
+test-e2e:
+	@scripts/e2e.sh
+
+# Layer 1 per-method: each creates a fresh kind cluster, deploys, smoke-tests,
+# then tears the cluster down.
+test-deploy-kustomize:
+	@scripts/test-deploy.sh kustomize
+
+test-deploy-helm:
+	@scripts/test-deploy.sh helm
+
+test-deploy-helm-oci:
+	@scripts/test-deploy.sh helm-oci
+
+test-deploy-argocd:
+	@scripts/test-deploy.sh argocd
+
+test-deploy-auth:
+	@scripts/test-deploy.sh auth
+
+test-upgrade:
+	@scripts/test-upgrade.sh
+
+# Everything, in cost order.
+test-all: test-lint
+	@scripts/test-deploy.sh kustomize
+	@scripts/test-deploy.sh helm
+	@scripts/test-deploy.sh helm-oci
+
+# Dump diagnostics for the current context (use after a failure).
+test-dump:
+	@scripts/dump.sh
+
 
 # CRDs are the single source of truth in kustomize/crds/ and are vendored into
 # the Helm chart's crds/ directory so `helm install` creates them automatically.
@@ -51,12 +126,36 @@ deploy-kustomize:
 deploy-crds:
 	kubectl apply --server-side -k kustomize/crds/
 
-# Enable authentication
+# Deploy via Kustomize with the auth overlay (creates AuthConfig + secrets).
+# Edit kustomize/overlays/auth/ CHANGEME values first.
+deploy-auth:
+	kubectl apply --server-side -k kustomize/overlays/auth/
+
+# Enable authentication.
+# Requires an existing AuthConfig CR. One is NOT created by kustomize/base — it
+# only exists if you deployed with the auth overlay or Helm auth.enabled=true.
+# Auth cannot be enabled without OIDC config (the controller rejects it), so we
+# refuse to create a half-configured CR here.
 auth-enable:
+	@if ! kubectl get authconfig default >/dev/null 2>&1; then \
+		echo "error: AuthConfig 'default' not found in the cluster."; \
+		echo; \
+		echo "kustomize/base does not create one. To get an AuthConfig, either:"; \
+		echo "  - Kustomize: kubectl apply --server-side -k kustomize/overlays/auth/"; \
+		echo "  - Helm:      helm upgrade ... --set auth.enabled=true"; \
+		echo; \
+		echo "Enabling auth also requires OIDC settings (issuerURL, clientID,"; \
+		echo "clientSecret). See docs/authentication.md."; \
+		exit 1; \
+	fi
 	kubectl patch authconfig default --type=merge -p '{"spec":{"enabled":true}}'
 
 # Disable authentication
 auth-disable:
+	@if ! kubectl get authconfig default >/dev/null 2>&1; then \
+		echo "AuthConfig 'default' not found — auth is already effectively disabled."; \
+		exit 0; \
+	fi
 	kubectl patch authconfig default --type=merge -p '{"spec":{"enabled":false}}'
 
 # Port-forward frontend to localhost:3000
