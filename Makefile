@@ -41,31 +41,31 @@ kind-down:
 	@scripts/kind.sh down
 
 # Layer 1: smoke-test whatever is deployed in the current kubectl context.
-test-smoke:
+test-smoke: test-tools
 	@scripts/smoke.sh
 
 # Layer 2: full workspace lifecycle against the current context.
-test-e2e:
+test-e2e: test-tools
 	@scripts/e2e.sh
 
 # Layer 1 per-method: each creates a fresh kind cluster, deploys, smoke-tests,
 # then tears the cluster down.
-test-deploy-kustomize:
+test-deploy-kustomize: test-tools
 	@scripts/test-deploy.sh kustomize
 
-test-deploy-helm:
+test-deploy-helm: test-tools
 	@scripts/test-deploy.sh helm
 
-test-deploy-helm-oci:
+test-deploy-helm-oci: test-tools
 	@scripts/test-deploy.sh helm-oci
 
-test-deploy-argocd:
+test-deploy-argocd: test-tools
 	@scripts/test-deploy.sh argocd
 
-test-deploy-auth:
+test-deploy-auth: test-tools
 	@scripts/test-deploy.sh auth
 
-test-upgrade:
+test-upgrade: test-tools
 	@scripts/test-upgrade.sh
 
 # Everything, in cost order.
