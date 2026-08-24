@@ -11,6 +11,13 @@ on:
     types:
       - published
   workflow_dispatch:
+    inputs:
+      allow_overwrite:
+        description: >-
+          Republish even if this chart version already exists in GHCR.
+          Only use this to repair a broken push.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -46,6 +53,35 @@ jobs:
           fi
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "Chart version: ${version}"
+
+      # Guard against silently overwriting an already-published immutable
+      # version. Without this, any push to main touching helm/** republishes
+      # whatever version Chart.yaml happens to hold, clobbering a release.
+      # Re-running deliberately is still possible via workflow_dispatch with
+      # allow_overwrite=true.
+      - name: Check version is not already published
+        if: ${{ inputs.allow_overwrite != true }}
+        env:
+          VERSION: ${{ steps.chart.outputs.version }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          repo="${OWNER}/charts/kube-workspaces"
+          token=$(curl -fsSL \
+            "https://ghcr.io/token?scope=repository:${repo}:pull&service=ghcr.io" \
+            | jq -r '.token')
+
+          code=$(curl -sSL -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer ${token}" \
+            -H 'Accept: application/vnd.oci.image.manifest.v1+json' \
+            "https://ghcr.io/v2/${repo}/manifests/${VERSION}")
+
+          if [ "$code" = "200" ]; then
+            echo "::error::chart version ${VERSION} is already published to ghcr.io/${repo}."
+            echo "Bump 'version' in helm/kube-workspaces/Chart.yaml before merging."
+            exit 1
+          fi
+          echo "Version ${VERSION} is not yet published (HTTP ${code}) — proceeding."
 
       - name: Package chart
         run: |
