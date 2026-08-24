@@ -298,3 +298,35 @@ Before applying, make sure your DNS points at your ingress controller and that
 cert-manager (or your ACME client) is configured to issue for your domains.
 The ingress annotation `cert-manager.io/cluster-issuer` triggers automatic
 certificate issuance through cert-manager's ingress-shim.
+
+## Namespaces and `--create-namespace`
+
+By default the chart renders a Namespace object for the **workspace** namespace
+only. The release namespace is deliberately left to Helm:
+
+```bash
+helm install kube-workspaces oci://ghcr.io/kube-workspaces/charts/kube-workspaces \
+  --namespace kube-workspaces-system --create-namespace
+```
+
+Helm creates the release namespace itself in order to store the release secret,
+then refuses to adopt it as a chart resource — so rendering it from the chart as
+well fails with `invalid ownership metadata`, or intermittently
+`namespaces "kube-workspaces-system" already exists`.
+
+If a config-management tool needs the Namespace to be part of the release (Argo
+CD, for instance, so that it is not pruned), enable it explicitly and do **not**
+pass `--create-namespace`:
+
+```yaml
+namespaces:
+  createReleaseNamespace: true
+```
+
+Other switches:
+
+| Value | Default | Effect |
+|-------|---------|--------|
+| `namespaces.create` | `true` | Master switch; `false` renders no Namespace objects at all |
+| `namespaces.createReleaseNamespace` | `false` | Render `.Release.Namespace` |
+| `namespaces.createWorkspaceNamespace` | `true` | Render `workspaceNamespace` |

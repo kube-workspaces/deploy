@@ -112,11 +112,17 @@ workspaceNamespace: workspaces
 namespaces:
   # Master switch - when false, no Namespace objects are rendered at all
   create: true
-  # Create the release namespace (.Release.Namespace). Set to false when
-  # installing into a pre-existing namespace that is managed externally --
-  # Helm cannot adopt a namespace it did not create and will fail with
-  # "invalid ownership metadata".
-  createReleaseNamespace: true
+  # Render a Namespace object for the release namespace (.Release.Namespace).
+  #
+  # Defaults to false because it conflicts with `helm install --create-namespace`,
+  # which is the documented install path: Helm creates the namespace itself in
+  # order to store the release secret, then refuses to adopt it as a chart
+  # resource ("invalid ownership metadata", or intermittently "already exists").
+  #
+  # Enable this only when something else needs the Namespace to be part of the
+  # release — e.g. Argo CD, so it is not pruned — and in that case do NOT pass
+  # --create-namespace. See docs/domains.md.
+  createReleaseNamespace: false
   # Also create the workspace namespace (workspaceNamespace)
   createWorkspaceNamespace: true
 

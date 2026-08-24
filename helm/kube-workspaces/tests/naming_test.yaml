@@ -8,8 +8,23 @@ templates:
   - namespaces.yaml
   - controller-deployment.yaml
 tests:
-  - it: creates both namespaces by default
+  # Only the workspace namespace by default. The release namespace is left to
+  # `helm install --create-namespace`: Helm creates it itself to store the
+  # release secret and then refuses to adopt it as a chart resource, so
+  # rendering it here makes the documented install command fail.
+  - it: renders only the workspace namespace by default
     template: namespaces.yaml
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: metadata.name
+          value: workspaces
+
+  - it: can render the release namespace for config-management tools
+    template: namespaces.yaml
+    set:
+      namespaces.createReleaseNamespace: true
     asserts:
       - hasDocuments:
           count: 2
@@ -23,20 +38,10 @@ tests:
           count: 0
 
   # Needed when installing into a namespace managed elsewhere (e.g. by Argo CD).
-  - it: can skip the release namespace but keep the workspace one
-    template: namespaces.yaml
-    set:
-      namespaces.createReleaseNamespace: false
-    asserts:
-      - hasDocuments:
-          count: 1
-      - equal:
-          path: metadata.name
-          value: workspaces
-
   - it: can skip the workspace namespace but keep the release one
     template: namespaces.yaml
     set:
+      namespaces.createReleaseNamespace: true
       namespaces.createWorkspaceNamespace: false
     asserts:
       - hasDocuments:
@@ -45,7 +50,6 @@ tests:
   - it: honours a custom workspace namespace name
     template: namespaces.yaml
     set:
-      namespaces.createReleaseNamespace: false
       workspaceNamespace: team-a
     asserts:
       - equal:
