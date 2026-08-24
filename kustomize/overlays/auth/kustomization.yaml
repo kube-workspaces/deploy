@@ -5,7 +5,9 @@ resources:
   - ../../base
   - authconfig.yaml
   - auth-secrets.yaml
-  - workspace-roles.yaml
+  # NOTE: workspace-roles.yaml is NOT listed here — ../../base already
+  # includes it. Duplicating it makes `kustomize build` fail with
+  # "may not add resource with an already registered id".
 
 patches:
   - path: api-env-patch.yaml
