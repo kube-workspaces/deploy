@@ -9,31 +9,35 @@
 # wait_for_crds [timeout]
 # Waits for every CRD in KW_CRDS to reach Established.
 #
-# `kubectl wait` fails immediately with NotFound if the object does not exist yet
-# rather than waiting for it to appear, and a server-side apply can return before
-# the API server has registered the CRD. So poll for existence first, then wait
-# on the condition.
+# Deliberately does not use `kubectl wait`: it exits immediately with NotFound
+# when the object does not exist yet rather than waiting for it to appear, and a
+# server-side apply of the 837 KiB CRD bundle returns before the API server has
+# registered them all. It also proved flaky against the 658 KiB Workspace CRD
+# even once present. Polling the condition directly is both simpler and reliable.
 wait_for_crds() {
   local timeout="${1:-120s}" crd
-  # Strip any unit suffix; used as a rough second budget for the existence poll.
+  # Strip any unit suffix; used as a per-CRD second budget.
   local budget="${timeout%s}"
   [ "$budget" -gt 0 ] 2>/dev/null || budget=120
 
   for crd in "${KW_CRDS[@]}"; do
-    local i=0
-    while ! kubectl get "crd/${crd}" >/dev/null 2>&1; do
+    local i=0 status=""
+    while :; do
+      status=$(kubectl get "crd/${crd}" \
+        -o jsonpath='{.status.conditions[?(@.type=="Established")].status}' \
+        2>/dev/null || true)
+      [ "$status" = "True" ] && break
       i=$((i + 1))
       if [ "$i" -ge "$budget" ]; then
-        fail "CRD $crd exists (not registered after ${budget}s)"
+        if [ -z "$status" ]; then
+          fail "CRD $crd Established (not registered after ${budget}s)"
+        else
+          fail "CRD $crd Established (status=${status} after ${budget}s)"
+        fi
         return 1
       fi
       sleep 1
     done
-    if ! kubectl wait --for=condition=Established \
-        "crd/${crd}" --timeout="$timeout" >/dev/null 2>&1; then
-      fail "CRD $crd Established"
-      return 1
-    fi
   done
   pass "all ${#KW_CRDS[@]} CRDs Established"
 }
