@@ -68,10 +68,19 @@ ingress:
   enabled: false
   className: ""
   annotations: {}
+  # Each host entry needs its own `paths` list. If you override `hosts` you must
+  # supply `paths` too — a host with no paths renders an invalid Ingress.
   hosts:
     - host: workspaces.local
       paths:
+        # Workspace traffic is served by the proxy, not the API. The API has no
+        # /proxy routes, so pointing this at the API 404s every workspace.
         - path: /proxy
+          pathType: Prefix
+          backend:
+            serviceName: kube-workspaces-proxy
+            servicePort: 80
+        - path: /v1
           pathType: Prefix
           backend:
             serviceName: kube-workspaces-api
@@ -81,6 +90,13 @@ ingress:
           backend:
             serviceName: kube-workspaces-api
             servicePort: 80
+        - path: /openapi
+          pathType: Prefix
+          backend:
+            serviceName: kube-workspaces-api
+            servicePort: 80
+        # Frontend catches everything else, including the /admin, /workspaces
+        # and /volumes page routes.
         - path: /
           pathType: Prefix
           backend:

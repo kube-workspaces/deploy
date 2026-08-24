@@ -24,11 +24,20 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
+    {{- range $host := .Values.ingress.hosts }}
+    {{- /*
+      Fail fast rather than rendering `paths:` with a null value. Overriding
+      ingress.hosts via --set replaces the whole list, so it is easy to end up
+      with a host and no paths; the API server rejects that with a type error
+      that gives no hint about the cause.
+    */ -}}
+    {{- if not $host.paths }}
+    {{- fail (printf "ingress.hosts entry %q has no 'paths' — each host requires at least one path (see values.yaml for the default set)" $host.host) }}
+    {{- end }}
+    - host: {{ $host.host | quote }}
       http:
         paths:
-          {{- range .paths }}
+          {{- range $host.paths }}
           - path: {{ .path }}
             pathType: {{ .pathType }}
             backend:
