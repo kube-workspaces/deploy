@@ -78,6 +78,11 @@ than the mechanism, so it is method-agnostic:
   StatefulSets, verified with `kubectl auth can-i` so we test effective
   permissions rather than reading bindings
 
+The suite reads the `AuthConfig` and adapts: with auth **enabled** it asserts the
+API *rejects* unauthenticated calls with 401/403 and that `/auth/config` stays
+reachable, because asserting a 200 there would be asserting an auth bypass.
+Override the detection with `KW_AUTH_ENABLED=0|1`.
+
 To iterate against a cluster you keep between runs:
 
 ```sh
@@ -179,6 +184,7 @@ to an anonymous token.
 | `KW_NAMESPACE` | `kube-workspaces-system` | Component namespace |
 | `KW_WORKSPACE_NAMESPACE` | `workspaces` | Where Workspace CRs live |
 | `KW_EXPECT_IMAGES` | `1` | Set to `0` to skip Image-catalog assertions |
+| `KW_AUTH_ENABLED` | auto-detected | Force auth-on or auth-off API assertions |
 | `KW_LENIENT_SA` | unset | Downgrade SA hardening checks to warnings |
 | `E2E_IMAGE` | `traefik/whoami` | Container image for the test workspace |
 | `E2E_KEEP` | unset | Leave the test workspace behind |

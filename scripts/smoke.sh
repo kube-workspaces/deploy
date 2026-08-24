@@ -32,6 +32,20 @@ install_cluster_trap
 info "context: $(kubectl config current-context 2>/dev/null || echo unknown)"
 info "namespace: ${KW_NAMESPACE}"
 
+# Detect whether authentication is enabled, so the API assertions expect the
+# right thing. With auth on, an unauthenticated 200 would be a bypass, not a
+# pass. Callers can force it either way with KW_AUTH_ENABLED.
+if [ -z "${KW_AUTH_ENABLED:-}" ]; then
+  if [ "$(kubectl get authconfig default \
+      -o jsonpath='{.spec.enabled}' 2>/dev/null)" = "true" ]; then
+    KW_AUTH_ENABLED=1
+  else
+    KW_AUTH_ENABLED=0
+  fi
+fi
+export KW_AUTH_ENABLED
+info "auth enabled: ${KW_AUTH_ENABLED}"
+
 # ---------------------------------------------------------------------------
 # CRDs and workloads
 # ---------------------------------------------------------------------------
@@ -67,12 +81,42 @@ group "api"
 if pf_start kube-workspaces-api "$API_PORT" 80; then
   api="http://127.0.0.1:${API_PORT}"
 
+  # /healthz is always unauthenticated.
   retry_http_body "api /healthz returns ok" "${api}/healthz" '"status":"ok"'
-  retry_http "api /v1/workspaces responds" "${api}/v1/workspaces?namespace=${KW_WORKSPACE_NAMESPACE}" 200
-  retry_http "api /v1/namespaces responds" "${api}/v1/namespaces" 200
-  retry_http "api /v1/volumes responds" "${api}/v1/volumes?namespace=${KW_WORKSPACE_NAMESPACE}" 200
-  retry_http "api /v1/images responds" "${api}/v1/images" 200
-  retry_http "api /platform/config responds" "${api}/platform/config" 200
+
+  if [ "${KW_AUTH_ENABLED:-0}" = "1" ]; then
+    # With auth on, the correct behaviour for an unauthenticated caller is a
+    # rejection. Asserting 200 here would be asserting an auth bypass.
+    info "auth is enabled — asserting endpoints reject unauthenticated calls"
+    for ep in \
+      "/v1/workspaces?namespace=${KW_WORKSPACE_NAMESPACE}" \
+      "/v1/namespaces" \
+      "/v1/volumes?namespace=${KW_WORKSPACE_NAMESPACE}" \
+      "/v1/images"
+    do
+      code=$(http_code "${api}${ep}")
+      case "$code" in
+        401|403) pass "api ${ep} rejects unauthenticated access (${code})" ;;
+        *)       fail "api ${ep} rejects unauthenticated access (got ${code}, want 401/403)" ;;
+      esac
+    done
+
+    # The login/config endpoint must stay reachable or nobody can authenticate.
+    code=$(http_code "${api}/auth/config")
+    case "$code" in
+      200) pass "api /auth/config is reachable (${code})" ;;
+      *)   fail "api /auth/config is reachable (got ${code})" ;;
+    esac
+  else
+    retry_http "api /v1/workspaces responds" "${api}/v1/workspaces?namespace=${KW_WORKSPACE_NAMESPACE}" 200
+    retry_http "api /v1/namespaces responds" "${api}/v1/namespaces" 200
+    retry_http "api /v1/volumes responds" "${api}/v1/volumes?namespace=${KW_WORKSPACE_NAMESPACE}" 200
+    retry_http "api /v1/images responds" "${api}/v1/images" 200
+    retry_http "api /platform/config responds" "${api}/platform/config" 200
+
+    # An unknown path must 404 rather than 200 — catches a catch-all misroute.
+    retry_http "api unknown path 404s" "${api}/v1/definitely-not-a-route" 404 3
+  fi
 
   # The OpenAPI document must be valid JSON, not just a 200.
   if http_body "${api}/openapi3.json" | jq -e '.openapi' >/dev/null 2>&1; then
@@ -81,8 +125,9 @@ if pf_start kube-workspaces-api "$API_PORT" 80; then
     fail "api /openapi3.json is valid OpenAPI JSON"
   fi
 
-  # Image catalog. kustomize/base ships no Image CRs, so this is opt-in.
-  if [ "${KW_EXPECT_IMAGES:-1}" = "1" ]; then
+  # Image catalog. kustomize/base ships no Image CRs, so this is opt-in, and it
+  # is unreadable anonymously when auth is on.
+  if [ "${KW_EXPECT_IMAGES:-1}" = "1" ] && [ "${KW_AUTH_ENABLED:-0}" != "1" ]; then
     count=$(http_body "${api}/v1/images" | jq 'length' 2>/dev/null || echo 0)
     if [ "${count:-0}" -gt 0 ]; then
       pass "api /v1/images returns ${count} image(s)"
@@ -90,11 +135,8 @@ if pf_start kube-workspaces-api "$API_PORT" 80; then
       fail "api /v1/images returns at least one image (got ${count:-0}); did 'make install-images' run?"
     fi
   else
-    info "skipping Image catalog assertions (KW_EXPECT_IMAGES=0)"
+    info "skipping Image catalog assertions"
   fi
-
-  # An unknown path must 404 rather than 200 — catches a catch-all misroute.
-  retry_http "api unknown path 404s" "${api}/v1/definitely-not-a-route" 404 3
 else
   fail "port-forward to the api service"
 fi

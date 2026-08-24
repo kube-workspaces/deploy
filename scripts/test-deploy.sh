@@ -197,6 +197,21 @@ case "$METHOD" in
     # it — unlike every other method here, which applies local files. A local
     # run therefore validates HEAD as pushed, not what you are editing.
     rev="${GITHUB_SHA:-$(git rev-parse HEAD 2>/dev/null || echo main)}"
+
+    # A SHA the remote does not have would leave the Application stuck on a
+    # revision-not-found error that looks like an infrastructure failure. Detect
+    # it up front and fall back to whatever the remote's default branch is.
+    # Note: `git branch -r --contains` exits 0 with empty output when no remote
+    # ref contains the commit, so test the output rather than the status.
+    if [ "$rev" != "main" ] && command -v git >/dev/null 2>&1; then
+      if [ -z "$(git branch -r --contains "$rev" 2>/dev/null)" ]; then
+        warn "commit ${rev} has not been pushed — Argo CD cannot fetch it"
+        remote_head=$(git rev-parse origin/main 2>/dev/null || echo main)
+        warn "falling back to origin/main (${remote_head}); this run does NOT test your local commits"
+        rev="$remote_head"
+      fi
+    fi
+
     info "pointing Applications at revision ${rev}"
     if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
       warn "working tree has uncommitted changes — Argo CD syncs from the remote,"
@@ -243,22 +258,36 @@ case "$METHOD" in
         continue
       fi
 
-      # Not Healthy. Determine whether the only unhealthy resource is the
-      # Ingress, which is expected on a cluster with no ingress controller.
-      unhealthy=$(kubectl get application "$app" -n "$ARGOCD_NAMESPACE" \
-        -o jsonpath='{range .status.resources[?(@.health.status)]}{.kind}/{.name}={.health.status}{"\n"}{end}' \
-        2>/dev/null | grep -v '=Healthy$' || true)
-      non_ingress=$(printf '%s\n' "$unhealthy" | grep -v '^Ingress/' | grep -v '^$' || true)
+      # Not Healthy. For the components Application this is expected on a
+      # cluster with no ingress controller: kustomize/base pins
+      # ingressClassName: traefik, so the Ingress never receives a
+      # load-balancer address and Argo holds the Application at Progressing
+      # forever even though every Deployment is Available.
+      #
+      # Argo does not populate per-resource health in .status.resources (it is
+      # served through the API's resource-tree endpoint, not the CR), so decide
+      # by inspecting the real objects: if the sync succeeded and all four
+      # Deployments are Available, the only thing outstanding is the Ingress.
+      if [ "$sync" = "Synced" ] && [ "$app" = "kube-workspaces" ]; then
+        unavailable=$(kubectl get deployments -n "$KW_NAMESPACE" \
+          -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{range .status.conditions[?(@.type=="Available")]}{.status}{end}{"\n"}{end}' \
+          2>/dev/null | awk -F'\t' '$2!="True" {print $1}')
+        ingress_pending=$(kubectl get ingress -n "$KW_NAMESPACE" \
+          -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.loadBalancer.ingress}{"\n"}{end}' \
+          2>/dev/null | awk -F'\t' '$2=="" {print $1}')
 
-      if [ "$sync" = "Synced" ] && [ -z "$non_ingress" ] && [ -n "$unhealthy" ]; then
-        pass "Application ${app} is Synced (only the Ingress is not Healthy — expected without an ingress controller)"
-      else
-        fail "Application ${app} is Synced/Healthy (sync=${sync:-?} health=${health:-?})"
-        [ -n "$unhealthy" ] && printf '%s\n' "$unhealthy" | sed 's/^/     unhealthy: /' >&2
-        kubectl get application "$app" -n "$ARGOCD_NAMESPACE" \
-          -o jsonpath='{range .status.conditions[*]}{.type}: {.message}{"\n"}{end}' \
-          2>/dev/null | sed 's/^/     /' >&2 || true
+        if [ -z "$unavailable" ] && [ -n "$ingress_pending" ]; then
+          pass "Application ${app} is Synced; health is Progressing only because the Ingress has no address (no ingress controller on this cluster)"
+          continue
+        fi
       fi
+
+      fail "Application ${app} is Synced/Healthy (sync=${sync:-?} health=${health:-?})"
+      [ -n "${unavailable:-}" ] && \
+        printf '%s\n' "$unavailable" | sed 's/^/     Deployment not Available: /' >&2
+      kubectl get application "$app" -n "$ARGOCD_NAMESPACE" \
+        -o jsonpath='{range .status.conditions[*]}{.type}: {.message}{"\n"}{end}' \
+        2>/dev/null | sed 's/^/     /' >&2 || true
     done
     apply_images
     endgroup
