@@ -161,27 +161,10 @@ jobs:
             https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64
           chmod +x /usr/local/bin/kind
 
-      - name: Create cluster
-        run: make kind-up
-
-      - name: Deploy
-        run: |
-          make install-crd
-          kubectl apply --server-side -k kustomize/overlays/test/
-          make install-images
-          kubectl wait --for=condition=Available deployment --all \
-            -n kube-workspaces-system --timeout=300s
-
+      # Self-contained: creates the cluster, deploys, runs the smoke and
+      # lifecycle suites, then tears it down even on failure.
       - name: Run functional e2e
-        run: make test-e2e
-
-      - name: Dump diagnostics on failure
-        if: failure()
-        run: make test-dump
-
-      - name: Delete cluster
-        if: always()
-        run: make kind-down
+        run: make test-e2e-full
 
   # ---------------------------------------------------------------------------
   # The published images use floating :latest tags, so a green PR run can go red

@@ -7,7 +7,7 @@
 	test-tools test-lint test-smoke test-e2e test-all test-dump \
 	kind-up kind-down \
 	test-deploy-kustomize test-deploy-helm test-deploy-helm-oci \
-	test-deploy-argocd test-deploy-auth test-upgrade test-ingress
+	test-deploy-argocd test-deploy-auth test-upgrade test-ingress test-e2e-full
 
 # ---------------------------------------------------------------------------
 # Testing
@@ -48,6 +48,11 @@ test-smoke: test-tools
 test-e2e: test-tools
 	@scripts/e2e.sh
 
+# Layer 2, self-contained: creates a cluster, deploys, runs the lifecycle test,
+# then tears it down. Use this when you do not already have a deployment up.
+test-e2e-full: test-tools
+	@scripts/test-deploy.sh e2e
+
 # Layer 1 per-method: each creates a fresh kind cluster, deploys, smoke-tests,
 # then tears the cluster down.
 test-deploy-kustomize: test-tools
@@ -75,11 +80,18 @@ test-ingress: export INSTALL_K3D=1
 test-ingress: test-tools
 	@scripts/test-ingress.sh
 
-# Everything, in cost order.
+# Everything, in cost order. Each deployment method creates and destroys its own
+# cluster, so this is safe to run unattended — but it takes ~40 minutes.
 test-all: test-lint
 	@scripts/test-deploy.sh kustomize
 	@scripts/test-deploy.sh helm
 	@scripts/test-deploy.sh helm-oci
+	@scripts/test-deploy.sh e2e
+	@scripts/test-deploy.sh auth
+	@scripts/test-deploy.sh argocd
+	@scripts/test-upgrade.sh
+	@INSTALL_K3D=1 scripts/install-tools.sh >/dev/null
+	@scripts/test-ingress.sh
 
 # Dump diagnostics for the current context (use after a failure).
 test-dump:

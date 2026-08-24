@@ -10,6 +10,7 @@
 #   helm-oci    the published chart from ghcr.io  (tests the artifact users get)
 #   auth        kustomize with the auth overlay
 #   argocd      install Argo CD, then both Application manifests
+#   e2e         kustomize, then the full workspace lifecycle test
 #
 # Env:
 #   KIND_CLUSTER      cluster name (default derived from the method)
@@ -27,9 +28,9 @@ source "${SCRIPT_DIR}/lib/k8s.sh"
 
 METHOD="${1:-}"
 case "$METHOD" in
-  kustomize|helm|helm-oci|auth|argocd) ;;
+  kustomize|helm|helm-oci|auth|argocd|e2e) ;;
   *)
-    echo "usage: $0 {kustomize|helm|helm-oci|auth|argocd}" >&2
+    echo "usage: $0 {kustomize|helm|helm-oci|auth|argocd|e2e}" >&2
     exit 2
     ;;
 esac
@@ -100,7 +101,7 @@ deploy_kustomize_common() {
 }
 
 case "$METHOD" in
-  kustomize)
+  e2e|kustomize)
     group "deploy: kustomize"
     # Use the test overlay: base hardcodes imagePullPolicy: Always and an
     # Ingress pinned to traefik, neither of which suits a kind cluster.
@@ -315,6 +316,18 @@ else
   fail "smoke suite (${METHOD})"
 fi
 endgroup
+
+# The e2e method additionally exercises a real workspace end to end.
+if [ "$METHOD" = "e2e" ]; then
+  group "functional e2e"
+  apply_images
+  if "${SCRIPT_DIR}/e2e.sh"; then
+    pass "functional e2e suite"
+  else
+    fail "functional e2e suite"
+  fi
+  endgroup
+fi
 
 printf '\n%s%s deployment via %s%s\n' "$C_BOLD" "kube-workspaces" "$METHOD" "$C_OFF"
 finish
