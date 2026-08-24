@@ -1,0 +1,166 @@
+name: Nightly
+
+# The slower and less hermetic checks. Kept out of the PR gate because they are
+# either long-running, dependent on external state, or (in the case of ArgoCD)
+# only meaningful for pushed commits.
+on:
+  schedule:
+    # 03:00 UTC daily.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  KIND_NODE_IMAGE: kindest/node:v1.31.0
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Deployment methods that cannot sensibly run on a PR.
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Deploy via ${{ matrix.method }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # argocd syncs from the git remote, so it can only test pushed commits —
+        # and on a fork PR the SHA is not fetchable from the base repo at all.
+        # auth is slower and exercises the OIDC-enabled paths.
+        method: [argocd, auth]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.3
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+
+      - name: Install kind
+        run: |
+          curl -fsSLo /usr/local/bin/kind \
+            https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64
+          chmod +x /usr/local/bin/kind
+
+      - name: Deploy and smoke-test
+        run: make test-deploy-${{ matrix.method }}
+
+  # ---------------------------------------------------------------------------
+  # Do the manifests still work on the Kubernetes versions we claim to support?
+  # ---------------------------------------------------------------------------
+  k8s-versions:
+    name: Kubernetes ${{ matrix.k8s }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Oldest supported and newest tested. Update deliberately.
+        k8s:
+          - v1.29.14
+          - v1.30.10
+          - v1.31.0
+          - v1.32.2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: ${{ matrix.k8s }}
+
+      - name: Install kind
+        run: |
+          curl -fsSLo /usr/local/bin/kind \
+            https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64
+          chmod +x /usr/local/bin/kind
+
+      - name: Deploy and smoke-test
+        env:
+          KIND_NODE_IMAGE: kindest/node:${{ matrix.k8s }}
+          # Validate rendered manifests against the same version we deploy to.
+          KUBECONFORM_K8S_VERSION: ${{ matrix.k8s }}
+        run: make test-deploy-kustomize
+
+  # ---------------------------------------------------------------------------
+  # Full functional e2e, including the workspace lifecycle.
+  # ---------------------------------------------------------------------------
+  e2e:
+    name: Functional e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+
+      - name: Install kind
+        run: |
+          curl -fsSLo /usr/local/bin/kind \
+            https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64
+          chmod +x /usr/local/bin/kind
+
+      - name: Create cluster
+        run: make kind-up
+
+      - name: Deploy
+        run: |
+          make install-crd
+          kubectl apply --server-side -k kustomize/overlays/test/
+          make install-images
+          kubectl wait --for=condition=Available deployment --all \
+            -n kube-workspaces-system --timeout=300s
+
+      - name: Run functional e2e
+        run: make test-e2e
+
+      - name: Dump diagnostics on failure
+        if: failure()
+        run: make test-dump
+
+      - name: Delete cluster
+        if: always()
+        run: make kind-down
+
+  # ---------------------------------------------------------------------------
+  # The published images use floating :latest tags, so a green PR run can go red
+  # here with no change to this repo. That is the point: catch upstream drift.
+  # ---------------------------------------------------------------------------
+  drift:
+    name: Report image drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve :latest digests
+        run: |
+          {
+            echo "### Current :latest digests"
+            echo
+            echo '| component | digest |'
+            echo '|-----------|--------|'
+            for c in controller api proxy frontend; do
+              token=$(curl -fsSL \
+                "https://ghcr.io/token?scope=repository:kube-workspaces/${c}:pull&service=ghcr.io" \
+                | jq -r '.token')
+              digest=$(curl -fsSI \
+                -H "Authorization: Bearer ${token}" \
+                -H 'Accept: application/vnd.oci.image.index.v1+json' \
+                -H 'Accept: application/vnd.docker.distribution.manifest.list.v2+json' \
+                -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' \
+                "https://ghcr.io/v2/kube-workspaces/${c}/manifests/latest" \
+                | tr -d '\r' | awk -F': ' 'tolower($1)=="docker-content-digest"{print $2}')
+              echo "| ${c} | \`${digest:-unknown}\` |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"

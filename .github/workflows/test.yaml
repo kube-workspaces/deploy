@@ -1,0 +1,153 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+# A new push supersedes an in-flight run for the same ref. Cluster jobs are slow,
+# so avoid queueing several of them for the same branch.
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Keep in step with scripts/kind.sh and the Makefile.
+  KIND_NODE_IMAGE: kindest/node:v1.31.0
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Layer 0: no cluster, ~15s. Gates everything else.
+  # ---------------------------------------------------------------------------
+  validate:
+    name: Static validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.3
+
+      # Match the client version to the cluster the manifests are tested
+      # against, so we neither hit a version-skew warning nor validate against
+      # a schema the test cluster does not have.
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+
+      # kustomize, yq and kubeconform are installed into .bin/ by the target's
+      # own test-tools dependency at pinned versions, so nothing else is needed:
+      # none of them ship on the runner image.
+      - name: Run static validation
+        run: make test-lint
+
+  # ---------------------------------------------------------------------------
+  # Layer 1: one kind cluster per deployment method, in parallel.
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Deploy via ${{ matrix.method }}
+    needs: validate
+    runs-on: ubuntu-latest
+    strategy:
+      # Report every broken method in one run rather than stopping at the first.
+      fail-fast: false
+      matrix:
+        method:
+          - kustomize
+          - helm
+          - helm-oci
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.3
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+
+      # scripts/kind.sh creates and deletes the cluster itself, so only the
+      # binary is needed here.
+      - name: Install kind
+        run: |
+          curl -fsSLo /usr/local/bin/kind \
+            https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64
+          chmod +x /usr/local/bin/kind
+          kind version
+
+      - name: Deploy and smoke-test
+        run: make test-deploy-${{ matrix.method }}
+
+  # ---------------------------------------------------------------------------
+  # Layer 2: functional end-to-end on a kustomize install.
+  # ---------------------------------------------------------------------------
+  e2e:
+    name: Functional e2e
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+
+      - name: Install kind
+        run: |
+          curl -fsSLo /usr/local/bin/kind \
+            https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64
+          chmod +x /usr/local/bin/kind
+
+      - name: Create cluster
+        run: make kind-up
+
+      - name: Deploy
+        run: |
+          make install-crd
+          kubectl apply --server-side -k kustomize/overlays/test/
+          make install-images
+
+      - name: Wait for rollout
+        run: |
+          kubectl wait --for=condition=Available deployment --all \
+            -n kube-workspaces-system --timeout=300s
+
+      - name: Run functional e2e
+        run: make test-e2e
+
+      - name: Dump diagnostics on failure
+        if: failure()
+        run: make test-dump
+
+      - name: Delete cluster
+        if: always()
+        run: make kind-down
+
+  # A single required check to gate merges on, so the branch protection rule does
+  # not need updating every time the matrix changes.
+  test-summary:
+    name: All tests passed
+    if: always()
+    needs: [validate, deploy, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check results
+        run: |
+          if [ "${{ contains(needs.*.result, 'failure') }}" = "true" ] \
+          || [ "${{ contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            echo "::error::one or more test jobs failed"
+            exit 1
+          fi
+          echo "all test jobs passed"
