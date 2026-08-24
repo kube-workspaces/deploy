@@ -1,43 +1,19 @@
+{{- /*
+  Render an Image CR per entry in .Values.images.
+
+  Every key except "name" and "displayName" is passed through verbatim, so any
+  field the Image CRD supports can be set from values.yaml without editing this
+  template. Previously each field needed an explicit clause here, which silently
+  dropped anything not listed (additionalPorts, tags, category, defaultUser, ...).
+*/ -}}
 {{- range .Values.images }}
+{{- $name := required "each entry in .Values.images requires a 'name' (RFC 1123 compliant)" .name }}
 ---
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
 metadata:
-  name: {{ required "each entry in .Values.images requires a 'name' (RFC 1123 compliant)" .name }}
+  name: {{ $name }}
 spec:
-  image: {{ .image }}
-  displayName: {{ default .name .displayName | quote }}
-  description: {{ .description | quote }}
-  defaultPort: {{ .defaultPort }}
-  {{- if .defaultPath }}
-  defaultPath: {{ .defaultPath | quote }}
-  {{- end }}
-  {{- if .icon }}
-  icon: {{ .icon | quote }}
-  {{- end }}
-  {{- if .homepageURL }}
-  homepageURL: {{ .homepageURL | quote }}
-  {{- end }}
-  {{- if .sourceURL }}
-  sourceURL: {{ .sourceURL | quote }}
-  {{- end }}
-  {{- if .privileged }}
-  privileged: {{ .privileged }}
-  {{- end }}
-  {{- if .defaultArgs }}
-  defaultArgs:
-    {{- toYaml .defaultArgs | nindent 4 }}
-  {{- end }}
-  {{- if .defaultEnv }}
-  defaultEnv:
-    {{- toYaml .defaultEnv | nindent 4 }}
-  {{- end }}
-  {{- if .defaultCredentials }}
-  defaultCredentials:
-    {{- toYaml .defaultCredentials | nindent 4 }}
-  {{- end }}
-  {{- if .proxyConfig }}
-  proxyConfig:
-    {{- toYaml .proxyConfig | nindent 4 }}
-  {{- end }}
+  displayName: {{ default $name .displayName | quote }}
+  {{- omit . "name" "displayName" | toYaml | nindent 2 }}
 {{- end }}

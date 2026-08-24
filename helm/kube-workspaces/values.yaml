@@ -137,6 +137,11 @@ images:
     icon: "https://cdn.simpleicons.org/debian/A81D33"
     homepageURL: "https://www.debian.org"
     sourceURL: "https://salsa.debian.org/debian/debian"
+    # The image serves VNC on 6901 and an audio WebSocket on 6902. Both must be
+    # exposed, otherwise noVNC's audio-plugin.js fails with "Protocol error".
+    additionalPorts:
+      - name: audio
+        port: 6902
     proxyConfig:
       needsNoopSW: true
       websocketPaths:
@@ -145,6 +150,8 @@ images:
       # Serves plain HTTP on 6901 (verified). Previously had tlsInsecure: true,
       # which made the proxy dial HTTPS and fail with 502.
       scheme: http
+      # Routes /audio/ requests to port 6902 instead of the default port.
+      audioPort: 6902
   - name: kasm-desktop
     displayName: "Kasm Desktop"
     image: "kasmweb/desktop:1.19.0"

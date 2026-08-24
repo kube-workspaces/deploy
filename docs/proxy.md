@@ -691,6 +691,12 @@ spec:
 
 The audio plugin in the browser requests `/audio/` which, through escaped request recovery (cookie-based), becomes `/proxy/{ns}/{name}/audio/`. The proxy detects the `/audio/` path and routes it to Service port 6902 instead of port 80.
 
+> **`audioPort` requires a matching `additionalPorts` entry.** `audioPort` only
+> tells the proxy where to route `/audio/`; it does not expose the port. The
+> workspace Service is generated from the container ports, which come from
+> `additionalPorts`. Setting `audioPort` alone leaves the port unreachable and
+> noVNC fails with `Uncaught Error: Protocol error` from `audio-plugin.js`.
+
 ---
 
 ## Image CR `defaultEnv` and Base URL Configuration
