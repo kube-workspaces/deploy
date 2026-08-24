@@ -513,6 +513,19 @@ else
   pass "all Makefile targets are declared .PHONY"
 fi
 
+# A kustomize directory must be applied with -k. With -f, kubectl treats
+# kustomization.yaml as a manifest and fails with 'no matches for kind
+# "Kustomization"' — after applying everything else, so the mistake is easy to
+# miss until a strict caller checks the exit code.
+bad_apply=$(grep -rnE 'kubectl apply [^|]*-f [^ ]*kustomize/[a-z]+/?( |$)' \
+  Makefile scripts/ .github/ README.md docs/ 2>/dev/null || true)
+if [ -n "$bad_apply" ]; then
+  fail "kustomize directories are applied with -k, not -f"
+  printf '%s\n' "$bad_apply" | sed 's/^/     /' >&2
+else
+  pass "kustomize directories are applied with -k, not -f"
+fi
+
 endgroup
 
 finish

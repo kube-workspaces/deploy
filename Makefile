@@ -121,9 +121,12 @@ check-helm-crds:
 	if [ -n "$$drift" ]; then echo "Run 'make sync-helm-crds' to resolve."; exit 1; fi; \
 	echo "Helm CRDs are in sync with kustomize/crds/"
 
-# Install CRDs to the current cluster (server-side apply)
+# Install CRDs to the current cluster (server-side apply).
+# -k, not -f: with -f, kubectl treats kustomization.yaml as a manifest and fails
+# with 'no matches for kind "Kustomization"' after applying the CRDs, so the
+# target exits non-zero despite having done its job.
 install-crd:
-	kubectl apply --server-side -f kustomize/crds/
+	kubectl apply --server-side -k kustomize/crds/
 
 # Install Image CRs from images.yaml
 install-images:
