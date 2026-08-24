@@ -11,6 +11,7 @@ layers before merging anything that touches manifests.
 | 0 — static | `make test-lint` | no | ~15 s | Everything renders, validates and is internally consistent |
 | 1 — smoke | `make test-deploy-kustomize` etc. | kind | ~4 min | The components install and serve traffic |
 | 2 — functional | `make test-e2e` | kind | ~5 min | A real workspace works end to end |
+| 3 — upgrade | `make test-upgrade` | kind | ~8 min | Existing installs can move to this version |
 
 ## Prerequisites
 
@@ -120,6 +121,41 @@ Where Layer 1 proves the components start, this proves the platform works:
 A raw `Workspace` needs no matching `Image` CR — `Image` CRs only populate the
 UI/API catalog and supply defaults at creation time through the API.
 
+## Layer 3 — chart upgrade
+
+```sh
+make test-upgrade
+```
+
+Installs the newest **published** chart, upgrades to the local one, smoke-tests
+the result, then rolls back. This is the path every existing user takes, and it
+covers what a fresh install cannot: changed immutable fields, removed or renamed
+resources, and CRD updates applied over existing objects.
+
+The version to upgrade from is the newest published tag that is not the local
+version, resolved by semver from the GHCR tag list. Override with
+`FROM_VERSION`. If the local `Chart.yaml` version is already published, the test
+warns that it is only exercising a no-op upgrade — bump the version first.
+
+This is also the check that tells you a version bump is genuinely releasable: the
+post-upgrade smoke run is strict, so hardening that only exists locally must
+actually take effect on an upgraded install.
+
+## CI
+
+| Workflow | Trigger | Contents |
+|----------|---------|----------|
+| `test.yaml` | push, PR | Layer 0, then kustomize/helm/helm-oci in parallel plus Layer 2 |
+| `nightly.yaml` | 03:00 UTC | argocd, auth, upgrade, a Kubernetes version matrix, Layer 2, and an image-drift report |
+| `helm-publish.yaml` | push to main touching `helm/**` | Packages and pushes the chart, refusing to overwrite a published version |
+
+Point branch protection at the `All tests passed` check from `test.yaml`; it
+aggregates the matrix so the required check does not need editing when the matrix
+changes.
+
+`argocd` and `auth` are nightly rather than per-PR: ArgoCD can only test pushed
+commits, and on a fork PR the SHA is not fetchable from the base repo at all.
+
 ## Caveats
 
 ### ArgoCD tests only *pushed* commits
@@ -189,6 +225,7 @@ to an anonymous token.
 | `E2E_IMAGE` | `traefik/whoami` | Container image for the test workspace |
 | `E2E_KEEP` | unset | Leave the test workspace behind |
 | `CHART_VERSION` | local `Chart.yaml` version | Version for `helm-oci` |
+| `FROM_VERSION` | newest published | Version to upgrade from in `test-upgrade` |
 
 ## Debugging a failure
 

@@ -79,6 +79,11 @@ the full description.
 | Functional e2e | `make test-e2e` | kind | ~10 min |
 | Everything | `make test-all` | kind | ~20 min |
 
+When changing the Helm chart, also bump `version` in
+`helm/kube-workspaces/Chart.yaml` and run `make test-upgrade` — CI refuses to
+republish an already-published version, and the upgrade test is what proves an
+existing install can move to it.
+
 Run at minimum `make test-lint` before opening a PR — CI runs it on every push
 and it catches unbuildable kustomizations, unrenderable Helm values, schema
 violations and drifted vendored CRDs.
