@@ -31,6 +31,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          # Need the previous commit so the guard below can tell whether this
+          # push actually changed the chart.
+          fetch-depth: 2
 
       - name: Set up Helm
         uses: azure/setup-helm@v5
@@ -54,12 +58,18 @@ jobs:
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "Chart version: ${version}"
 
-      # Guard against silently overwriting an already-published immutable
-      # version. Without this, any push to main touching helm/** republishes
-      # whatever version Chart.yaml happens to hold, clobbering a release.
-      # Re-running deliberately is still possible via workflow_dispatch with
-      # allow_overwrite=true.
-      - name: Check version is not already published
+      # Decide whether there is anything to publish.
+      #
+      # Republishing an already-present tag would clobber an immutable release,
+      # so it must not happen silently. But it is also not necessarily an error:
+      # this workflow's paths filter includes the workflow file itself, so
+      # editing CI triggers a run in which the chart is genuinely unchanged.
+      #
+      # So: skip cleanly when the version is already published, and only fail
+      # when the chart content has actually changed without a version bump —
+      # which is the case that would otherwise lose a release.
+      - name: Check whether this version needs publishing
+        id: check
         if: ${{ inputs.allow_overwrite != true }}
         env:
           VERSION: ${{ steps.chart.outputs.version }}
@@ -76,18 +86,30 @@ jobs:
             -H 'Accept: application/vnd.oci.image.manifest.v1+json' \
             "https://ghcr.io/v2/${repo}/manifests/${VERSION}")
 
-          if [ "$code" = "200" ]; then
-            echo "::error::chart version ${VERSION} is already published to ghcr.io/${repo}."
+          if [ "$code" != "200" ]; then
+            echo "Version ${VERSION} is not yet published (HTTP ${code}) — proceeding."
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Already published. Did this push actually change the chart?
+          if git rev-parse HEAD~1 >/dev/null 2>&1 \
+             && ! git diff --quiet HEAD~1 HEAD -- helm/kube-workspaces/; then
+            echo "::error::chart version ${VERSION} is already published to ghcr.io/${repo}, but this push modified helm/kube-workspaces/."
             echo "Bump 'version' in helm/kube-workspaces/Chart.yaml before merging."
             exit 1
           fi
-          echo "Version ${VERSION} is not yet published (HTTP ${code}) — proceeding."
+
+          echo "::notice::version ${VERSION} is already published and the chart is unchanged — nothing to do."
+          echo "publish=false" >> "$GITHUB_OUTPUT"
 
       - name: Package chart
+        if: ${{ inputs.allow_overwrite == true || steps.check.outputs.publish == 'true' }}
         run: |
           helm package helm/kube-workspaces/ --destination dist/
 
       - name: Log in to GHCR
+        if: ${{ inputs.allow_overwrite == true || steps.check.outputs.publish == 'true' }}
         run: |
           echo '${{ secrets.GITHUB_TOKEN }}' | \
             helm registry login ghcr.io \
@@ -95,12 +117,14 @@ jobs:
               --password-stdin
 
       - name: Push chart to GHCR
+        if: ${{ inputs.allow_overwrite == true || steps.check.outputs.publish == 'true' }}
         run: |
           helm push \
             "dist/kube-workspaces-${{ steps.chart.outputs.version }}.tgz" \
             oci://ghcr.io/${{ github.repository_owner }}/charts
 
       - name: Summary
+        if: ${{ inputs.allow_overwrite == true || steps.check.outputs.publish == 'true' }}
         run: |
           {
             echo "### Helm chart published"
