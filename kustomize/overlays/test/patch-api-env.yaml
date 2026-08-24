@@ -1,0 +1,23 @@
+# Replace placeholder public hostnames with the localhost endpoints that tests
+# actually use (via `kubectl port-forward`).
+#
+# Strategic merge on env requires the full list: a merge patch on a list of
+# name/value pairs is keyed by `name`, so listing only the three entries we
+# care about leaves any others untouched.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-workspaces-api
+  namespace: kube-workspaces-system
+spec:
+  template:
+    spec:
+      containers:
+        - name: api
+          env:
+            - name: EXTERNAL_HOST
+              value: "localhost:8888"
+            - name: AUTH_CALLBACK_URL
+              value: "http://localhost:3000/auth/callback"
+            - name: ALLOWED_ORIGINS
+              value: "http://localhost:3000,http://localhost:8888"

@@ -1,0 +1,41 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Test overlay: makes kustomize/base deployable and assertable on a throwaway
+# local cluster (kind/k3d). Not intended for production.
+#
+# Differences from base:
+#   1. imagePullPolicy: IfNotPresent  — base hardcodes Always, which defeats
+#      `kind load docker-image` and forces a registry round-trip on every pod
+#      start. IfNotPresent lets locally built images actually be used and keeps
+#      re-deploys fast.
+#   2. The Ingress is removed — base hardcodes `ingressClassName: traefik` and
+#      a cert-manager cluster-issuer annotation, neither of which exist on a
+#      default kind cluster. Tests reach services via port-forward instead.
+#   3. Placeholder *.example.com hostnames are replaced with localhost values
+#      so CORS/callback config matches how tests actually connect.
+
+resources:
+  - ../../base
+
+patches:
+  # Use locally present images when available (kind load / k3d import).
+  - path: patch-image-pull-policy.yaml
+    target:
+      kind: Deployment
+      labelSelector: app.kubernetes.io/name=kube-workspaces
+
+  # Point the API at localhost rather than the placeholder public hostnames.
+  - path: patch-api-env.yaml
+    target:
+      kind: Deployment
+      name: kube-workspaces-api
+
+  # Same for the proxy's CORS origins.
+  - path: patch-proxy-env.yaml
+    target:
+      kind: Deployment
+      name: kube-workspaces-proxy
+
+  # Drop the Ingress: no ingress controller on a default kind cluster.
+  - path: delete-ingress.yaml

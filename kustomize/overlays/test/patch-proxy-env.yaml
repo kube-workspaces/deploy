@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-workspaces-proxy
+  namespace: kube-workspaces-system
+spec:
+  template:
+    spec:
+      containers:
+        - name: proxy
+          env:
+            - name: ALLOWED_ORIGINS
+              value: "http://localhost:3000,http://localhost:8891"

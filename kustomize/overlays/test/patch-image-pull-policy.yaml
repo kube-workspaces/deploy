@@ -1,0 +1,6 @@
+# JSON 6902 patch: applies to every kube-workspaces Deployment via the
+# labelSelector in kustomization.yaml, so it stays correct if a component is
+# added or renamed.
+- op: replace
+  path: /spec/template/spec/containers/0/imagePullPolicy
+  value: IfNotPresent
