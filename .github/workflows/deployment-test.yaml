@@ -63,13 +63,13 @@ jobs:
       result: ${{ steps.report.outputs.result }}
     steps:
       - name: Checkout deploy manifests
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: kube-workspaces/deploy
           ref: ${{ inputs.deploy_ref }}
 
       - name: Set up kubectl
-        uses: azure/setup-kubectl@v4
+        uses: azure/setup-kubectl@v5
         with:
           version: v1.31.0
 
