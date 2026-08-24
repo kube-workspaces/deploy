@@ -1,0 +1,300 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  name: authconfigs.kubeworkspaces.io
+spec:
+  group: kubeworkspaces.io
+  names:
+    kind: AuthConfig
+    listKind: AuthConfigList
+    plural: authconfigs
+    singular: authconfig
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.enabled
+      name: Enabled
+      type: boolean
+    - jsonPath: .spec.oidc.issuerURL
+      name: Issuer
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: |-
+          AuthConfig is the Schema for the authconfigs API.
+          It defines the authentication and authorization configuration for kube-workspaces.
+          Typically only one instance named "default" should exist.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: AuthConfigSpec defines the desired state of AuthConfig.
+            properties:
+              adminEmails:
+                description: |-
+                  AdminEmails is a list of email addresses that are always granted admin role.
+                  Used for bootstrapping admin access.
+                items:
+                  type: string
+                type: array
+              authorization:
+                description: Authorization configures authorization behavior.
+                properties:
+                  restrictNamespaceAccess:
+                    description: |-
+                      RestrictNamespaceAccess when true, non-admin users can only access namespaces
+                      explicitly assigned to them (via User CR namespaceAccess + personal namespace).
+                      When false (default), all authenticated users can see all namespaces.
+                      Admins always have access to everything regardless of this setting.
+                    type: boolean
+                type: object
+              enabled:
+                description: Enabled is the master switch for authentication. When
+                  false, the system operates without auth.
+                type: boolean
+              oidc:
+                description: OIDC contains the OIDC provider configuration.
+                properties:
+                  clientID:
+                    description: ClientID is the OAuth2 client ID.
+                    type: string
+                  clientSecret:
+                    description: ClientSecret is a reference to the secret containing
+                      the OAuth2 client secret.
+                    properties:
+                      key:
+                        description: Key is the key within the secret.
+                        type: string
+                      name:
+                        description: Name is the name of the secret.
+                        type: string
+                    required:
+                    - key
+                    - name
+                    type: object
+                  groupsClaim:
+                    default: groups
+                    description: GroupsClaim is the JWT claim to use for group membership.
+                    type: string
+                  issuerURL:
+                    description: IssuerURL is the OIDC issuer URL (e.g. https://dex.example.com).
+                    type: string
+                  scopes:
+                    default:
+                    - openid
+                    - email
+                    - profile
+                    - groups
+                    description: Scopes are the OIDC scopes to request.
+                    items:
+                      type: string
+                    type: array
+                  usernameClaim:
+                    default: email
+                    description: UsernameClaim is the JWT claim to use as the username.
+                    type: string
+                required:
+                - clientID
+                - clientSecret
+                - issuerURL
+                type: object
+              personalNamespaces:
+                description: PersonalNamespaces configures personal namespace behavior.
+                properties:
+                  annotations:
+                    additionalProperties:
+                      type: string
+                    description: Annotations are applied to created personal namespaces.
+                    type: object
+                  enabled:
+                    description: Enabled controls whether personal namespaces are
+                      created for users.
+                    type: boolean
+                  labels:
+                    additionalProperties:
+                      type: string
+                    description: Labels are applied to created personal namespaces.
+                    type: object
+                  resourceQuota:
+                    additionalProperties:
+                      type: string
+                    description: ResourceQuota defines optional resource limits for
+                      personal namespaces.
+                    type: object
+                  template:
+                    default: '{{username}}'
+                    description: Template is the namespace name template. Supports
+                      {{username}} placeholder.
+                    type: string
+                type: object
+              registration:
+                description: Registration configures user registration/provisioning
+                  behavior.
+                properties:
+                  allowedDomains:
+                    description: |-
+                      AllowedDomains restricts registration to specific email domains. Empty means allow all.
+                      When both AllowedDomains and AllowedEmails are set, either match permits login (OR logic).
+                    items:
+                      type: string
+                    type: array
+                  allowedEmails:
+                    description: |-
+                      AllowedEmails restricts login to specific email addresses. Empty means allow all.
+                      Emails in spec.adminEmails always bypass this restriction.
+                      When both AllowedDomains and AllowedEmails are set, either match permits login (OR logic).
+                    items:
+                      type: string
+                    type: array
+                  autoProvision:
+                    default: true
+                    description: AutoProvision controls whether User CRs are auto-created
+                      on first OIDC login.
+                    type: boolean
+                  defaultRole:
+                    allOf:
+                    - enum:
+                      - admin
+                      - editor
+                      - viewer
+                    - enum:
+                      - admin
+                      - editor
+                      - viewer
+                    default: editor
+                    description: DefaultRole is the role assigned to newly provisioned
+                      users.
+                    type: string
+                  requireApproval:
+                    description: RequireApproval if true, new users are created as
+                      disabled until an admin enables them.
+                    type: boolean
+                type: object
+              session:
+                description: Session contains session/token configuration.
+                properties:
+                  refreshExpiry:
+                    default: 7d
+                    description: RefreshExpiry is how long refresh tokens are valid.
+                    type: string
+                  signingKey:
+                    description: SigningKey is a reference to the secret containing
+                      the JWT signing key.
+                    properties:
+                      key:
+                        description: Key is the key within the secret.
+                        type: string
+                      name:
+                        description: Name is the name of the secret.
+                        type: string
+                    required:
+                    - key
+                    - name
+                    type: object
+                  tokenExpiry:
+                    default: 24h
+                    description: TokenExpiry is how long session tokens are valid.
+                    type: string
+                required:
+                - signingKey
+                type: object
+            type: object
+          status:
+            description: AuthConfigStatus defines the observed state of AuthConfig.
+            properties:
+              conditions:
+                description: Conditions represent the latest available observations.
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              enabled:
+                description: Enabled reflects whether auth is currently active.
+                type: boolean
+              issuerReachable:
+                description: IssuerReachable indicates whether the OIDC issuer is
+                  reachable.
+                type: boolean
+              lastVerified:
+                description: LastVerified is when the OIDC issuer was last verified.
+                format: date-time
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

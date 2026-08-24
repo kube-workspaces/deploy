@@ -2,7 +2,30 @@
 
 .PHONY: install-crd install-images pull-images push-images deploy-kustomize deploy-crds \
 	auth-enable auth-disable port-forward-frontend port-forward-api port-forward-proxy \
-	helm-install helm-upgrade helm-template lint-helm
+	helm-install helm-upgrade helm-template lint-helm sync-helm-crds check-helm-crds
+
+# CRDs are the single source of truth in kustomize/crds/ and are vendored into
+# the Helm chart's crds/ directory so `helm install` creates them automatically.
+HELM_CRDS := crd.yaml kubeworkspaces.io_users.yaml kubeworkspaces.io_authconfigs.yaml \
+	kubeworkspaces.io_platformconfigs.yaml kubeworkspaces.io_poddefaults.yaml
+
+# Copy CRDs from kustomize/crds/ into the Helm chart's crds/ directory
+sync-helm-crds:
+	@mkdir -p helm/kube-workspaces/crds
+	@for f in $(HELM_CRDS); do cp "kustomize/crds/$$f" helm/kube-workspaces/crds/; done
+	@echo "Synced CRDs into helm/kube-workspaces/crds/"
+
+# Fail if the vendored Helm CRDs have drifted from kustomize/crds/
+check-helm-crds:
+	@drift=""; \
+	for f in $(HELM_CRDS); do \
+		if ! diff -q "kustomize/crds/$$f" "helm/kube-workspaces/crds/$$f" >/dev/null 2>&1; then \
+			echo "DRIFT: helm/kube-workspaces/crds/$$f differs from kustomize/crds/$$f"; \
+			drift="yes"; \
+		fi; \
+	done; \
+	if [ -n "$$drift" ]; then echo "Run 'make sync-helm-crds' to resolve."; exit 1; fi; \
+	echo "Helm CRDs are in sync with kustomize/crds/"
 
 # Install CRDs to the current cluster (server-side apply)
 install-crd:

@@ -106,6 +106,63 @@ helm install kube-workspaces ./helm/kube-workspaces \
   -f my-values.yaml
 ```
 
+**ingress-nginx controllers** have no middleware concept — use a
+`rewrite-target` annotation with regex capture groups to strip `/api` instead:
+
+```yaml
+api:
+  externalHost: "workspaces.example.com"
+  allowedOrigins: "https://workspaces.example.com"
+proxy:
+  allowedOrigins: "https://workspaces.example.com"
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  hosts:
+    - host: workspaces.example.com
+      paths:
+        # $2 is the second capture group, so /api/v1/x -> /v1/x on the API
+        - path: /api(/|$)(.*)
+          pathType: ImplementationSpecific
+          backend:
+            serviceName: kube-workspaces-api
+            servicePort: 80
+        - path: /v1(/|$)(.*)
+          pathType: ImplementationSpecific
+          backend:
+            serviceName: kube-workspaces-api
+            servicePort: 80
+        - path: /auth(/|$)(.*)
+          pathType: ImplementationSpecific
+          backend:
+            serviceName: kube-workspaces-api
+            servicePort: 80
+        - path: /openapi(/|$)(.*)
+          pathType: ImplementationSpecific
+          backend:
+            serviceName: kube-workspaces-api
+            servicePort: 80
+        - path: /proxy(/|$)(.*)
+          pathType: ImplementationSpecific
+          backend:
+            serviceName: kube-workspaces-proxy
+            servicePort: 80
+        # /()(.*) keeps the capture-group count consistent so $2 resolves
+        - path: /()(.*)
+          pathType: ImplementationSpecific
+          backend:
+            serviceName: kube-workspaces-frontend
+            servicePort: 80
+```
+
+> Every path needs a `backend` block — the chart has no default. Omitting it
+> fails with `nil pointer evaluating interface {}.serviceName`.
+>
+> Where TLS terminates at an upstream load balancer, leave `ingress.tls` unset.
+
 ### ArgoCD
 
 Point your Application at the chart and put the values inline. Multi-source

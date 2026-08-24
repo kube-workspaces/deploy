@@ -30,6 +30,9 @@ jobs:
         with:
           version: v3.16.3
 
+      - name: Check vendored CRDs are in sync
+        run: make check-helm-crds
+
       - name: Lint chart
         run: helm lint helm/kube-workspaces/
 
