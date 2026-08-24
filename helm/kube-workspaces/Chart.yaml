@@ -1,8 +1,8 @@
 apiVersion: v2
 name: kube-workspaces
-description: A Helm chart for deploying kube-workspaces (controller, API, and frontend)
+description: A Helm chart for deploying kube-workspaces (controller, API, proxy and frontend)
 type: application
-version: 0.1.5
+version: 0.1.6
 appVersion: "0.1.0"
 
 dependencies:
