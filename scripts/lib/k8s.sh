@@ -8,9 +8,27 @@
 
 # wait_for_crds [timeout]
 # Waits for every CRD in KW_CRDS to reach Established.
+#
+# `kubectl wait` fails immediately with NotFound if the object does not exist yet
+# rather than waiting for it to appear, and a server-side apply can return before
+# the API server has registered the CRD. So poll for existence first, then wait
+# on the condition.
 wait_for_crds() {
   local timeout="${1:-120s}" crd
+  # Strip any unit suffix; used as a rough second budget for the existence poll.
+  local budget="${timeout%s}"
+  [ "$budget" -gt 0 ] 2>/dev/null || budget=120
+
   for crd in "${KW_CRDS[@]}"; do
+    local i=0
+    while ! kubectl get "crd/${crd}" >/dev/null 2>&1; do
+      i=$((i + 1))
+      if [ "$i" -ge "$budget" ]; then
+        fail "CRD $crd exists (not registered after ${budget}s)"
+        return 1
+      fi
+      sleep 1
+    done
     if ! kubectl wait --for=condition=Established \
         "crd/${crd}" --timeout="$timeout" >/dev/null 2>&1; then
       fail "CRD $crd Established"
