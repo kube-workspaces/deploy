@@ -208,7 +208,7 @@ http://{workspace-name}.{namespace}.svc.cluster.local:80/{rest}
 
 - Port 80 is used by default (workspace Services map port 80 to the container's `defaultPort`)
 - If `audioPort` is configured and the request path matches `/audio/`, the proxy routes to that port instead (e.g., port 6902)
-- If `tlsInsecure` is set, scheme becomes `https` with certificate verification disabled
+- The scheme is `http` unless `scheme: https` is set (or the deprecated `tlsInsecure: true`); `tlsSkipVerify` controls certificate verification
 
 ### WebSocket Support
 
@@ -512,18 +512,62 @@ proxyConfig:
 
 ---
 
-### `tlsInsecure`
+### `scheme`
 
 ```yaml
 proxyConfig:
-  tlsInsecure: true
+  scheme: https
+```
+
+**Type:** `string`, one of `http` or `https` (default: `http`)
+
+**Effect:** Selects the URL scheme the proxy uses to reach the workspace pod.
+
+**When to use:** Set `https` for images that serve TLS on their workspace port
+(e.g. KasmVNC desktops, `linuxserver/kasm`). Leave unset — or set `http`
+explicitly — for images serving plain HTTP.
+
+---
+
+### `tlsSkipVerify`
+
+```yaml
+proxyConfig:
+  scheme: https
+  tlsSkipVerify: true
 ```
 
 **Type:** `bool` (default: `false`)
 
-**Effect:** Changes the proxy's connection to the workspace pod from HTTP to HTTPS with TLS certificate verification disabled (`InsecureSkipVerify: true`).
+**Effect:** When connecting over HTTPS, skips verification of the workspace's TLS
+certificate (`InsecureSkipVerify: true`). Has no effect when the scheme is `http`.
 
-**When to use:** Required for workspace images that only serve HTTPS with self-signed certificates (e.g. Kasm Workspaces, KasmVNC desktops).
+**When to use:** Required for images serving self-signed certificates, which is
+typical for KasmVNC-based desktops. Omit it when the workspace presents a
+certificate signed by a CA the proxy trusts.
+
+---
+
+### `tlsInsecure` (deprecated)
+
+```yaml
+proxyConfig:
+  tlsInsecure: true   # equivalent to: scheme: https + tlsSkipVerify: true
+```
+
+**Type:** `bool` (default: `false`)
+
+**Status:** Deprecated — use [`scheme`](#scheme) and
+[`tlsSkipVerify`](#tlsskipverify) instead.
+
+This single flag conflated two independent decisions: which scheme to dial, and
+whether to verify the certificate. As a result "HTTPS with a valid CA" was
+impossible to express, and the name misleadingly suggested it disabled TLS rather
+than enabling it.
+
+It is still honoured for backwards compatibility: when `scheme` is unset,
+`tlsInsecure: true` implies **both** `scheme: https` and `tlsSkipVerify: true`.
+An explicit `scheme` always takes precedence.
 
 ---
 
@@ -1090,9 +1134,20 @@ Solutions (in order of preference):
 > variable), **that application is incompatible with the proxy**. See the
 > [Application Compatibility](#application-compatibility) section below.
 
-### Self-signed certificate errors (502 Bad Gateway)
+### 502 Bad Gateway
 
-Enable `tlsInsecure: true` in proxyConfig for images that serve HTTPS with self-signed certs.
+Check that the scheme matches what the image actually serves. A 502 is common when
+the proxy dials HTTPS against a plain-HTTP workspace, or vice versa. Verify from
+inside the cluster:
+
+```bash
+kubectl run probe --rm -it --image=curlimages/curl -- \
+  sh -c 'curl -s -o /dev/null -w "http:%{http_code}\n" http://WORKSPACE.NAMESPACE.svc.cluster.local/; \
+         curl -sk -o /dev/null -w "https:%{http_code}\n" https://WORKSPACE.NAMESPACE.svc.cluster.local/'
+```
+
+Then set `scheme` accordingly. For images serving HTTPS with self-signed
+certificates, add `tlsSkipVerify: true`.
 
 ### Changes to Image CR defaults not taking effect
 
@@ -1152,12 +1207,12 @@ An application is **incompatible** if it:
 |-------------|-----------|----------------------|
 | code-server | Yes | `rewriteHostAbsolutePaths: true`, `VSCODE_PROXY_URI=/proxy/{{namespace}}/{{name}}/proxy/{{port}}/` — port forwarding works via code-server's built-in `/proxy/<port>/` route |
 | OpenVSCode Server | Yes | Same as code-server: `VSCODE_PROXY_URI=/proxy/{{namespace}}/{{name}}/proxy/{{port}}/` |
-| noVNC / KasmVNC | Yes | `tlsInsecure: true`, `needsNoopSW: true` |
+| noVNC / KasmVNC | Yes | `scheme: https`, `tlsSkipVerify: true`, `needsNoopSW: true` |
 | linuxserver/webtop (KasmVNC) | Yes | `SUBFOLDER=/proxy/{{namespace}}/{{name}}/` env + `preservePathPrefix: true` — app natively supports subfolder |
 | linuxserver/firefox | Yes | Same as webtop: `SUBFOLDER` env + `preservePathPrefix: true` |
 | Filebrowser | Yes | `FB_BASE_URL=/proxy/{{namespace}}/{{name}}` env + `preservePathPrefix: true` + `needsNoopSW: true` |
 | JupyterLab | Yes | `--NotebookApp.base_url=/proxy/{{namespace}}/{{name}}` |
-| kasmweb/* (port 6901) | Yes | `tlsInsecure: true`, `needsNoopSW: true` — uses cookie-based escape recovery via frontend server |
+| kasmweb/* (port 6901) | Yes | `scheme: https`, `tlsSkipVerify: true`, `needsNoopSW: true` — uses cookie-based escape recovery via frontend server |
 | flaccid/debian-desktop | Yes | `audioPort: 6902` + `additionalPorts: [{name: audio, port: 6902}]` — audio WebSocket on separate port; VNC via cookie-based escape recovery |
 
 ### What to do when an app is incompatible

@@ -158,7 +158,8 @@ spec:
   proxyConfig:
     needsNoopSW: true
     rewriteHostAbsolutePaths: true
-    tlsInsecure: true
+    scheme: https
+    tlsSkipVerify: true
     websocketPaths:
     - /websockify
   sourceURL: https://github.com/kasmtech/workspaces-images
@@ -312,7 +313,8 @@ spec:
   proxyConfig:
     needsNoopSW: true
     rewriteHostAbsolutePaths: true
-    tlsInsecure: true
+    scheme: https
+    tlsSkipVerify: true
 ---
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
@@ -600,7 +602,8 @@ spec:
   proxyConfig:
     needsNoopSW: true
     rewriteHostAbsolutePaths: true
-    tlsInsecure: true
+    scheme: https
+    tlsSkipVerify: true
   sourceURL: https://github.com/linuxserver/docker-kasm
 ---
 apiVersion: kubeworkspaces.io/v1alpha1
@@ -632,7 +635,8 @@ spec:
   proxyConfig:
     needsNoopSW: true
     rewriteHostAbsolutePaths: true
-    tlsInsecure: true
+    scheme: https
+    tlsSkipVerify: true
     websocketPaths:
     - /websockify
   sourceURL: https://github.com/kasmtech
@@ -663,7 +667,8 @@ spec:
   proxyConfig:
     needsNoopSW: true
     rewriteHostAbsolutePaths: true
-    tlsInsecure: true
+    scheme: https
+    tlsSkipVerify: true
     websocketPaths:
     - /websockify
   sourceURL: https://github.com/kasmtech
@@ -694,7 +699,8 @@ spec:
   proxyConfig:
     needsNoopSW: true
     rewriteHostAbsolutePaths: true
-    tlsInsecure: true
+    scheme: https
+    tlsSkipVerify: true
     websocketPaths:
     - /websockify
   sourceURL: https://github.com/kasmtech

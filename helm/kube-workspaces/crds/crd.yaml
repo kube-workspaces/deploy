@@ -9848,9 +9848,25 @@ spec:
                       RewriteHostAbsolutePaths: rewrite requests with absolute paths that escape the proxy
                       prefix by using the Referer header to determine the target workspace.
                     type: boolean
+                  scheme:
+                    description: |-
+                      Scheme: URL scheme the proxy uses to reach the workspace backend.
+                      Defaults to "http" when empty.
+                    enum:
+                    - http
+                    - https
+                    type: string
                   tlsInsecure:
-                    description: 'TLSInsecure: connect to backend over HTTPS with
-                      skip-verify (for self-signed certs).'
+                    description: |-
+                      TLSInsecure: Deprecated: this conflated scheme selection with certificate
+                      verification, making "HTTPS with a valid CA" impossible to express. Use
+                      scheme: https plus tlsSkipVerify instead. Still honoured as a fallback when
+                      scheme is unset: it implies both HTTPS and skip-verify.
+                    type: boolean
+                  tlsSkipVerify:
+                    description: |-
+                      TLSSkipVerify: when connecting over HTTPS, do not verify the backend's
+                      certificate. Required for workspaces serving self-signed certificates.
                     type: boolean
                   websocketPaths:
                     description: 'WebSocketPaths: paths that use WebSocket (informational

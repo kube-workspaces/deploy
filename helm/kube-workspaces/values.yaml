@@ -142,7 +142,9 @@ images:
       websocketPaths:
         - "/websockify"
       rewriteHostAbsolutePaths: true
-      tlsInsecure: true
+      # Serves plain HTTP on 6901 (verified). Previously had tlsInsecure: true,
+      # which made the proxy dial HTTPS and fail with 502.
+      scheme: http
   - name: kasm-desktop
     displayName: "Kasm Desktop"
     image: "kasmweb/desktop:1.19.0"
@@ -158,7 +160,9 @@ images:
       websocketPaths:
         - "/websockify"
       rewriteHostAbsolutePaths: true
-      tlsInsecure: true
+      # KasmVNC serves HTTPS with a self-signed cert.
+      scheme: https
+      tlsSkipVerify: true
   - name: kasm-chrome
     displayName: "Kasm Chrome"
     image: "kasmweb/chrome:1.19.0"
@@ -180,7 +184,9 @@ images:
       websocketPaths:
         - "/websockify"
       rewriteHostAbsolutePaths: true
-      tlsInsecure: true
+      # KasmVNC serves HTTPS with a self-signed cert.
+      scheme: https
+      tlsSkipVerify: true
   - name: kasm-workspaces
     displayName: "Kasm Workspaces"
     image: "linuxserver/kasm:1.19.0"
@@ -197,7 +203,9 @@ images:
     proxyConfig:
       needsNoopSW: true
       rewriteHostAbsolutePaths: true
-      tlsInsecure: true
+      # Serves HTTPS with a self-signed cert on port 3000.
+      scheme: https
+      tlsSkipVerify: true
 
 serviceAccount:
   create: true
