@@ -1,0 +1,134 @@
+name: Deployment test (reusable)
+
+# Reusable entry point so the component repositories can gate on the deployment
+# actually working, rather than each of them only proving their own image builds.
+#
+# The problem this solves: deployment tests living solely in this repo mean a
+# controller CRD change or an API route rename breaks nothing visible until
+# somebody happens to touch deploy/. Calling this after publishing an image
+# closes that gap.
+#
+# Usage from another repo:
+#
+#   jobs:
+#     deployment:
+#       uses: kube-workspaces/deploy/.github/workflows/deployment-test.yaml@main
+#       with:
+#         component: controller
+#         image_tag: sha-abc1234
+#
+# With no inputs it tests the published :latest images, which is what the nightly
+# drift run wants.
+
+on:
+  workflow_call:
+    inputs:
+      component:
+        description: >-
+          Which component triggered this run (controller, api, proxy, frontend).
+          Used only for labelling; all four are always deployed together.
+        type: string
+        required: false
+        default: ''
+      image_tag:
+        description: >-
+          Tag to substitute for the calling component's image. Defaults to
+          latest, i.e. whatever is currently published.
+        type: string
+        required: false
+        default: latest
+      deploy_ref:
+        description: Ref of this repo to test with.
+        type: string
+        required: false
+        default: main
+      run_e2e:
+        description: Also run the functional workspace lifecycle test.
+        type: boolean
+        required: false
+        default: true
+    outputs:
+      result:
+        description: pass or fail
+        value: ${{ jobs.deploy.outputs.result }}
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy${{ inputs.component && format(' ({0}:{1})', inputs.component, inputs.image_tag) || '' }}
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.report.outputs.result }}
+    steps:
+      - name: Checkout deploy manifests
+        uses: actions/checkout@v4
+        with:
+          repository: kube-workspaces/deploy
+          ref: ${{ inputs.deploy_ref }}
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+
+      - name: Install kind
+        run: |
+          curl -fsSLo /usr/local/bin/kind \
+            https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64
+          chmod +x /usr/local/bin/kind
+
+      - name: Create cluster
+        run: make kind-up
+
+      - name: Install CRDs
+        run: make install-crd
+
+      # Pin the calling component to the tag under test while leaving the others
+      # on latest, so a failure points at the change that triggered the run.
+      - name: Deploy
+        env:
+          COMPONENT: ${{ inputs.component }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          set -euo pipefail
+          if [ -n "$COMPONENT" ] && [ "$IMAGE_TAG" != "latest" ]; then
+            echo "pinning ${COMPONENT} to ${IMAGE_TAG}"
+            kustomize build kustomize/overlays/test/ \
+              | sed "s|ghcr.io/kube-workspaces/${COMPONENT}:latest|ghcr.io/kube-workspaces/${COMPONENT}:${IMAGE_TAG}|" \
+              | kubectl apply --server-side -f -
+          else
+            kubectl apply --server-side -k kustomize/overlays/test/
+          fi
+          make install-images
+
+      - name: Wait for rollout
+        run: |
+          kubectl wait --for=condition=Available deployment --all \
+            -n kube-workspaces-system --timeout=300s
+
+      - name: Smoke test
+        run: make test-smoke
+
+      - name: Functional e2e
+        if: ${{ inputs.run_e2e }}
+        run: make test-e2e
+
+      - name: Report
+        id: report
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "result=pass" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=fail" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Dump diagnostics on failure
+        if: failure()
+        run: make test-dump
+
+      - name: Delete cluster
+        if: always()
+        run: make kind-down
