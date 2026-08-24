@@ -99,8 +99,11 @@ namespaces:
   createWorkspaceNamespace: true
 
 # Available workspace images (become Image CRs)
+# `name` becomes the Image CR object name and MUST be RFC 1123 compliant
+# (lowercase alphanumerics and '-'). `displayName` is the label shown in the UI.
 images:
-  - name: "Code Server (VS Code)"
+  - name: code-server
+    displayName: "Code Server (VS Code)"
     image: "codercom/code-server:latest"
     description: "Browser-based VS Code experience"
     defaultPort: 8080
@@ -119,7 +122,8 @@ images:
     proxyConfig:
       needsNoopSW: true
       rewriteHostAbsolutePaths: true
-  - name: "Debian Desktop"
+  - name: debian-desktop
+    displayName: "Debian Desktop"
     image: "flaccid/debian-desktop:latest"
     description: "Full Linux desktop via noVNC"
     defaultPort: 6901
@@ -133,7 +137,8 @@ images:
         - "/websockify"
       rewriteHostAbsolutePaths: true
       tlsInsecure: true
-  - name: "Kasm Desktop"
+  - name: kasm-desktop
+    displayName: "Kasm Desktop"
     image: "kasmweb/desktop:1.19.0"
     description: "Ubuntu desktop streamed via KasmVNC"
     defaultPort: 6901
@@ -148,7 +153,8 @@ images:
         - "/websockify"
       rewriteHostAbsolutePaths: true
       tlsInsecure: true
-  - name: "Kasm Chrome"
+  - name: kasm-chrome
+    displayName: "Kasm Chrome"
     image: "kasmweb/chrome:1.19.0"
     description: "Chrome browser streamed via KasmVNC"
     defaultPort: 6901
@@ -169,7 +175,8 @@ images:
         - "/websockify"
       rewriteHostAbsolutePaths: true
       tlsInsecure: true
-  - name: "Kasm Workspaces"
+  - name: kasm-workspaces
+    displayName: "Kasm Workspaces"
     image: "linuxserver/kasm:1.19.0"
     description: "Full Kasm Workspaces platform with Docker-in-Docker. Requires privileged mode. Access the setup wizard first, then the main interface."
     defaultPort: 3000

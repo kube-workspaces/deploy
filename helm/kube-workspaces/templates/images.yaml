@@ -3,10 +3,10 @@
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
 metadata:
-  name: {{ .name | lower | replace " " "-" }}
+  name: {{ required "each entry in .Values.images requires a 'name' (RFC 1123 compliant)" .name }}
 spec:
   image: {{ .image }}
-  displayName: {{ .name | quote }}
+  displayName: {{ default .name .displayName | quote }}
   description: {{ .description | quote }}
   defaultPort: {{ .defaultPort }}
   {{- if .defaultPath }}
