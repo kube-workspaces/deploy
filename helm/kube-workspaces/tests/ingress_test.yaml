@@ -1,0 +1,136 @@
+# Unit tests for the Ingress template.
+#
+# Two real bugs lived here:
+#   1. /proxy was routed to the API service, which serves no /proxy routes, so
+#      every workspace request 404'd.
+#   2. overriding ingress.hosts via --set replaces the whole list, so a host
+#      could end up with no paths, rendering `paths: null` and producing an
+#      Ingress the API server rejects with an opaque type error.
+suite: ingress
+templates:
+  - ingress.yaml
+tests:
+  - it: renders nothing when disabled
+    set:
+      ingress.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders an Ingress when enabled
+    set:
+      ingress.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Ingress
+      - isAPIVersion:
+          of: networking.k8s.io/v1
+
+  # Bug 1. Workspace traffic belongs to the proxy, not the API.
+  - it: routes /proxy to the proxy service
+    set:
+      ingress.enabled: true
+    asserts:
+      - equal:
+          path: spec.rules[0].http.paths[0].path
+          value: /proxy
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.name
+          value: kube-workspaces-proxy
+
+  - it: routes the API paths to the api service
+    set:
+      ingress.enabled: true
+    asserts:
+      - equal:
+          path: spec.rules[0].http.paths[1].path
+          value: /v1
+      - equal:
+          path: spec.rules[0].http.paths[1].backend.service.name
+          value: kube-workspaces-api
+      - equal:
+          path: spec.rules[0].http.paths[2].backend.service.name
+          value: kube-workspaces-api
+      - equal:
+          path: spec.rules[0].http.paths[3].backend.service.name
+          value: kube-workspaces-api
+
+  # The catch-all must come last, or it shadows the more specific prefixes.
+  - it: sends everything else to the frontend, last
+    set:
+      ingress.enabled: true
+    asserts:
+      - equal:
+          path: spec.rules[0].http.paths[4].path
+          value: /
+      - equal:
+          path: spec.rules[0].http.paths[4].backend.service.name
+          value: kube-workspaces-frontend
+
+  # Bug 2. Must fail loudly at template time rather than emit invalid YAML.
+  - it: fails when a host has no paths
+    set:
+      ingress.enabled: true
+      ingress.hosts:
+        - host: nopaths.local
+    asserts:
+      - failedTemplate:
+          errorMessage: "ingress.hosts entry \"nopaths.local\" has no 'paths' — each host requires at least one path (see values.yaml for the default set)"
+
+  - it: accepts a custom host with explicit paths
+    set:
+      ingress.enabled: true
+      ingress.className: nginx
+      ingress.hosts:
+        - host: kw.test.local
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                serviceName: kube-workspaces-frontend
+                servicePort: 80
+    asserts:
+      - equal:
+          path: spec.ingressClassName
+          value: nginx
+      - equal:
+          path: spec.rules[0].host
+          value: kw.test.local
+      - lengthEqual:
+          path: spec.rules[0].http.paths
+          count: 1
+
+  - it: omits ingressClassName when unset
+    set:
+      ingress.enabled: true
+      ingress.className: ""
+    asserts:
+      - isNull:
+          path: spec.ingressClassName
+
+  - it: renders TLS when configured
+    set:
+      ingress.enabled: true
+      ingress.tls:
+        - secretName: kw-tls
+          hosts:
+            - workspaces.local
+    asserts:
+      - equal:
+          path: spec.tls[0].secretName
+          value: kw-tls
+      - equal:
+          path: spec.tls[0].hosts[0]
+          value: workspaces.local
+
+  - it: applies annotations
+    set:
+      ingress.enabled: true
+      ingress.annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-production
+    asserts:
+      - equal:
+          path: metadata.annotations["cert-manager.io/cluster-issuer"]
+          value: letsencrypt-production

@@ -1,0 +1,130 @@
+# Unit tests for the Image CR template.
+#
+# This template regressed once already: each field needed an explicit clause, so
+# anything not listed (additionalPorts, tags, category, defaultUser, ...) was
+# silently dropped. It now passes everything through with `omit`, and these tests
+# pin that behaviour down.
+suite: images
+templates:
+  - images.yaml
+tests:
+  - it: renders one Image CR per entry
+    set:
+      images:
+        - name: alpha
+          image: example/alpha:1
+          defaultPort: 8080
+        - name: beta
+          image: example/beta:2
+          defaultPort: 3000
+    asserts:
+      - hasDocuments:
+          count: 2
+      - documentIndex: 0
+        equal:
+          path: metadata.name
+          value: alpha
+      - documentIndex: 1
+        equal:
+          path: metadata.name
+          value: beta
+
+  - it: is cluster-scoped, so no namespace is set
+    set:
+      images:
+        - name: alpha
+          image: example/alpha:1
+    asserts:
+      - isKind:
+          of: Image
+      - isAPIVersion:
+          of: kubeworkspaces.io/v1alpha1
+      - isNull:
+          path: metadata.namespace
+
+  - it: defaults displayName to the entry name
+    set:
+      images:
+        - name: alpha
+          image: example/alpha:1
+    asserts:
+      - equal:
+          path: spec.displayName
+          value: alpha
+
+  - it: honours an explicit displayName
+    set:
+      images:
+        - name: alpha
+          displayName: Alpha Workspace
+          image: example/alpha:1
+    asserts:
+      - equal:
+          path: spec.displayName
+          value: Alpha Workspace
+
+  # The regression this template was written to fix: arbitrary CRD fields must
+  # survive, not just a hardcoded allow-list.
+  - it: passes through fields the template does not name explicitly
+    set:
+      images:
+        - name: alpha
+          image: example/alpha:1
+          defaultPort: 8080
+          category: IDE
+          tags: [code, editor]
+          defaultUser: coder
+          defaultUID: 1000
+          defaultHomedir: /home/coder
+          additionalPorts:
+            - name: audio
+              port: 4901
+          proxyConfig:
+            needsNoopSW: true
+    asserts:
+      - equal:
+          path: spec.category
+          value: IDE
+      - equal:
+          path: spec.tags[1]
+          value: editor
+      - equal:
+          path: spec.defaultUser
+          value: coder
+      - equal:
+          path: spec.defaultUID
+          value: 1000
+      - equal:
+          path: spec.defaultHomedir
+          value: /home/coder
+      - equal:
+          path: spec.additionalPorts[0].port
+          value: 4901
+      - equal:
+          path: spec.proxyConfig.needsNoopSW
+          value: true
+
+  # 'name' and 'displayName' are template inputs, not CRD spec fields.
+  - it: does not leak the name key into the spec
+    set:
+      images:
+        - name: alpha
+          image: example/alpha:1
+    asserts:
+      - isNull:
+          path: spec.name
+
+  - it: renders nothing when images is empty
+    set:
+      images: []
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: fails when an entry has no name
+    set:
+      images:
+        - image: example/alpha:1
+    asserts:
+      - failedTemplate:
+          errorMessage: "each entry in .Values.images requires a 'name' (RFC 1123 compliant)"

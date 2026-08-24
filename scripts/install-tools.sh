@@ -87,3 +87,20 @@ else
 fi
 
 echo "tools ready in ${BIN}"
+
+# --- helm-unittest ----------------------------------------------------------
+# A Helm plugin rather than a standalone binary, so it installs into Helm's
+# plugin directory instead of .bin/. Skipped silently if helm is absent; the
+# validate script degrades to a warning if the plugin is missing.
+if command -v helm >/dev/null 2>&1; then
+  if helm plugin list 2>/dev/null | grep -q '^unittest'; then
+    echo "helm-unittest plugin already installed"
+  else
+    echo "installing helm-unittest plugin"
+    # --verify=false: the upstream repo publishes no provenance, and newer Helm
+    # refuses to install without it otherwise.
+    helm plugin install https://github.com/helm-unittest/helm-unittest \
+      --verify=false >/dev/null 2>&1 \
+      || echo "warning: could not install helm-unittest; template unit tests will be skipped" >&2
+  fi
+fi

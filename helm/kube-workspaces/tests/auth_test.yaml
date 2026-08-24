@@ -1,0 +1,122 @@
+# Unit tests for the auth conditionals.
+#
+# Auth is opt-in. The controller rejects an enabled AuthConfig that has no OIDC
+# configuration, so the template must not emit an oidc block from a partially
+# filled-in values file.
+suite: auth
+templates:
+  - authconfig.yaml
+tests:
+  - it: renders nothing when auth is disabled
+    set:
+      auth.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders an AuthConfig when auth is enabled
+    set:
+      auth.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: AuthConfig
+      - isAPIVersion:
+          of: kubeworkspaces.io/v1alpha1
+      - equal:
+          path: spec.enabled
+          value: true
+
+  # The CRD is a cluster-scoped singleton named 'default'.
+  - it: is the cluster-scoped singleton
+    set:
+      auth.enabled: true
+    asserts:
+      - equal:
+          path: metadata.name
+          value: default
+      - isNull:
+          path: metadata.namespace
+
+  # Without an issuerURL the oidc block must be omitted entirely rather than
+  # emitted with empty strings, which the controller would reject.
+  - it: omits the oidc block when no issuerURL is set
+    set:
+      auth.enabled: true
+    asserts:
+      - isNull:
+          path: spec.oidc
+
+  - it: renders the oidc block when an issuerURL is set
+    set:
+      auth.enabled: true
+      auth.oidc.issuerURL: https://dex.example.com
+      auth.oidc.clientID: kube-workspaces
+    asserts:
+      - equal:
+          path: spec.oidc.issuerURL
+          value: https://dex.example.com
+      - equal:
+          path: spec.oidc.clientID
+          value: kube-workspaces
+
+  # clientSecret is a secret *reference*, not an inline value.
+  - it: references the client secret rather than inlining it
+    set:
+      auth.enabled: true
+      auth.oidc.issuerURL: https://dex.example.com
+      auth.oidc.clientID: kube-workspaces
+    asserts:
+      - equal:
+          path: spec.oidc.clientSecret.name
+          value: kube-workspaces-oidc
+      - equal:
+          path: spec.oidc.clientSecret.key
+          value: client-secret
+
+  - it: carries the default scopes and username claim
+    set:
+      auth.enabled: true
+      auth.oidc.issuerURL: https://dex.example.com
+    asserts:
+      - contains:
+          path: spec.oidc.scopes
+          content: openid
+      - equal:
+          path: spec.oidc.usernameClaim
+          value: email
+
+  - it: references the session signing key secret
+    set:
+      auth.enabled: true
+    asserts:
+      - equal:
+          path: spec.session.signingKey.name
+          value: kube-workspaces-session
+      - equal:
+          path: spec.session.signingKey.key
+          value: signing-key
+
+  - it: passes through admin emails
+    set:
+      auth.enabled: true
+      auth.adminEmails:
+        - admin@example.com
+        - ops@example.com
+    asserts:
+      - equal:
+          path: spec.adminEmails[0]
+          value: admin@example.com
+      - lengthEqual:
+          path: spec.adminEmails
+          count: 2
+
+  - it: can enable personal namespaces
+    set:
+      auth.enabled: true
+      auth.personalNamespaces.enabled: true
+    asserts:
+      - equal:
+          path: spec.personalNamespaces.enabled
+          value: true

@@ -150,6 +150,29 @@ check "vendored Helm CRDs match kustomize/crds" make check-helm-crds
 endgroup
 
 # ---------------------------------------------------------------------------
+# 3b. Helm template unit tests
+# ---------------------------------------------------------------------------
+
+group "helm unittest"
+
+if helm plugin list 2>/dev/null | grep -q '^unittest'; then
+  # --strict so a malformed suite is an error rather than being skipped.
+  if out=$(helm unittest --strict "$CHART" 2>&1); then
+    # Surface the tally rather than the whole log.
+    tally=$(printf '%s\n' "$out" | grep -E '^Tests:' | head -1)
+    pass "helm unittest (${tally:-passed})"
+  else
+    fail "helm unittest"
+    printf '%s\n' "$out" | sed 's/^/     /' >&2
+  fi
+else
+  warn "helm-unittest plugin not installed — skipping template unit tests"
+  warn "install: helm plugin install https://github.com/helm-unittest/helm-unittest --verify=false"
+fi
+
+endgroup
+
+# ---------------------------------------------------------------------------
 # 4. Schema validation with kubeconform
 # ---------------------------------------------------------------------------
 
