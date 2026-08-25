@@ -139,7 +139,11 @@ jobs:
         run: |
           set -euo pipefail
           {
-            scripts/release-notes.sh --repo deploy --from "$(git describe --tags --abbrev=0)" --to HEAD
+            # --version, not --to HEAD: the notes quote the version in the
+            # upgrade command, and "HEAD" is not installable.
+            scripts/release-notes.sh --repo deploy \
+              --from "$(git describe --tags --abbrev=0)" \
+              --to HEAD --version "$VERSION"
             echo
             echo "<!-- The categorised commit list is appended by GitHub. -->"
           } > /tmp/preamble.md

@@ -10,6 +10,7 @@
 # from a list of CI commits.
 #
 # Usage: scripts/release-notes.sh [--repo NAME] [--from TAG] [--to REF]
+#                                 [--version VERSION]
 # Output: markdown on stdout.
 
 set -uo pipefail
@@ -17,12 +18,16 @@ set -uo pipefail
 REPO_NAME=""
 FROM=""
 TO="HEAD"
+# The version being released. Defaults to TO, which is right when TO is a tag but
+# renders "HEAD" in the upgrade snippet when generating notes before tagging.
+VERSION_IN=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --repo) REPO_NAME="$2"; shift 2 ;;
     --from) FROM="$2"; shift 2 ;;
     --to)   TO="$2"; shift 2 ;;
+    --version) VERSION_IN="$2"; shift 2 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -129,7 +134,8 @@ fi
 # Upgrade instructions, tailored per repo
 # ---------------------------------------------------------------------------
 
-VERSION="${TO#refs/tags/}"
+VERSION="${VERSION_IN:-${TO#refs/tags/}}"
+VERSION="${VERSION#refs/tags/}"
 case "$REPO_NAME" in
   deploy)
     cat <<EOF
