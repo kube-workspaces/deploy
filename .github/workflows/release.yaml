@@ -126,11 +126,6 @@ jobs:
             echo "<!-- The categorised commit list is appended by GitHub. -->"
           } > /tmp/preamble.md
           cat /tmp/preamble.md
-          {
-            echo 'body<<RELEASE_NOTES_EOF'
-            cat /tmp/preamble.md
-            echo 'RELEASE_NOTES_EOF'
-          } >> "$GITHUB_OUTPUT"
 
       - name: Summary
         run: |
@@ -154,9 +149,13 @@ jobs:
 
           # --generate-notes appends the categorised commit list, grouped per
           # .github/release.yml, beneath our preamble.
+          #
+          # --notes-file, not --notes "${{ ... }}": interpolating the body into the
+          # shell makes bash treat its backticks as command substitution, which
+          # silently ate every `code span` and the fenced block.
           gh release create "$VERSION" \
             --title "$VERSION" \
-            --notes "${{ steps.notes.outputs.body }}" \
+            --notes-file /tmp/preamble.md \
             --generate-notes \
             --verify-tag
 
