@@ -24,7 +24,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: proxy
-          image: "{{ .Values.proxy.image.repository }}:{{ .Values.proxy.image.tag }}"
+          image: "{{ .Values.proxy.image.repository }}:{{ .Values.proxy.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.proxy.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.proxy.port }}

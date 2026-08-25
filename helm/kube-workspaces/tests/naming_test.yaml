@@ -95,3 +95,22 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].imagePullPolicy
           value: IfNotPresent
+
+  # appVersion must actually pin the images, or it is decorative. An empty tag
+  # falls back to Chart.AppVersion; hardcoding :latest here meant the chart
+  # declared one version and installed another.
+  - it: defaults the image tag to the chart appVersion
+    template: controller-deployment.yaml
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: '^ghcr\.io/kube-workspaces/controller:[0-9]+\.[0-9]+\.[0-9]+$'
+
+  - it: still allows an explicit tag override
+    template: controller-deployment.yaml
+    set:
+      controller.image.tag: latest
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/kube-workspaces/controller:latest

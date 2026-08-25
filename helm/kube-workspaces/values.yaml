@@ -4,7 +4,9 @@ replicaCount: 1
 controller:
   image:
     repository: ghcr.io/kube-workspaces/controller
-    tag: latest
+    # Empty means Chart.AppVersion, so the chart installs the component
+    # release it declares. Override to pin a specific tag or use :latest.
+    tag: ""
     pullPolicy: Always
   resources:
     limits:
@@ -17,7 +19,9 @@ controller:
 api:
   image:
     repository: ghcr.io/kube-workspaces/api
-    tag: latest
+    # Empty means Chart.AppVersion, so the chart installs the component
+    # release it declares. Override to pin a specific tag or use :latest.
+    tag: ""
     pullPolicy: Always
   resources:
     limits:
@@ -33,7 +37,9 @@ api:
 proxy:
   image:
     repository: ghcr.io/kube-workspaces/proxy
-    tag: latest
+    # Empty means Chart.AppVersion, so the chart installs the component
+    # release it declares. Override to pin a specific tag or use :latest.
+    tag: ""
     pullPolicy: Always
   resources:
     limits:
@@ -52,7 +58,9 @@ proxy:
 frontend:
   image:
     repository: ghcr.io/kube-workspaces/frontend
-    tag: latest
+    # Empty means Chart.AppVersion, so the chart installs the component
+    # release it declares. Override to pin a specific tag or use :latest.
+    tag: ""
     pullPolicy: Always
   resources:
     limits:
