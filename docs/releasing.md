@@ -137,3 +137,36 @@ later is a *major*.
 ```sh
 scripts/release-notes.sh --repo deploy --from v0.2.0 --to HEAD
 ```
+
+## Known quirks
+
+### The `v0.2.0` publish run shows red
+
+The `Publish Helm Chart` run triggered by the `v0.2.0` **release event** failed.
+The chart is published and the release is complete — this is cosmetic.
+
+The version guard was too blunt at the time: on a release event `HEAD` is the
+tagged commit, which of course changed the chart, since bumping the version is how
+the release was prepared. The push to `main` had already published it, so there
+was nothing left to do. Fixed in `helm-publish.yaml`, which now only enforces the
+"changed without a bump" rule on pushes to `main`.
+
+Re-running does not clear it: a re-run checks out the tag, which predates the fix.
+Clearing it would mean re-tagging a published release, which is not worth doing.
+Releases from `v0.2.1` onward are unaffected.
+
+### `main` history includes direct pushes
+
+Branch protection on `deploy` requires pull requests but has
+`enforce_admins: false`, so commits made with an admin token can and did land
+directly on `main` — most of the test-suite and CI work arrived that way while it
+was being iterated against real runners.
+
+The four component repositories were changed via PR throughout. If direct pushes
+to `deploy` are unwanted, set `enforce_admins: true`:
+
+```sh
+gh api -X PATCH repos/kube-workspaces/deploy/branches/main/protection/enforce_admins
+```
+
+Note this also blocks `--admin` merges, so every PR would then need a reviewer.
