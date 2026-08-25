@@ -429,6 +429,57 @@ check_sa_explicit() {
     | select(.metadata.name | test("frontend"))
     | .spec.template.spec.automountServiceAccountToken' "$stream" 2>/dev/null)
   check_equals "${label}: frontend does not mount a SA token" "false" "$automount"
+
+  # No component should rely on the legacy auto-mounted token. The three that
+  # need API access mount an explicit projected token instead; the frontend
+  # mounts none at all.
+  local legacy
+  legacy=$(yq -N 'select(.kind=="Deployment")
+    | select(.spec.template.spec.automountServiceAccountToken != false)
+    | .metadata.name' "$stream" 2>/dev/null)
+  if [ -z "$legacy" ]; then
+    pass "${label}: no Deployment uses the legacy auto-mounted token"
+  else
+    fail "${label}: no Deployment uses the legacy auto-mounted token"
+    printf '%s\n' "$legacy" | sed 's/^/     automounts: /' >&2
+  fi
+
+  # The three API-consuming components must have a projected token mounted at the
+  # path client-go's in-cluster config expects, with all three files present —
+  # a partial mount fails authentication at startup rather than at build time.
+  local comp missing=""
+  for comp in controller api proxy; do
+    local paths
+    # Emit one path per line and sort, rather than building an array in yq:
+    # collecting across a multi-document stream is unreliable in yq v4.
+    paths=$(yq -N "select(.kind==\"Deployment\")
+      | select(.metadata.name | test(\"kube-workspaces-${comp}\$\"))
+      | .spec.template.spec.volumes[]
+      | select(.name == \"kube-api-access\")
+      | .projected.sources[]
+      | (.serviceAccountToken.path, .configMap.items[]?.path, .downwardAPI.items[]?.path)" \
+      "$stream" 2>/dev/null | grep -v '^null$' | sort | tr '\n' ',' | sed 's/,$//')
+    [ "$paths" = "ca.crt,namespace,token" ] || missing="${missing} ${comp}(${paths:-none})"
+  done
+  if [ -z "$missing" ]; then
+    pass "${label}: controller, api and proxy mount a complete projected token"
+  else
+    fail "${label}: controller, api and proxy mount a complete projected token (bad:${missing})"
+  fi
+
+  # An audience must NOT be pinned: the API server issues for its own default
+  # audience, and hardcoding one risks mismatching the cluster issuer.
+  local aud
+  aud=$(yq -N 'select(.kind=="Deployment")
+    | .spec.template.spec.volumes[]?
+    | select(.name == "kube-api-access")
+    | .projected.sources[]?.serviceAccountToken.audience' "$stream" 2>/dev/null \
+    | grep -v '^null$' || true)
+  if [ -z "$aud" ]; then
+    pass "${label}: projected tokens pin no audience"
+  else
+    fail "${label}: projected tokens pin no audience (found: $(echo "$aud" | tr '\n' ' '))"
+  fi
 }
 
 k_stream="${RENDER_DIR}/kustomize-base.yaml"

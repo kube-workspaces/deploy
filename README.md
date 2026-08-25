@@ -534,6 +534,19 @@ actually work, not just that the pods started:
 > (`kubectl logs -n kube-workspaces-system deploy/kube-workspaces-controller`),
 > and namespace events before drawing a conclusion.
 
+## Documentation
+
+| Document | Covers |
+|----------|--------|
+| [docs/architecture.svg](docs/architecture.svg) | Component diagram |
+| [docs/authentication.md](docs/authentication.md) | OIDC setup, roles, personal namespaces |
+| [docs/domains.md](docs/domains.md) | Custom hostnames and ingress routing |
+| [docs/proxy.md](docs/proxy.md) | How workspace traffic is proxied |
+| [docs/security.md](docs/security.md) | ServiceAccount tokens, RBAC, what is deliberately not hardened |
+| [docs/testing.md](docs/testing.md) | The test suite and how to run it |
+| [docs/releasing.md](docs/releasing.md) | Release procedure across the five repositories |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Development setup |
+
 ## License
 
 Apache License 2.0

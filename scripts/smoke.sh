@@ -284,6 +284,28 @@ if kubectl exec -n "$KW_NAMESPACE" deploy/kube-workspaces-frontend -- \
 else
   pass "frontend has no ServiceAccount token mounted"
 fi
+
+# The three API-consuming components must use a projected token rather than the
+# legacy auto-mounted one. Checked on the running pod: a manifest can look right
+# while the pod was admitted before the change.
+#
+# Tolerated under KW_LENIENT_SA, since a released artifact predating this
+# hardening legitimately still automounts.
+proj_bad=""
+for comp in controller api proxy; do
+  src=$(kubectl get pod -n "$KW_NAMESPACE" \
+    -l "app.kubernetes.io/component=${comp}" \
+    -o jsonpath='{.items[0].spec.volumes[?(@.name=="kube-api-access")].projected.sources[0].serviceAccountToken.expirationSeconds}' \
+    2>/dev/null)
+  [ -n "$src" ] || proj_bad="${proj_bad} ${comp}"
+done
+if [ -z "$proj_bad" ]; then
+  pass "controller, api and proxy run with a projected SA token"
+elif [ -n "${KW_LENIENT_SA:-}" ]; then
+  warn "not using a projected SA token:${proj_bad} (tolerated: KW_LENIENT_SA)"
+else
+  fail "controller, api and proxy run with a projected SA token (missing:${proj_bad})"
+fi
 endgroup
 
 finish

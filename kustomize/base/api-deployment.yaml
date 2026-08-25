@@ -19,6 +19,10 @@ spec:
         app.kubernetes.io/component: api
     spec:
       serviceAccountName: kube-workspaces-controller
+      # The legacy auto-mounted token is replaced with an explicit projected one:
+      # it is short-lived and auto-rotated rather than long-lived, and the mount is
+      # intentional and auditable rather than implicit. See docs/security.md.
+      automountServiceAccountToken: false
       containers:
         - name: api
           image: ghcr.io/kube-workspaces/api:latest
@@ -48,6 +52,34 @@ spec:
             requests:
               cpu: 100m
               memory: 128Mi
+          volumeMounts:
+            - name: kube-api-access
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
+      volumes:
+        - name: kube-api-access
+          projected:
+            defaultMode: 420
+            sources:
+              # No audience is set deliberately. The API server then issues the
+              # token for its own default audience, which is what client-go's
+              # in-cluster config expects. Hardcoding one risks mismatching the
+              # cluster issuer (kubernetes.default.svc vs
+              # kubernetes.default.svc.cluster.local) and failing authentication.
+              - serviceAccountToken:
+                  path: token
+                  expirationSeconds: 3600
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                    - key: ca.crt
+                      path: ca.crt
+              - downwardAPI:
+                  items:
+                    - path: namespace
+                      fieldRef:
+                        apiVersion: v1
+                        fieldPath: metadata.namespace
 ---
 apiVersion: v1
 kind: Service
