@@ -66,17 +66,31 @@ jobs:
           chart=$(helm show chart helm/kube-workspaces/ | awk '/^version:/ {print $2}')
           app=$(helm show chart helm/kube-workspaces/ | awk '/^appVersion:/ {gsub(/"/,"",$2); print $2}')
 
-          fail=0
+          # The chart version must equal the release: this repo's tag *is* the
+          # chart release.
           if [ "$chart" != "$bare" ]; then
             echo "::error::Chart.yaml version is $chart, expected $bare"
-            fail=1
+            exit 1
           fi
-          if [ "$app" != "$bare" ]; then
-            echo "::error::Chart.yaml appVersion is $app, expected $bare"
-            fail=1
+
+          # appVersion tracks the *component* release, which is not always the
+          # same number. A chart-only fix (an ingress path, a template guard)
+          # bumps the chart without there being any new component build, so
+          # requiring equality here would force pointless component releases.
+          #
+          # What must hold is that appVersion names components that exist — the
+          # next step checks that — and that it is not ahead of the chart.
+          if [ "$app" = "$bare" ]; then
+            echo "chart $chart and appVersion $app both match $VERSION"
+          else
+            newest=$(printf '%s\n%s\n' "$bare" "$app" | sort -V | tail -1)
+            if [ "$newest" = "$app" ]; then
+              echo "::error::appVersion $app is ahead of the chart version $bare"
+              echo "appVersion must name an already-released component version."
+              exit 1
+            fi
+            echo "::notice::chart $chart pins component appVersion $app (chart-only release)"
           fi
-          [ "$fail" = "0" ] || exit 1
-          echo "chart $chart / appVersion $app match $VERSION"
 
       # A release whose chart pins images that were never published would be
       # broken on arrival.
@@ -85,7 +99,11 @@ jobs:
           VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          bare="${VERSION#v}"
+          # Check appVersion, not the release version: the chart may be released
+          # on its own version line while pinning an earlier component release.
+          bare=$(helm show chart helm/kube-workspaces/ \
+            | awk '/^appVersion:/ {gsub(/"/,"",$2); print $2}')
+          echo "checking for component images at ${bare}"
           missing=""
           for c in controller api proxy frontend; do
             token=$(curl -fsSL \

@@ -40,9 +40,22 @@ Wait for those builds to finish before moving on.
 In `deploy`, set both fields in `helm/kube-workspaces/Chart.yaml`:
 
 ```yaml
-version: 0.3.0      # the chart's own version
-appVersion: "0.3.0" # the component version it pins
+version: 0.3.0      # the chart's own version — must equal the deploy tag
+appVersion: "0.3.0" # the component version it pins — must already be released
 ```
+
+The two are **not** required to match. `version` is the chart's own release line
+and must equal the tag; `appVersion` names the component release the chart pins.
+A chart-only fix — an ingress path, a template guard — bumps `version` without
+there being any new component build, so `appVersion` legitimately lags:
+
+```yaml
+version: 0.2.2      # chart-only fix
+appVersion: "0.2.1" # still pinning the 0.2.1 components
+```
+
+The release workflow enforces exactly that: `version` must equal the tag,
+`appVersion` must not be *ahead* of it, and images must exist at `appVersion`.
 
 Then verify and merge:
 
