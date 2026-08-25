@@ -1,0 +1,52 @@
+# Configuration for GitHub's automatic release notes.
+#
+# Used by `gh release create --generate-notes` and by the "Generate release
+# notes" button in the UI. Categories are matched in order, so the first match
+# wins — which is why `breaking` sits at the top.
+#
+# Kept identical across the five kube-workspaces repositories so a reader moving
+# between them sees the same structure. If you change it here, change it
+# everywhere (scripts/check-release-config.sh in the deploy repo enforces this).
+changelog:
+  exclude:
+    labels:
+      - duplicate
+      - invalid
+      - wontfix
+      - question
+
+  categories:
+    - title: ⚠️ Breaking changes
+      labels:
+        - breaking
+
+    - title: 🔒 Security
+      labels:
+        - security
+
+    - title: ✨ Features
+      labels:
+        - enhancement
+        - feature
+
+    - title: 🐛 Fixes
+      labels:
+        - bug
+
+    - title: 📚 Documentation
+      labels:
+        - documentation
+
+    - title: 🔧 CI and tooling
+      labels:
+        - ci
+        - chore
+
+    - title: ⬆️ Dependencies
+      labels:
+        - dependencies
+
+    # Anything unlabelled still appears, rather than being silently dropped.
+    - title: Other changes
+      labels:
+        - "*"

@@ -526,6 +526,19 @@ else
   pass "kustomize directories are applied with -k, not -f"
 fi
 
+# The release-notes categories only give a consistent reading experience if every
+# repo uses the same ones. Skips when the sibling checkouts are absent (as in CI
+# for this repo), so it is advisory there and enforcing locally.
+if out=$(scripts/check-release-config.sh 2>&1); then
+  case "$out" in
+    *"skipping"*) info "release.yml consistency: ${out}" ;;
+    *)            pass "release.yml is consistent across sibling repos" ;;
+  esac
+else
+  fail "release.yml is consistent across sibling repos"
+  printf '%s\n' "$out" | sed 's/^/     /' >&2
+fi
+
 endgroup
 
 finish

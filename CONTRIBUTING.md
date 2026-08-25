@@ -99,6 +99,17 @@ Two caveats worth knowing before you rely on a green run:
 
 See [docs/testing.md](docs/testing.md) for the full list.
 
+## Releasing
+
+The five repositories are released together and share a version. See
+[docs/releasing.md](docs/releasing.md) for the procedure — the order matters,
+since the chart's `appVersion` must name component images that already exist.
+
+Release notes are generated, not hand-written: `scripts/release-notes.sh`
+produces a preamble (leading with whether the release changes behaviour at all)
+and GitHub appends a commit list categorised per `.github/release.yml`. Label
+your PRs so they land in the right section.
+
 ## Making Changes
 
 ### Branching
