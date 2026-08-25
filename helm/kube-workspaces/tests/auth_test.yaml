@@ -120,3 +120,59 @@ tests:
       - equal:
           path: spec.personalNamespaces.enabled
           value: true
+
+  # Local auth may be enabled independently of OIDC.
+  - it: omits the localAuth block when disabled
+    set:
+      auth.enabled: true
+      auth.oidc.issuerURL: https://dex.example.com
+    asserts:
+      - isNull:
+          path: spec.localAuth
+
+  - it: renders the localAuth block with defaults when enabled (no OIDC)
+    set:
+      auth.enabled: true
+      auth.localAuth.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isNull:
+          path: spec.oidc
+      - equal:
+          path: spec.localAuth.enabled
+          value: true
+      - equal:
+          path: spec.localAuth.bootstrapAdmin.email
+          value: admin@local
+      - equal:
+          path: spec.localAuth.bootstrapAdmin.skip
+          value: false
+
+  - it: can override the bootstrap admin email and skip creation
+    set:
+      auth.enabled: true
+      auth.localAuth.enabled: true
+      auth.localAuth.bootstrapAdmin.email: root@example.com
+      auth.localAuth.bootstrapAdmin.skip: true
+    asserts:
+      - equal:
+          path: spec.localAuth.bootstrapAdmin.email
+          value: root@example.com
+      - equal:
+          path: spec.localAuth.bootstrapAdmin.skip
+          value: true
+
+  - it: can enable both OIDC and localAuth simultaneously
+    set:
+      auth.enabled: true
+      auth.oidc.issuerURL: https://dex.example.com
+      auth.oidc.clientID: kube-workspaces
+      auth.localAuth.enabled: true
+    asserts:
+      - equal:
+          path: spec.oidc.issuerURL
+          value: https://dex.example.com
+      - equal:
+          path: spec.localAuth.enabled
+          value: true

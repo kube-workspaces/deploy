@@ -1,0 +1,34 @@
+# AuthConfig CR - the singleton that enables authentication.
+#
+# This is the "quick way" to get authentication running with zero external
+# dependencies: no OIDC provider, no Dex, no client secrets. A default admin
+# user is auto-created on first reconcile with a randomly generated password
+# stored in a Kubernetes Secret (see session-secret.yaml's neighbor,
+# kw-user-admin-at-local-local-auth, created by the controller — not this
+# overlay). Retrieve it with:
+#
+#   kubectl get secret kw-user-admin-at-local-local-auth \
+#     -n kube-workspaces-system -o jsonpath='{.data.password}' | base64 -d
+#
+# You can layer OIDC on top later (or combine both) by also applying
+# kustomize/overlays/auth/, which sets spec.oidc alongside spec.localAuth.
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: AuthConfig
+metadata:
+  name: default
+spec:
+  enabled: true
+  session:
+    signingKey:
+      name: "kube-workspaces-session"
+      key: "signing-key"
+    tokenExpiry: "24h"
+    refreshExpiry: "7d"
+  personalNamespaces:
+    enabled: true
+    template: "{{username}}"
+  localAuth:
+    enabled: true
+    bootstrapAdmin:
+      email: "admin@local"                      # CHANGEME (optional): bootstrap admin identifier
+      skip: false

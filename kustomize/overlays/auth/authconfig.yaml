@@ -32,3 +32,13 @@ spec:
     requireApproval: false
   adminEmails:
     - "admin@example.com"                       # CHANGEME: Your admin email(s)
+  # To ALSO enable local (username/password) authentication alongside OIDC,
+  # uncomment the block below. A default admin user is auto-created with a
+  # randomly generated password (see docs/authentication.md for retrieval
+  # instructions). Alternatively, see kustomize/overlays/auth-local/ for a
+  # local-only setup with no OIDC provider required at all.
+  # localAuth:
+  #   enabled: true
+  #   bootstrapAdmin:
+  #     email: "admin@local"
+  #     skip: false

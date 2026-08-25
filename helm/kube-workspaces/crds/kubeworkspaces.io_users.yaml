@@ -72,6 +72,37 @@ spec:
                 items:
                   type: string
                 type: array
+              localAuth:
+                description: |-
+                  LocalAuth configures local username/password authentication for this user.
+                  May be set alongside other authentication methods (e.g. OIDC) for the same identity.
+                properties:
+                  enabled:
+                    description: |-
+                      Enabled controls whether this user may authenticate with a local password,
+                      in addition to any other configured authentication method (e.g. OIDC).
+                    type: boolean
+                  mustChangePassword:
+                    description: |-
+                      MustChangePassword indicates the user must set a new password before
+                      continuing to use the system. Set on creation/reset, cleared on change.
+                    type: boolean
+                  passwordSecretRef:
+                    description: |-
+                      PasswordSecretRef references the Secret and key holding the bcrypt password
+                      hash for this user (key is conventionally "passwordHash").
+                    properties:
+                      key:
+                        description: Key is the key within the secret.
+                        type: string
+                      name:
+                        description: Name is the name of the secret.
+                        type: string
+                    required:
+                    - key
+                    - name
+                    type: object
+                type: object
               namespaceAccess:
                 description: NamespaceAccess defines additional shared namespace grants
                   beyond the personal namespace.
@@ -176,8 +207,19 @@ spec:
                   - type
                   type: object
                 type: array
+              failedLoginAttempts:
+                description: |-
+                  FailedLoginAttempts is the number of consecutive failed local login attempts.
+                  Reset to 0 on successful login.
+                type: integer
               lastLogin:
                 description: LastLogin is the timestamp of the user's last login.
+                format: date-time
+                type: string
+              lockedUntil:
+                description: |-
+                  LockedUntil, if set and in the future, indicates local login is temporarily
+                  disabled due to repeated failed attempts.
                 format: date-time
                 type: string
               loginCount:

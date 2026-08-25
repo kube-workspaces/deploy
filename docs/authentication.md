@@ -1,14 +1,20 @@
 # Authentication Setup Guide
 
-This guide covers how to configure authentication for kube-workspaces using different OIDC providers.
+This guide covers how to configure authentication for kube-workspaces, using
+either an external OIDC provider or built-in local (username/password) accounts.
+The two methods can be enabled independently or together.
 
 ## Overview
 
-kube-workspaces uses OIDC (OpenID Connect) for authentication. The system supports:
+kube-workspaces supports two authentication methods:
 
-- **Dex** (bundled or external) - federated OIDC proxy supporting GitHub, GitLab, LDAP, SAML, and more
-- **Okta** - enterprise identity provider
-- **Any OIDC-compliant provider** - Google, Auth0, Keycloak, Azure AD, etc.
+- **OIDC** (OpenID Connect) - federate to an external identity provider:
+  - **Dex** (bundled or external) - federated OIDC proxy supporting GitHub, GitLab, LDAP, SAML, and more
+  - **Okta** - enterprise identity provider
+  - **Any OIDC-compliant provider** - Google, Auth0, Keycloak, Azure AD, etc.
+- **Local auth** - username/password accounts stored as Kubernetes Secrets, with
+  no external dependency. A default admin user is created automatically the
+  first time local auth is enabled.
 
 Authentication is **opt-in** and disabled by default. When disabled, the system operates without auth (everyone has full access).
 
@@ -18,17 +24,21 @@ Authentication is **opt-in** and disabled by default. When disabled, the system 
 User Browser
     |
     v
-Frontend (Next.js) -- /auth/login --> API (/auth/login) --> OIDC Provider
-    |                                     |
-    |                                     v
-    |                              API (/auth/callback) <-- Provider callback
-    |                                     |
-    v                                     v
-Frontend (reads session)          Sets httpOnly cookie (kw-session)
+Frontend (Next.js) -- /auth/login --------------> API (/auth/login) --> OIDC Provider
+    |                                                   |
+    |                -- /auth/login/local (email+pw) -->|
+    |                                                    v
+    |                                             API (/auth/callback) <-- Provider callback
+    |                                                    |
+    v                                                    v
+Frontend (reads session)                         Sets httpOnly cookie (kw-session)
 ```
 
 - Session tokens are HMAC-SHA256 signed JWTs stored in a `kw-session` httpOnly cookie
-- The signing key is stored in a Kubernetes Secret
+- The signing key is stored in a Kubernetes Secret, and is used for sessions
+  regardless of which authentication method issued them
+- Local user passwords are bcrypt-hashed and stored in a per-user Kubernetes
+  Secret (`kw-user-<slug>-local-auth`), referenced from the `User` CR
 - User state is stored in `User` CRDs (cluster-scoped)
 - Configuration is stored in an `AuthConfig` CRD (singleton named `default`)
 
@@ -36,8 +46,9 @@ Frontend (reads session)          Sets httpOnly cookie (kw-session)
 
 - kube-workspaces deployed (controller, API, frontend)
 - CRDs installed (`kubectl apply --server-side -k deploy/kustomize/crds/`)
-- An OIDC provider configured with a client ID and secret
-- The API must be reachable at a stable URL for the OIDC callback
+- For OIDC: an OIDC provider configured with a client ID and secret, and the
+  API reachable at a stable URL for the OIDC callback
+- For local auth: nothing extra — see [Option 5](#option-5-local-authentication) below
 
 ---
 
@@ -345,11 +356,133 @@ spec:
 
 ---
 
+## Option 5: Local Authentication
+
+Local auth provides username/password login with no external identity provider.
+It is the fastest way to get authentication running, and can be enabled
+independently of OIDC, or alongside it (a user can have local auth, OIDC, or
+both configured for the same email).
+
+### Quick start (Kustomize)
+
+```bash
+kubectl apply --server-side -k deploy/kustomize/crds/
+kubectl apply --server-side -k deploy/kustomize/overlays/auth-local/
+```
+
+This creates:
+- An `AuthConfig` with `spec.enabled: true` and `spec.localAuth.enabled: true` (no OIDC)
+- A session signing key Secret (`kube-workspaces-session`) — required for all
+  sessions regardless of auth method, so it must exist even for local-only setups
+
+Within a few seconds, the controller auto-creates a default admin `User`
+(`admin@local` by default) with a randomly generated password stored in a
+Secret named `kw-user-admin-at-local-local-auth` in `kube-workspaces-system`.
+
+### Quick start (Helm)
+
+```bash
+helm install kube-workspaces helm/kube-workspaces/ \
+  --namespace kube-workspaces-system --create-namespace \
+  --set auth.enabled=true \
+  --set auth.localAuth.enabled=true
+```
+
+Or via `make`:
+
+```bash
+make deploy-auth-local
+```
+
+### Retrieving the bootstrap admin password
+
+```bash
+make get-admin-password
+# or directly:
+kubectl get secret kw-user-admin-at-local-local-auth \
+  -n kube-workspaces-system -o jsonpath='{.data.password}' | base64 -d
+```
+
+The plaintext `password` key only exists until the admin changes their
+password for the first time (they are required to on first login) — after
+that, only the bcrypt `passwordHash` key remains, and `get-admin-password`
+will report an error.
+
+### Customizing the bootstrap admin
+
+```yaml
+auth:
+  enabled: true
+  localAuth:
+    enabled: true
+    bootstrapAdmin:
+      email: "root@example.com"   # defaults to admin@local
+      skip: false                  # set true to skip auto-creation entirely
+```
+
+### Enabling local auth alongside OIDC
+
+Add `spec.localAuth` to an AuthConfig that already has `spec.oidc` configured
+(see `deploy/kustomize/overlays/auth/authconfig.yaml` for a commented example),
+or with Helm:
+
+```bash
+helm upgrade kube-workspaces helm/kube-workspaces/ \
+  --reuse-values \
+  --set auth.oidc.issuerURL=https://dex.example.com \
+  --set auth.localAuth.enabled=true
+```
+
+Both login methods appear on the login page; users can be created with either
+method independently.
+
+### Creating additional local users
+
+Via the admin UI (`/admin/users` → New User → Auth method: Local password), or
+via the API:
+
+```bash
+curl -X POST https://workspaces.example.com/admin/users \
+  -H "Content-Type: application/json" \
+  -b "kw-session=<admin-session-cookie>" \
+  -d '{
+    "email": "jane.doe@example.com",
+    "displayName": "Jane Doe",
+    "role": "viewer",
+    "authMethod": "local"
+  }'
+```
+
+Response includes a one-time `password` field (auto-generated if omitted from
+the request). The user must change it on first login
+(`spec.localAuth.mustChangePassword: true`).
+
+### Resetting a local user's password
+
+```bash
+curl -X POST https://workspaces.example.com/admin/users/jane-doe-at-example-com/reset-password \
+  -b "kw-session=<admin-session-cookie>"
+```
+
+Returns a new one-time password and sets `mustChangePassword: true` again.
+
+### Password policy and lockout
+
+- Minimum password length: 12 characters (enforced server-side on change/reset)
+- Passwords are bcrypt-hashed (cost 12) before being stored
+- After 5 consecutive failed login attempts for a user, that account is
+  temporarily locked with exponential backoff (1m, 5m, 15m, then 30m), tracked
+  in `User.status.failedLoginAttempts` / `status.lockedUntil`
+- The `/auth/login/local` endpoint additionally applies a coarse per-IP rate
+  limit, independent of per-user lockout
+
+---
+
 ## User Management
 
 ### Creating users manually
 
-Users are auto-created on first login when `registration.autoProvision` is true. You can also pre-create users:
+Users are auto-created on first login when `registration.autoProvision` is true (OIDC), or via the admin API/UI (local auth — see [Option 5](#option-5-local-authentication)). You can also pre-create OIDC users directly as a CR:
 
 ```yaml
 apiVersion: kubeworkspaces.io/v1alpha1
@@ -369,6 +502,10 @@ spec:
 kubectl apply -f user.yaml
 ```
 
+Note: pre-creating a User this way does not give them local-auth password
+login — that requires a password Secret and `spec.localAuth`, which the admin
+API sets up for you (see [Option 5](#option-5-local-authentication)).
+
 ### Roles
 
 | Role | Capabilities |
@@ -377,11 +514,17 @@ kubectl apply -f user.yaml
 | `editor` | Create, edit, delete workspaces in assigned namespaces |
 | `viewer` | Read-only access to workspaces in assigned namespaces |
 
+A user's authentication method (OIDC, local, or both) is independent of their
+role — `spec.role` applies regardless of how they signed in.
+
 ### Disabling a user
 
 ```bash
 kubectl patch user jane-doe --type=merge -p '{"spec":{"disabled":true}}'
 ```
+
+Disabling blocks both OIDC and local login for that user, and pauses
+reconciliation of their namespace/RBAC.
 
 ### Granting shared namespace access
 
@@ -390,6 +533,9 @@ kubectl patch user jane-doe --type=json -p '[
   {"op": "add", "path": "/spec/namespaceAccess/-", "value": {"namespace": "team-alpha", "role": "editor"}}
 ]'
 ```
+
+By default, new users (local or OIDC) have no namespace access beyond their
+personal namespace (if enabled) — namespace access must be granted explicitly.
 
 ---
 
@@ -424,3 +570,36 @@ Ensure:
 - Check that `personalNamespaces.enabled: true` in AuthConfig
 - Look at the User controller logs: `kubectl logs -l app.kubernetes.io/component=controller -n kube-workspaces-system`
 - Verify the User CR status: `kubectl get user <name> -o yaml`
+
+### Local login returns "account_locked"
+
+The account has 5 or more consecutive failed login attempts. Check:
+
+```bash
+kubectl get user <name> -o jsonpath='{.status.failedLoginAttempts} {.status.lockedUntil}'
+```
+
+Wait for `lockedUntil` to pass, or clear it manually:
+
+```bash
+kubectl patch user <name> --subresource=status --type=merge \
+  -p '{"status":{"failedLoginAttempts":0,"lockedUntil":null}}'
+```
+
+### `make get-admin-password` reports an error
+
+The plaintext password is removed from the Secret as soon as the admin changes
+it for the first time — this is expected. If the admin has forgotten their
+password, reset it as another admin via the admin API/UI, or, if no other
+admin account exists, delete the `User` and its password Secret to let the
+controller re-create the bootstrap admin:
+
+```bash
+kubectl delete user admin-at-local
+kubectl delete secret kw-user-admin-at-local-local-auth -n kube-workspaces-system
+```
+
+The controller re-reconciles the `AuthConfig` on its periodic 5-minute
+recheck (or immediately if you touch the CR, e.g.
+`kubectl annotate authconfig default kubectl.kubernetes.io/restartedAt="$(date +%s)" --overwrite`),
+recreating both the `User` and its password Secret.

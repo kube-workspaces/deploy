@@ -202,6 +202,17 @@ auth:
     allowedEmails: []
     requireApproval: false
   adminEmails: []
+  # Local (username/password) authentication. May be enabled independently of,
+  # or alongside, OIDC. When enabled, a default admin user is auto-created with
+  # a randomly generated password stored in a Kubernetes Secret (see
+  # docs/authentication.md for retrieval instructions).
+  localAuth:
+    enabled: false
+    bootstrapAdmin:
+      email: "admin@local"
+      # Set to true to skip auto-creating the bootstrap admin user, e.g. if one
+      # has already been provisioned manually.
+      skip: false
 
 # Install workspace RBAC ClusterRoles (used by User controller for RoleBindings)
 workspaceRoles:

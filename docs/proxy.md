@@ -369,7 +369,7 @@ Direct path-based routing without rewriting:
 | Path | Backend | Notes |
 |------|---------|-------|
 | `/v1` | API | REST API endpoints |
-| `/auth` | API | OIDC login/callback |
+| `/auth` | API | OIDC/local login, callback, session endpoints |
 | `/openapi` | API | OpenAPI spec |
 | `/proxy` | **Proxy** | Workspace reverse proxy (auth-enabled) |
 | `/` (catch-all) | Frontend | Next.js app |

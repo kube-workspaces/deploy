@@ -74,6 +74,32 @@ spec:
                 description: Enabled is the master switch for authentication. When
                   false, the system operates without auth.
                 type: boolean
+              localAuth:
+                description: |-
+                  LocalAuth configures local username/password authentication. It may be
+                  enabled independently of, or alongside, OIDC.
+                properties:
+                  bootstrapAdmin:
+                    description: |-
+                      BootstrapAdmin configures auto-creation of a default admin user when local
+                      auth is first enabled.
+                    properties:
+                      email:
+                        default: admin@local
+                        description: Email is the identifier used for the auto-created
+                          admin user.
+                        type: string
+                      skip:
+                        description: |-
+                          Skip disables auto-creation of the bootstrap admin user, e.g. when an
+                          admin user has already been provisioned manually.
+                        type: boolean
+                    type: object
+                  enabled:
+                    description: Enabled controls whether local username/password
+                      authentication is available.
+                    type: boolean
+                type: object
               oidc:
                 description: OIDC contains the OIDC provider configuration.
                 properties:

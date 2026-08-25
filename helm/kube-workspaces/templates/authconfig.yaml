@@ -72,4 +72,15 @@ spec:
   adminEmails:
     {{- toYaml .Values.auth.adminEmails | nindent 4 }}
   {{- end }}
+  {{- if and .Values.auth.localAuth .Values.auth.localAuth.enabled }}
+  localAuth:
+    enabled: true
+    {{- if .Values.auth.localAuth.bootstrapAdmin }}
+    bootstrapAdmin:
+      {{- if .Values.auth.localAuth.bootstrapAdmin.email }}
+      email: {{ .Values.auth.localAuth.bootstrapAdmin.email | quote }}
+      {{- end }}
+      skip: {{ .Values.auth.localAuth.bootstrapAdmin.skip | default false }}
+    {{- end }}
+  {{- end }}
 {{- end }}

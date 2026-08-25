@@ -26,6 +26,7 @@ KNOWN_SUFFIXES = (
     "manager",
     "proxy-secrets",
     "proxy",
+    "local-auth-secrets",
     "workspace-admin-role",
     "workspace-editor-role",
     "workspace-viewer-role",

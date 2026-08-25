@@ -78,3 +78,39 @@ subjects:
   - kind: ServiceAccount
     name: {{ include "kube-workspaces.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
+---
+# Local authentication support: the controller (bootstrap admin) and API
+# (user/password admin CRUD) need to create, update, and delete the Secrets
+# holding local users' bcrypt password hashes. These Secrets always live in
+# the release namespace regardless of a user's personal namespace, so write
+# access is scoped to this namespace only rather than added to the cluster-wide
+# ClusterRole above (which keeps read-only access to Secrets everywhere else).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "kube-workspaces.fullname" . }}-local-auth-secrets
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auth
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "kube-workspaces.fullname" . }}-local-auth-secrets
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auth
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "kube-workspaces.fullname" . }}-local-auth-secrets
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "kube-workspaces.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}

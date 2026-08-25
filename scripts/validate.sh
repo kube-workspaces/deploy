@@ -29,6 +29,7 @@ KUSTOMIZE_DIRS=(
   kustomize/crds
   kustomize/base
   kustomize/overlays/auth
+  kustomize/overlays/auth-local
   kustomize/overlays/test
 )
 
@@ -94,6 +95,16 @@ render_case auth-full \
   --set auth.oidc.clientSecret.value=shhh \
   --set auth.personalNamespaces.enabled=true \
   --set 'auth.adminEmails[0]=admin@example.com'
+render_case auth-local \
+  --set auth.enabled=true \
+  --set auth.localAuth.enabled=true
+render_case auth-local-and-oidc \
+  --set auth.enabled=true \
+  --set auth.oidc.issuerURL=https://dex.example.com \
+  --set auth.oidc.clientID=kube-workspaces \
+  --set auth.oidc.clientSecret.create=true \
+  --set auth.oidc.clientSecret.value=shhh \
+  --set auth.localAuth.enabled=true
 render_case dex --set dex.enabled=true
 render_case ingress --set ingress.enabled=true
 render_case ingress-custom \
@@ -203,7 +214,7 @@ else
   }
 
   # Rendered kustomize output.
-  for d in kustomize/base kustomize/overlays/auth kustomize/overlays/test; do
+  for d in kustomize/base kustomize/overlays/auth kustomize/overlays/auth-local kustomize/overlays/test; do
     if out=$(kustomize build "$d" | kc - 2>&1); then
       pass "kubeconform $d"
     else

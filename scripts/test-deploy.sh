@@ -9,6 +9,7 @@
 #   helm        the local chart in helm/kube-workspaces/
 #   helm-oci    the published chart from ghcr.io  (tests the artifact users get)
 #   auth        kustomize with the auth overlay
+#   auth-local  kustomize with the local-only auth overlay (no OIDC provider)
 #   argocd      install Argo CD, then both Application manifests
 #   e2e         kustomize, then the full workspace lifecycle test
 #
@@ -28,15 +29,15 @@ source "${SCRIPT_DIR}/lib/k8s.sh"
 
 METHOD="${1:-}"
 case "$METHOD" in
-  kustomize|helm|helm-oci|auth|argocd|e2e) ;;
+  kustomize|helm|helm-oci|auth|auth-local|argocd|e2e) ;;
   *)
-    echo "usage: $0 {kustomize|helm|helm-oci|auth|argocd|e2e}" >&2
+    echo "usage: $0 {kustomize|helm|helm-oci|auth|auth-local|argocd|e2e}" >&2
     exit 2
     ;;
 esac
 
 require_tools kubectl kustomize curl
-[ "$METHOD" = "kustomize" ] || [ "$METHOD" = "auth" ] || require_tools helm
+[ "$METHOD" = "kustomize" ] || [ "$METHOD" = "auth" ] || [ "$METHOD" = "auth-local" ] || require_tools helm
 
 cd "$REPO_ROOT"
 
@@ -117,6 +118,20 @@ case "$METHOD" in
     # this test proves the manifests apply and the components still start.
     check "AuthConfig CR was created" \
       kubectl get authconfig default
+    endgroup
+    ;;
+
+  auth-local)
+    group "deploy: kustomize + local-only auth overlay"
+    deploy_kustomize_common kustomize/overlays/auth-local/
+    check "AuthConfig CR was created" \
+      kubectl get authconfig default
+    # No OIDC issuer to verify here, so the controller should mark it ready
+    # once the bootstrap admin has been reconciled. Give it a moment.
+    check "bootstrap admin User was created" \
+      bash -c 'for i in $(seq 1 30); do kubectl get user admin-at-local >/dev/null 2>&1 && exit 0; sleep 2; done; exit 1'
+    check "bootstrap admin password secret was created" \
+      kubectl get secret kw-user-admin-at-local-local-auth -n "$KW_NAMESPACE"
     endgroup
     ;;
 

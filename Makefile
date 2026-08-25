@@ -1,13 +1,14 @@
 # Deploy repo Makefile - operational targets for kube-workspaces deployment
 
 .PHONY: install-crd install-images deploy-kustomize deploy-crds \
-	deploy-auth auth-enable auth-disable port-forward-frontend port-forward-api \
+	deploy-auth deploy-auth-local auth-enable auth-disable get-admin-password \
+	port-forward-frontend port-forward-api \
 	port-forward-proxy helm-install helm-upgrade helm-template lint-helm \
 	sync-helm-crds check-helm-crds sync-images check-images \
 	test-tools test-lint test-smoke test-e2e test-all test-dump \
 	kind-up kind-down \
 	test-deploy-kustomize test-deploy-helm test-deploy-helm-oci \
-	test-deploy-argocd test-deploy-auth test-upgrade test-ingress test-e2e-full
+	test-deploy-argocd test-deploy-auth test-deploy-auth-local test-upgrade test-ingress test-e2e-full
 
 # ---------------------------------------------------------------------------
 # Testing
@@ -75,6 +76,9 @@ test-deploy-argocd: test-tools
 test-deploy-auth: test-tools
 	@scripts/test-deploy.sh auth
 
+test-deploy-auth-local: test-tools
+	@scripts/test-deploy.sh auth-local
+
 test-upgrade: test-tools
 	@scripts/test-upgrade.sh
 
@@ -93,6 +97,7 @@ test-all: test-lint
 	@scripts/test-deploy.sh helm-oci
 	@scripts/test-deploy.sh e2e
 	@scripts/test-deploy.sh auth
+	@scripts/test-deploy.sh auth-local
 	@scripts/test-deploy.sh argocd
 	@scripts/test-upgrade.sh
 	@INSTALL_K3D=1 scripts/install-tools.sh >/dev/null
@@ -187,21 +192,28 @@ deploy-crds:
 deploy-auth:
 	kubectl apply --server-side -k kustomize/overlays/auth/
 
+# Deploy via Kustomize with the local-only auth overlay (creates AuthConfig +
+# session secret; no OIDC provider required). A default admin user is
+# auto-created — retrieve its password with 'make get-admin-password'.
+deploy-auth-local:
+	kubectl apply --server-side -k kustomize/overlays/auth-local/
+
 # Enable authentication.
 # Requires an existing AuthConfig CR. One is NOT created by kustomize/base — it
-# only exists if you deployed with the auth overlay or Helm auth.enabled=true.
-# Auth cannot be enabled without OIDC config (the controller rejects it), so we
-# refuse to create a half-configured CR here.
+# only exists if you deployed with an auth overlay or Helm auth.enabled=true.
+# Auth cannot be enabled without at least one authentication method configured
+# (the controller rejects it): either OIDC or localAuth.
 auth-enable:
 	@if ! kubectl get authconfig default >/dev/null 2>&1; then \
 		echo "error: AuthConfig 'default' not found in the cluster."; \
 		echo; \
 		echo "kustomize/base does not create one. To get an AuthConfig, either:"; \
-		echo "  - Kustomize: kubectl apply --server-side -k kustomize/overlays/auth/"; \
-		echo "  - Helm:      helm upgrade ... --set auth.enabled=true"; \
+		echo "  - Kustomize (OIDC):  kubectl apply --server-side -k kustomize/overlays/auth/"; \
+		echo "  - Kustomize (local): kubectl apply --server-side -k kustomize/overlays/auth-local/"; \
+		echo "  - Helm:              helm upgrade ... --set auth.enabled=true"; \
 		echo; \
 		echo "Enabling auth also requires OIDC settings (issuerURL, clientID,"; \
-		echo "clientSecret). See docs/authentication.md."; \
+		echo "clientSecret) or localAuth.enabled=true. See docs/authentication.md."; \
 		exit 1; \
 	fi
 	kubectl patch authconfig default --type=merge -p '{"spec":{"enabled":true}}'
@@ -213,6 +225,21 @@ auth-disable:
 		exit 0; \
 	fi
 	kubectl patch authconfig default --type=merge -p '{"spec":{"enabled":false}}'
+
+# Retrieve the bootstrap local admin's password.
+# Only works until the admin changes their password for the first time — the
+# plaintext key is removed from the Secret at that point (see
+# docs/authentication.md).
+ADMIN_EMAIL ?= admin@local
+get-admin-password:
+	@slug=$$(echo "$(ADMIN_EMAIL)" | tr '[:upper:]' '[:lower:]' | sed -e 's/@/-at-/' -e 's/\./-/g' -e 's/_/-/g'); \
+	secret="kw-user-$${slug}-local-auth"; \
+	pw=$$(kubectl get secret "$$secret" -n kube-workspaces-system -o jsonpath='{.data.password}' 2>/dev/null | base64 -d); \
+	if [ -z "$$pw" ]; then \
+		echo "error: no plaintext password found in secret/$$secret (already changed, or auth not enabled yet)."; \
+		exit 1; \
+	fi; \
+	echo "$$pw"
 
 # Port-forward frontend to localhost:3000
 port-forward-frontend:
