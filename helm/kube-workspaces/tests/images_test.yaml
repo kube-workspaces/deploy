@@ -4,12 +4,16 @@
 # anything not listed (additionalPorts, tags, category, defaultUser, ...) was
 # silently dropped. It now passes everything through with `omit`, and these tests
 # pin that behaviour down.
+#
+# installExampleImages defaults to true, so tests that only care about
+# .Values.images explicitly disable it to keep document counts predictable.
 suite: images
 templates:
   - images.yaml
 tests:
   - it: renders one Image CR per entry
     set:
+      installExampleImages: false
       images:
         - name: alpha
           image: example/alpha:1
@@ -31,6 +35,7 @@ tests:
 
   - it: is cluster-scoped, so no namespace is set
     set:
+      installExampleImages: false
       images:
         - name: alpha
           image: example/alpha:1
@@ -44,6 +49,7 @@ tests:
 
   - it: defaults displayName to the entry name
     set:
+      installExampleImages: false
       images:
         - name: alpha
           image: example/alpha:1
@@ -54,6 +60,7 @@ tests:
 
   - it: honours an explicit displayName
     set:
+      installExampleImages: false
       images:
         - name: alpha
           displayName: Alpha Workspace
@@ -67,6 +74,7 @@ tests:
   # survive, not just a hardcoded allow-list.
   - it: passes through fields the template does not name explicitly
     set:
+      installExampleImages: false
       images:
         - name: alpha
           image: example/alpha:1
@@ -107,6 +115,7 @@ tests:
   # 'name' and 'displayName' are template inputs, not CRD spec fields.
   - it: does not leak the name key into the spec
     set:
+      installExampleImages: false
       images:
         - name: alpha
           image: example/alpha:1
@@ -114,8 +123,9 @@ tests:
       - isNull:
           path: spec.name
 
-  - it: renders nothing when images is empty
+  - it: renders nothing when images is empty and no catalog is enabled
     set:
+      installExampleImages: false
       images: []
     asserts:
       - hasDocuments:
@@ -123,8 +133,59 @@ tests:
 
   - it: fails when an entry has no name
     set:
+      installExampleImages: false
       images:
         - image: example/alpha:1
     asserts:
       - failedTemplate:
           errorMessage: "each entry in .Values.images requires a 'name' (RFC 1123 compliant)"
+
+  # --- installExampleImages / installCatalogImages -------------------------
+
+  - it: installs the curated examples by default
+    asserts:
+      - hasDocuments:
+          count: 5
+
+  - it: installs nothing when installExampleImages is false and no images are set
+    set:
+      installExampleImages: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: installs the full catalog when installCatalogImages is true
+    set:
+      installCatalogImages: true
+    asserts:
+      - hasDocuments:
+          count: 38
+
+  - it: installCatalogImages takes precedence over installExampleImages (no duplicates)
+    set:
+      installCatalogImages: true
+      installExampleImages: true
+    asserts:
+      - hasDocuments:
+          count: 38
+
+  - it: layers custom images on top of the default examples
+    set:
+      images:
+        - name: custom1
+          image: example/custom:1
+          defaultPort: 80
+    asserts:
+      - hasDocuments:
+          count: 6
+
+  - it: layers custom images on top of the full catalog
+    set:
+      installCatalogImages: true
+      images:
+        - name: custom1
+          image: example/custom:1
+          defaultPort: 80
+    asserts:
+      - hasDocuments:
+          count: 39

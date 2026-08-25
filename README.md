@@ -298,10 +298,28 @@ spec:
 
 ## Available Images
 
-| Image | Port | Default Path | Description |
-|-------|------|--------------|-------------|
-| `codercom/code-server:latest` | 8080 | `/` | Browser-based VS Code (auth disabled by default) |
-| `flaccid/debian-desktop:latest` | 6901 | `/vnc.html?resize=remote` | Full Linux desktop (noVNC) |
+The full catalog of `Image` manifests lives in
+[kube-workspaces/image-catalog](https://github.com/kube-workspaces/image-catalog),
+which is the source of truth. This repo vendors a pinned release of it into
+[`images.yaml`](images.yaml) and `helm/kube-workspaces/files/images-*.yaml` —
+see [Image Catalog Sync](CONTRIBUTING.md#image-catalog-sync) in
+CONTRIBUTING.md for how that vendoring works.
+
+- **Kustomize**: `make install-images` applies the full vendored `images.yaml`
+  (currently 38 images). `kustomize/base` does not create any `Image` CRs on
+  its own — this is a required separate step.
+- **Helm**: installs a curated set of 5 example images by default
+  (`installExampleImages: true`). Set `installCatalogImages: true` to install
+  the full catalog instead, or `installExampleImages: false` to install
+  neither. Add your own images via the `images:` values list regardless of
+  which catalog setting you use.
+
+  ```bash
+  # Full catalog via Helm
+  helm install kube-workspaces helm/kube-workspaces/ \
+    --namespace kube-workspaces-system --create-namespace \
+    --set installCatalogImages=true
+  ```
 
 ## Workspace Proxy
 

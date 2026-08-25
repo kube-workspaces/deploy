@@ -1,9 +1,9 @@
 # Deploy repo Makefile - operational targets for kube-workspaces deployment
 
-.PHONY: install-crd install-images pull-images push-images deploy-kustomize deploy-crds \
+.PHONY: install-crd install-images deploy-kustomize deploy-crds \
 	deploy-auth auth-enable auth-disable port-forward-frontend port-forward-api \
 	port-forward-proxy helm-install helm-upgrade helm-template lint-helm \
-	sync-helm-crds check-helm-crds \
+	sync-helm-crds check-helm-crds sync-images check-images \
 	test-tools test-lint test-smoke test-e2e test-all test-dump \
 	kind-up kind-down \
 	test-deploy-kustomize test-deploy-helm test-deploy-helm-oci \
@@ -24,6 +24,11 @@
 KIND_CLUSTER ?= kube-workspaces-test
 KIND_NODE_IMAGE ?= kindest/node:v1.31.0
 export KIND_CLUSTER KIND_NODE_IMAGE
+
+# Image CR catalog is vendored from kube-workspaces/image-catalog at this
+# pinned release. Bump deliberately with `make sync-images`.
+IMAGE_CATALOG_VERSION ?= v0.1.0
+IMAGE_CATALOG_REPO ?= kube-workspaces/image-catalog
 
 # Install pinned test tools into .bin/ (gitignored).
 test-tools:
@@ -121,6 +126,42 @@ check-helm-crds:
 	if [ -n "$$drift" ]; then echo "Run 'make sync-helm-crds' to resolve."; exit 1; fi; \
 	echo "Helm CRDs are in sync with kustomize/crds/"
 
+# images.yaml is vendored from kube-workspaces/image-catalog (source of
+# truth for Image CR manifests) at IMAGE_CATALOG_VERSION, not hand-edited.
+# The Helm chart gets its own copies so `helm install` works standalone
+# without a runtime fetch.
+IMAGE_CATALOG_BASE_URL := https://github.com/$(IMAGE_CATALOG_REPO)/releases/download/$(IMAGE_CATALOG_VERSION)
+
+sync-images:
+	@curl -fsSLo images.yaml "$(IMAGE_CATALOG_BASE_URL)/images.yaml"
+	@mkdir -p helm/kube-workspaces/files
+	@curl -fsSLo helm/kube-workspaces/files/images-catalog.yaml "$(IMAGE_CATALOG_BASE_URL)/images.yaml"
+	@curl -fsSLo helm/kube-workspaces/files/images-examples.yaml "$(IMAGE_CATALOG_BASE_URL)/images-examples.yaml"
+	@echo "Synced images.yaml and helm/kube-workspaces/files/images-*.yaml from $(IMAGE_CATALOG_REPO)@$(IMAGE_CATALOG_VERSION)"
+
+# Fail if the vendored image manifests have drifted from
+# IMAGE_CATALOG_VERSION — catches a version bump that forgot 'make sync-images'.
+check-images:
+	@tmp=$$(mktemp -d); \
+	trap 'rm -rf "$$tmp"' EXIT; \
+	curl -fsSLo "$$tmp/images.yaml" "$(IMAGE_CATALOG_BASE_URL)/images.yaml"; \
+	curl -fsSLo "$$tmp/images-examples.yaml" "$(IMAGE_CATALOG_BASE_URL)/images-examples.yaml"; \
+	drift=""; \
+	if ! diff -q "$$tmp/images.yaml" images.yaml >/dev/null 2>&1; then \
+		echo "DRIFT: images.yaml differs from $(IMAGE_CATALOG_REPO)@$(IMAGE_CATALOG_VERSION)"; \
+		drift="yes"; \
+	fi; \
+	if ! diff -q "$$tmp/images.yaml" helm/kube-workspaces/files/images-catalog.yaml >/dev/null 2>&1; then \
+		echo "DRIFT: helm/kube-workspaces/files/images-catalog.yaml differs from $(IMAGE_CATALOG_REPO)@$(IMAGE_CATALOG_VERSION)"; \
+		drift="yes"; \
+	fi; \
+	if ! diff -q "$$tmp/images-examples.yaml" helm/kube-workspaces/files/images-examples.yaml >/dev/null 2>&1; then \
+		echo "DRIFT: helm/kube-workspaces/files/images-examples.yaml differs from $(IMAGE_CATALOG_REPO)@$(IMAGE_CATALOG_VERSION)"; \
+		drift="yes"; \
+	fi; \
+	if [ -n "$$drift" ]; then echo "Run 'make sync-images' to resolve."; exit 1; fi; \
+	echo "Vendored image manifests are in sync with $(IMAGE_CATALOG_REPO)@$(IMAGE_CATALOG_VERSION)"
+
 # Install CRDs to the current cluster (server-side apply).
 # -k, not -f: with -f, kubectl treats kustomization.yaml as a manifest and fails
 # with 'no matches for kind "Kustomization"' after applying the CRDs, so the
@@ -128,16 +169,9 @@ check-helm-crds:
 install-crd:
 	kubectl apply --server-side -k kustomize/crds/
 
-# Install Image CRs from images.yaml
+# Install Image CRs from images.yaml (vendored from image-catalog — see
+# 'make sync-images', do not hand-edit)
 install-images:
-	kubectl apply --server-side -f images.yaml
-
-# Pull Image CRs from cluster into local images.yaml
-pull-images:
-	python3 pull-images.py > images.yaml
-
-# Push local images.yaml to cluster
-push-images:
 	kubectl apply --server-side -f images.yaml
 
 # Deploy via Kustomize (base)

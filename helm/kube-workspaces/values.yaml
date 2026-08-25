@@ -134,115 +134,25 @@ namespaces:
   # Also create the workspace namespace (workspaceNamespace)
   createWorkspaceNamespace: true
 
-# Available workspace images (become Image CRs)
-# `name` becomes the Image CR object name and MUST be RFC 1123 compliant
-# (lowercase alphanumerics and '-'). `displayName` is the label shown in the UI.
-images:
-  - name: code-server
-    displayName: "Code Server (VS Code)"
-    image: "codercom/code-server:latest"
-    description: "Browser-based VS Code experience"
-    defaultPort: 8080
-    defaultPath: "/"
-    icon: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/code-server.png"
-    homepageURL: "https://github.com/coder/code-server"
-    sourceURL: "https://github.com/coder/code-server"
-    defaultArgs:
-      - "--bind-addr"
-      - "0.0.0.0:8080"
-      - "--auth"
-      - "none"
-    defaultEnv:
-      - name: VSCODE_PROXY_URI
-        value: "/proxy/{{namespace}}/{{name}}"
-    proxyConfig:
-      needsNoopSW: true
-      rewriteHostAbsolutePaths: true
-  - name: debian-desktop
-    displayName: "Debian Desktop"
-    image: "flaccid/debian-desktop:latest"
-    description: "Full Linux desktop via noVNC"
-    defaultPort: 6901
-    defaultPath: "/vnc.html?resize=remote"
-    icon: "https://cdn.simpleicons.org/debian/A81D33"
-    homepageURL: "https://www.debian.org"
-    sourceURL: "https://salsa.debian.org/debian/debian"
-    # The image serves VNC on 6901 and an audio WebSocket on 6902. Both must be
-    # exposed, otherwise noVNC's audio-plugin.js fails with "Protocol error".
-    additionalPorts:
-      - name: audio
-        port: 6902
-    proxyConfig:
-      needsNoopSW: true
-      websocketPaths:
-        - "/websockify"
-      rewriteHostAbsolutePaths: true
-      # Serves plain HTTP on 6901 (verified). Previously had tlsInsecure: true,
-      # which made the proxy dial HTTPS and fail with 502.
-      scheme: http
-      # Routes /audio/ requests to port 6902 instead of the default port.
-      audioPort: 6902
-  - name: kasm-desktop
-    displayName: "Kasm Desktop"
-    image: "kasmweb/desktop:1.19.0"
-    description: "Ubuntu desktop streamed via KasmVNC"
-    defaultPort: 6901
-    defaultPath: "/"
-    icon: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kasm.svg"
-    defaultCredentials:
-      username: "kasm-user"
-      password: "password"
-    proxyConfig:
-      needsNoopSW: true
-      websocketPaths:
-        - "/websockify"
-      rewriteHostAbsolutePaths: true
-      # KasmVNC serves HTTPS with a self-signed cert.
-      scheme: https
-      tlsSkipVerify: true
-  - name: kasm-chrome
-    displayName: "Kasm Chrome"
-    image: "kasmweb/chrome:1.19.0"
-    description: "Chrome browser streamed via KasmVNC"
-    defaultPort: 6901
-    defaultPath: "/"
-    icon: "https://cdn.simpleicons.org/googlechrome/4285F4"
-    privileged: true
-    homepageURL: "https://kasmweb.com"
-    sourceURL: "https://github.com/kasmtech"
-    defaultEnv:
-      - name: VNC_PW
-        value: "password"
-    defaultCredentials:
-      username: "kasm-user"
-      password: "password"
-    proxyConfig:
-      needsNoopSW: true
-      websocketPaths:
-        - "/websockify"
-      rewriteHostAbsolutePaths: true
-      # KasmVNC serves HTTPS with a self-signed cert.
-      scheme: https
-      tlsSkipVerify: true
-  - name: kasm-workspaces
-    displayName: "Kasm Workspaces"
-    image: "linuxserver/kasm:1.19.0"
-    description: "Full Kasm Workspaces platform with Docker-in-Docker. Requires privileged mode. Access the setup wizard first, then the main interface."
-    defaultPort: 3000
-    defaultPath: "/"
-    icon: "https://cdn.simpleicons.org/linuxserver/DA3B8A"
-    privileged: true
-    homepageURL: "https://kasmweb.com"
-    sourceURL: "https://github.com/linuxserver/docker-kasm"
-    defaultEnv:
-      - name: KASM_PORT
-        value: "3000"
-    proxyConfig:
-      needsNoopSW: true
-      rewriteHostAbsolutePaths: true
-      # Serves HTTPS with a self-signed cert on port 3000.
-      scheme: https
-      tlsSkipVerify: true
+# Workspace image catalog, vendored from kube-workspaces/image-catalog
+# (https://github.com/kube-workspaces/image-catalog) — see files/images-*.yaml
+# and `make sync-images` in this repo.
+#
+# installExampleImages: install a small curated set of Image CRs (currently
+# 5: code-server, debian-desktop, kasm, kasmweb-chrome, kasmweb-desktop) so a
+# first-time install has something to launch immediately.
+installExampleImages: true
+# installCatalogImages: install the FULL image catalog (38+ Image CRs) instead
+# of just the curated examples. Takes precedence over installExampleImages
+# when true.
+installCatalogImages: false
+
+# Additional/custom workspace images (become Image CRs), on top of whichever
+# catalog set is enabled above. `name` becomes the Image CR object name and
+# MUST be RFC 1123 compliant (lowercase alphanumerics and '-'). `displayName`
+# is the label shown in the UI. Every other Image CRD field is passed through
+# verbatim by templates/images.yaml.
+images: []
 
 serviceAccount:
   create: true

@@ -112,6 +112,8 @@ render_case no-namespaces \
   --set namespaces.create=false \
   --set namespaces.createReleaseNamespace=false
 render_case no-images --set images=null
+render_case full-image-catalog --set installCatalogImages=true
+render_case no-image-catalog --set installExampleImages=false
 render_case custom-images \
   --set controller.image.tag=v1.2.3 \
   --set api.image.tag=v1.2.3 \
