@@ -168,9 +168,11 @@ jobs:
           # --generate-notes appends the categorised commit list, grouped per
           # .github/release.yml, beneath our preamble.
           #
-          # --notes-file, not --notes "${{ ... }}": interpolating the body into the
-          # shell makes bash treat its backticks as command substitution, which
-          # silently ate every `code span` and the fenced block.
+          # Use --notes-file rather than passing the body through a GitHub
+          # expression: interpolating it into the shell makes bash treat its
+          # backticks as command substitution, which silently ate every code span
+          # and the fenced block. (A literal expression cannot appear even in a
+          # comment here — Actions evaluates it and fails to parse the file.)
           gh release create "$VERSION" \
             --title "$VERSION" \
             --notes-file /tmp/preamble.md \
