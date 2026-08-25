@@ -1,11 +1,24 @@
 {{- /*
-  Render an Image CR per entry in .Values.images.
+  Image CRs come from two sources:
 
-  Every key except "name" and "displayName" is passed through verbatim, so any
-  field the Image CRD supports can be set from values.yaml without editing this
-  template. Previously each field needed an explicit clause here, which silently
-  dropped anything not listed (additionalPorts, tags, category, defaultUser, ...).
+    1. The vendored image catalog (files/images-catalog.yaml or
+       files/images-examples.yaml, synced from kube-workspaces/image-catalog
+       via `make sync-images` — see that repo for the source of truth).
+       installCatalogImages installs the full catalog; otherwise
+       installExampleImages (default true) installs just the curated subset.
+       installCatalogImages takes precedence when both are true, to avoid
+       rendering duplicate Image CRs for the examples.
+
+    2. .Values.images — additional/custom images layered on top. Every key
+       except "name" and "displayName" is passed through verbatim, so any
+       field the Image CRD supports can be set from values.yaml without
+       editing this template.
 */ -}}
+{{- if .Values.installCatalogImages }}
+{{ .Files.Get "files/images-catalog.yaml" }}
+{{- else if .Values.installExampleImages }}
+{{ .Files.Get "files/images-examples.yaml" }}
+{{- end }}
 {{- range .Values.images }}
 {{- $name := required "each entry in .Values.images requires a 'name' (RFC 1123 compliant)" .name }}
 ---

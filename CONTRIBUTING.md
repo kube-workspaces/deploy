@@ -207,6 +207,30 @@ When CRDs change:
 
 `make check-helm-crds` runs in CI, so forgetting step 3 blocks the merge.
 
+## Image Catalog Sync
+
+`Image` CR manifests are not authored in this repo. The source of truth is
+[kube-workspaces/image-catalog](https://github.com/kube-workspaces/image-catalog),
+which is vendored here at a pinned version (`IMAGE_CATALOG_VERSION` in the
+Makefile) into three files:
+
+- `images.yaml` — full catalog, used by `make install-images` (Kustomize path)
+- `helm/kube-workspaces/files/images-catalog.yaml` — same content, packaged with the Helm chart
+- `helm/kube-workspaces/files/images-examples.yaml` — curated subset, installed by default via `installExampleImages: true`
+
+To add or edit an image, open a PR against `image-catalog`, not here.
+
+To pick up a new image-catalog release:
+
+1. Bump `IMAGE_CATALOG_VERSION` in `Makefile`
+2. Run `make sync-images`
+3. Commit the updated `images.yaml` and `helm/kube-workspaces/files/images-*.yaml`
+
+`make check-images` runs in CI (the `helm-publish` workflow, which already
+talks to the network) rather than `make test-lint` — Layer 0 static
+validation is offline-only. Forgetting step 2 blocks the chart publish, not
+the PR.
+
 ## Reporting Issues
 
 - Use GitHub Issues on the relevant repository

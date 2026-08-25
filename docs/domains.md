@@ -191,6 +191,7 @@ spec:
             className: traefik
             # ... hosts as above (single-host with /api route)
           images: []
+          installExampleImages: false
     - repoURL: https://github.com/kube-workspaces/deploy.git
       targetRevision: main
       path: kustomize/crds
@@ -205,8 +206,11 @@ spec:
 
 Notes:
 
-- Set `images: []` if you already manage `Image` CRs out-of-band (e.g. for a
-  curated image catalog), to stop the chart's default images from rendering.
+- Set `installExampleImages: false` (and leave `images: []`) if you already
+  manage `Image` CRs out-of-band (e.g. via a curated image catalog), to stop
+  the chart's default images from rendering. Set `installCatalogImages: true`
+  instead if you want the full vendored image-catalog rather than the curated
+  examples.
 - ArgoCD renders the chart with `helm template` and applies the output as plain
   manifests — it does not create a Helm release, so `helm list` won't show it.
 - The middleware YAML should be applied before the Ingress references it, or

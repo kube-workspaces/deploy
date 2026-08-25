@@ -44,6 +44,9 @@ jobs:
       - name: Check vendored CRDs are in sync
         run: make check-helm-crds
 
+      - name: Check vendored image catalog is in sync
+        run: make check-images
+
       - name: Lint chart
         run: helm lint helm/kube-workspaces/
 

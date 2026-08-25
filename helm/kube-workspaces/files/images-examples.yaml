@@ -1,0 +1,171 @@
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: code-server
+  annotations:
+    catalog.kubeworkspaces.io/example: "true"
+spec:
+  defaultArgs:
+  - --bind-addr
+  - 0.0.0.0:8080
+  - --auth
+  - none
+  defaultEnv:
+  - name: VSCODE_PROXY_URI
+    value: /proxy/{{namespace}}/{{name}}/proxy/{{port}}/
+  defaultPath: /
+  defaultPort: 8080
+  description: Browser-based VS Code experience
+  category: IDE
+  tags:
+  - code
+  - vscode
+  - editor
+  displayName: Code Server (VS Code)
+  homepageURL: https://github.com/coder/code-server
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/code-server.png
+  image: codercom/code-server:latest
+  imageHomepageURL: https://hub.docker.com/r/codercom/code-server
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+  sourceURL: https://github.com/coder/code-server
+  defaultUser: coder
+  defaultHomedir: /home/coder
+  defaultUID: 1000
+  defaultInitContainers:
+    - name: volume-permissions
+      image: busybox:1.37
+      command: ["sh", "-c", "chown -R {{uid}}:{{uid}} /home/coder"]
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: debian-desktop
+  annotations:
+    catalog.kubeworkspaces.io/example: "true"
+spec:
+  defaultPath: /vnc.html?resize=remote
+  defaultPort: 6901
+  description: Debian desktop in a container with web access via TigerVNC and websockify.
+  category: Desktop
+  tags:
+  - vnc
+  - linux
+  - debian
+  displayName: Debian Desktop
+  homepageURL: https://github.com/flaccid/container-debian-desktop/blob/main/README.md
+  icon: https://raw.githubusercontent.com/flaccid/container-debian-desktop/refs/heads/main/config/openlogo-debianV2.svg
+  image: flaccid/debian-desktop:latest
+  imageHomepageURL: https://hub.docker.com/r/flaccid/debian-desktop
+  privileged: false
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    audioPort: 6902
+  additionalPorts:
+    - name: audio
+      port: 6902
+  sourceURL: https://github.com/flaccid/container-debian-desktop
+  defaultUser: admin
+  defaultHomedir: /home/admin
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: kasmweb-chrome
+  annotations:
+    catalog.kubeworkspaces.io/example: "true"
+spec:
+  defaultCredentials:
+    password: password
+    username: kasm_user
+  defaultEnv:
+  - name: VNC_PW
+    value: password
+  defaultPath: /
+  defaultPort: 6901
+  description: Chrome browser streamed via KasmVNC
+  category: Browser
+  displayName: Kasm Chrome
+  homepageURL: https://kasmweb.com
+  icon: https://cdn.simpleicons.org/googlechrome/4285F4
+  image: kasmweb/chrome:1.19.0
+  imageHomepageURL: https://hub.docker.com/r/kasmweb/chrome
+  privileged: true
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    scheme: https
+    tlsSkipVerify: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/kasmtech
+  defaultUser: kasm_user
+  defaultHomedir: /home/kasm_user
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: kasmweb-desktop
+  annotations:
+    catalog.kubeworkspaces.io/example: "true"
+spec:
+  defaultCredentials:
+    password: password
+    username: kasm_user
+  defaultEnv:
+  - name: VNC_PW
+    value: password
+  defaultPath: /
+  defaultPort: 6901
+  description: Ubuntu desktop streamed via KasmVNC
+  category: Desktop
+  displayName: Kasm Desktop
+  homepageURL: https://kasmweb.com
+  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kasm.svg
+  image: kasmweb/desktop:1.19.0
+  imageHomepageURL: https://hub.docker.com/r/kasmweb/desktop
+  privileged: true
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    scheme: https
+    tlsSkipVerify: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/kasmtech
+  defaultUser: kasm_user
+  defaultHomedir: /home/kasm_user
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: kasm
+  annotations:
+    catalog.kubeworkspaces.io/example: "true"
+spec:
+  defaultEnv:
+  - name: KASM_PORT
+    value: '3000'
+  defaultPath: /
+  defaultPort: 3000
+  description: Full Kasm Workspaces platform with Docker-in-Docker. Requires privileged
+    mode. Access the setup wizard first, then the main interface.
+  category: Desktop
+  tags:
+  - vnc
+  - linux
+  displayName: Kasm Workspaces
+  homepageURL: https://kasmweb.com
+  icon: https://cdn.simpleicons.org/linuxserver/DA3B8A
+  image: linuxserver/kasm:1.19.0
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/kasm
+  privileged: true
+  defaultSharedMemory: true
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    scheme: https
+    tlsSkipVerify: true
+  sourceURL: https://github.com/linuxserver/docker-kasm
