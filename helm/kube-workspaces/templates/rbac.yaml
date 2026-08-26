@@ -114,3 +114,41 @@ subjects:
   - kind: ServiceAccount
     name: {{ include "kube-workspaces.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
+---
+# When local auth is enabled, password Secrets may live in a separate system
+# namespace (kube-workspaces-system) that is not the release namespace. Grant
+# the same write access there so the API and controller can manage them.
+{{- if and .Values.auth.enabled .Values.auth.localAuth .Values.auth.localAuth.enabled }}
+{{- $systemNs := "kube-workspaces-system" }}
+{{- if ne $systemNs .Release.Namespace }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "kube-workspaces.fullname" . }}-local-auth-secrets
+  namespace: {{ $systemNs }}
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auth
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "kube-workspaces.fullname" . }}-local-auth-secrets
+  namespace: {{ $systemNs }}
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+    app.kubernetes.io/component: auth
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "kube-workspaces.fullname" . }}-local-auth-secrets
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "kube-workspaces.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- end }}

@@ -603,3 +603,56 @@ The controller re-reconciles the `AuthConfig` on its periodic 5-minute
 recheck (or immediately if you touch the CR, e.g.
 `kubectl annotate authconfig default kubectl.kubernetes.io/restartedAt="$(date +%s)" --overwrite`),
 recreating both the `User` and its password Secret.
+
+### Password change returns HTTP 500 "failed to update password"
+
+This error means the API's ServiceAccount does not have write access to the
+`kube-workspaces-system` namespace where password Secrets are stored.
+
+**Helm installs into a different release namespace** (e.g. a shared namespace)
+are the most common cause. The local-auth RBAC in the Helm chart creates a
+`Role`/`RoleBinding` scoped to `.Release.Namespace`, but password Secrets
+always live in `kube-workspaces-system`. Chart version **0.3.2+** adds the
+cross-namespace Role automatically when `auth.localAuth.enabled: true`. If you
+are on an older version, apply it manually:
+
+```bash
+kubectl apply --server-side -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kube-workspaces-local-auth-secrets
+  namespace: kube-workspaces-system
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kube-workspaces-local-auth-secrets
+  namespace: kube-workspaces-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kube-workspaces-local-auth-secrets
+subjects:
+  - kind: ServiceAccount
+    name: kube-workspaces          # adjust to your release name
+    namespace: <your-release-ns>   # the namespace you installed into
+EOF
+```
+
+Verify access was granted:
+
+```bash
+kubectl auth can-i update secrets \
+  --as=system:serviceaccount:<release-ns>:<sa-name> \
+  -n kube-workspaces-system
+# expected: yes
+```
+
+**Kustomize base installs** use `kube-workspaces-system` as both the release
+and secrets namespace, so the bundled `rbac.yaml` already grants the necessary
+access — no action required.

@@ -1,13 +1,26 @@
-# Unit tests for the local-auth Secrets RBAC (Role/RoleBinding), scoped to the
-# release namespace rather than added to the cluster-wide manager ClusterRole.
+# Unit tests for the local-auth Secrets RBAC.
+#
+# There are two sets of Role+RoleBinding:
+#   1. In the release namespace (.Release.Namespace) — for when secrets live
+#      in the same namespace as the deployment (default install path).
+#   2. In kube-workspaces-system — for when the release is in a different
+#      namespace (e.g. a shared namespace). This is the common production case
+#      and the one that was previously missing, causing HTTP 500 on password
+#      change (RBAC denied the Secret update).
 suite: rbac
 templates:
   - rbac.yaml
+set:
+  auth.enabled: true
+  auth.localAuth.enabled: true
 tests:
-  - it: creates a namespaced Role granting write access to Secrets
+  - it: creates a namespaced Role granting write access to Secrets in the release namespace
     documentSelector:
       path: kind
       value: Role
+    set:
+      # Override namespace so both Roles have distinct namespaces in this test
+      auth.localAuth.enabled: false
     asserts:
       - equal:
           path: metadata.name
@@ -25,10 +38,12 @@ tests:
           path: rules[0].verbs
           content: delete
 
-  - it: binds the Role to the shared service account
+  - it: binds the release-namespace Role to the shared service account
     documentSelector:
       path: kind
       value: RoleBinding
+    set:
+      auth.localAuth.enabled: false
     asserts:
       - equal:
           path: metadata.name
@@ -57,3 +72,29 @@ tests:
       - notContains:
           path: rules[8].verbs
           content: delete
+
+  - it: renders cross-namespace Role in kube-workspaces-system when local auth is enabled and release namespace differs
+    documentSelector:
+      path: metadata.namespace
+      value: kube-workspaces-system
+    set:
+      auth.localAuth.enabled: true
+    asserts:
+      - isKind:
+          of: Role
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-kube-workspaces-local-auth-secrets
+      - contains:
+          path: rules[0].verbs
+          content: create
+      - contains:
+          path: rules[0].verbs
+          content: update
+
+  - it: does not render cross-namespace Role when local auth is disabled
+    set:
+      auth.localAuth.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 5  # SA + ClusterRole + ClusterRoleBinding + Role(release-ns) + RoleBinding(release-ns)
