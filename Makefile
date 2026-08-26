@@ -1,7 +1,8 @@
 # Deploy repo Makefile - operational targets for kube-workspaces deployment
 
 .PHONY: install-crd install-images deploy-kustomize deploy-crds \
-	deploy-auth deploy-auth-local auth-enable auth-disable get-admin-password \
+	deploy-auth deploy-auth-local auth-enable auth-disable \
+	get-admin-password reset-admin-password \
 	port-forward-frontend port-forward-api \
 	port-forward-proxy helm-install helm-upgrade helm-template lint-helm \
 	sync-helm-crds check-helm-crds sync-images check-images \
@@ -229,7 +230,8 @@ auth-disable:
 # Retrieve the bootstrap local admin's password.
 # Only works until the admin changes their password for the first time — the
 # plaintext key is removed from the Secret at that point (see
-# docs/authentication.md).
+# docs/authentication.md). Use 'make reset-admin-password' if the password
+# has already been changed or is otherwise unknown.
 ADMIN_EMAIL ?= admin@local
 get-admin-password:
 	@slug=$$(echo "$(ADMIN_EMAIL)" | tr '[:upper:]' '[:lower:]' | sed -e 's/@/-at-/' -e 's/\./-/g' -e 's/_/-/g'); \
@@ -237,9 +239,29 @@ get-admin-password:
 	pw=$$(kubectl get secret "$$secret" -n kube-workspaces-system -o jsonpath='{.data.password}' 2>/dev/null | base64 -d); \
 	if [ -z "$$pw" ]; then \
 		echo "error: no plaintext password found in secret/$$secret (already changed, or auth not enabled yet)."; \
+		echo "       Use 'make reset-admin-password' to generate and set a new one."; \
 		exit 1; \
 	fi; \
 	echo "$$pw"
+
+# Reset the bootstrap local admin's password to a new randomly generated value.
+# Use this when the password has been changed via the UI and is no longer known.
+# Prints the new password and sets mustChangePassword=true so the admin is
+# prompted to pick a permanent one on next login.
+reset-admin-password:
+	@command -v python3 >/dev/null 2>&1 || { echo "error: python3 is required"; exit 1; }; \
+	python3 -c "import bcrypt" 2>/dev/null || { echo "error: python3 bcrypt module required (pip install bcrypt)"; exit 1; }; \
+	slug=$$(echo "$(ADMIN_EMAIL)" | tr '[:upper:]' '[:lower:]' | sed -e 's/@/-at-/' -e 's/\./-/g' -e 's/_/-/g'); \
+	secret="kw-user-$${slug}-local-auth"; \
+	new_pw=$$(cat /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 20); \
+	new_hash=$$(python3 -c "import bcrypt,sys; print(bcrypt.hashpw(sys.argv[1].encode(), bcrypt.gensalt(12)).decode())" "$$new_pw"); \
+	kubectl patch secret "$$secret" -n kube-workspaces-system --type=merge \
+		-p "{\"stringData\":{\"password\":\"$$new_pw\",\"passwordHash\":\"$$new_hash\"}}" >/dev/null; \
+	kubectl patch user "$$slug" --type=merge \
+		-p '{"spec":{"localAuth":{"mustChangePassword":true}}}' >/dev/null; \
+	echo "Password reset for $(ADMIN_EMAIL)"; \
+	echo "New password: $$new_pw"; \
+	echo "(you will be prompted to change it on next login)"
 
 # Port-forward frontend to localhost:3000
 port-forward-frontend:
