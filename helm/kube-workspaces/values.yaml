@@ -217,6 +217,12 @@ auth:
     allowedEmails: []
     requireApproval: false
   adminEmails: []
+  # Authorization settings. When restrictNamespaceAccess is true, non-admin
+  # users can only access namespaces explicitly assigned to them (via User CR
+  # namespaceAccess + personal namespace); the CRD default (false) lets all
+  # authenticated users see all namespaces. The authorization block is only
+  # rendered when restrictNamespaceAccess is explicitly set.
+  authorization: {}
   # Local (username/password) authentication. May be enabled independently of,
   # or alongside, OIDC. When enabled, a default admin user is auto-created with
   # a randomly generated password stored in a Kubernetes Secret (see

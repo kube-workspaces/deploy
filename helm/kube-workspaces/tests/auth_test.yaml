@@ -98,6 +98,35 @@ tests:
           path: spec.session.signingKey.key
           value: signing-key
 
+  # Authorization. RestrictNamespaceAccess gates visibility of non-assigned
+  # namespaces. It is optional — not rendered unless explicitly set.
+  - it: omits the authorization block when not set
+    set:
+      auth.enabled: true
+      auth.oidc.issuerURL: https://dex.example.com
+    asserts:
+      - isNull:
+          path: spec.authorization
+
+  - it: renders restrictNamespaceAccess when enabled
+    set:
+      auth.enabled: true
+      auth.oidc.issuerURL: https://dex.example.com
+      auth.authorization.restrictNamespaceAccess: true
+    asserts:
+      - equal:
+          path: spec.authorization.restrictNamespaceAccess
+          value: true
+
+  - it: renders restrictNamespaceAccess false when explicitly set
+    set:
+      auth.enabled: true
+      auth.authorization.restrictNamespaceAccess: false
+    asserts:
+      - equal:
+          path: spec.authorization.restrictNamespaceAccess
+          value: false
+
   - it: passes through admin emails
     set:
       auth.enabled: true
