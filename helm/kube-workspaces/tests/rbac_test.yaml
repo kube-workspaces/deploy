@@ -73,22 +73,52 @@ tests:
           path: rules[8].verbs
           content: delete
 
-  - it: renders cross-namespace Role in kube-workspaces-system when local auth is enabled and release namespace differs
-    documentSelector:
-      path: metadata.namespace
-      value: kube-workspaces-system
+  - it: renders cross-namespace Role and RoleBinding in kube-workspaces-system when local auth is enabled and release namespace differs
     set:
       auth.localAuth.enabled: true
     asserts:
-      - isKind:
+      # Existence, namespace-scoped. `containsDocument` with `any: true`
+      # asserts that some rendered document matches — pinning name + namespace
+      # rules out the identical release-namespace sibling.
+      - containsDocument:
+          kind: Role
+          apiVersion: rbac.authorization.k8s.io/v1
+          name: RELEASE-NAME-kube-workspaces-local-auth-secrets
+          namespace: kube-workspaces-system
+          any: true
+      - containsDocument:
+          kind: RoleBinding
+          apiVersion: rbac.authorization.k8s.io/v1
+          name: RELEASE-NAME-kube-workspaces-local-auth-secrets
+          namespace: kube-workspaces-system
+          any: true
+      # Both Roles in the render (release namespace and kube-workspaces-system)
+      # carry identical name and rules, so select on kind for the verb checks.
+      - documentSelector:
+          path: kind
+          value: Role
+          matchMany: true
+        isKind:
           of: Role
-      - equal:
+      - documentSelector:
+          path: kind
+          value: Role
+          matchMany: true
+        equal:
           path: metadata.name
           value: RELEASE-NAME-kube-workspaces-local-auth-secrets
-      - contains:
+      - documentSelector:
+          path: kind
+          value: Role
+          matchMany: true
+        contains:
           path: rules[0].verbs
           content: create
-      - contains:
+      - documentSelector:
+          path: kind
+          value: Role
+          matchMany: true
+        contains:
           path: rules[0].verbs
           content: update
 

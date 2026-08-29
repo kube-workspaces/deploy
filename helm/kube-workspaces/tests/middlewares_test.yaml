@@ -1,0 +1,138 @@
+# Unit tests for the Traefik Middleware template
+# (templates/middlewares.yaml, driven by .Values.ingress.middlewares).
+#
+# Traefik attaches middleware to Ingress routers via a qualifying annotation —
+# "<namespace>-<name>@kubernetescrd" — so the Middleware must land in the same
+# namespace as the Ingress (the release namespace) with a name the annotation
+# can address. Asserting those two fields is the whole point of the template.
+suite: middlewares
+templates:
+  - middlewares.yaml
+tests:
+  - it: renders nothing when no middlewares are configured
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders a middleware with the given name, namespace and spec
+    set:
+      ingress.middlewares:
+        - name: kube-workspaces-strip-api
+          spec:
+            stripPrefix:
+              prefixes:
+                - /api
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Middleware
+      - isAPIVersion:
+          of: traefik.io/v1alpha1
+      - equal:
+          path: metadata.name
+          value: kube-workspaces-strip-api
+      - equal:
+          path: metadata.namespace
+          value: NAMESPACE
+      - equal:
+          path: spec.stripPrefix.prefixes[0]
+          value: /api
+
+  - it: renders one document per configured middleware
+    set:
+      ingress.middlewares:
+        - name: strip-api
+          spec:
+            stripPrefix:
+              prefixes:
+                - /api
+        - name: rate-limit
+          spec:
+            rateLimit:
+              average: 100
+              burst: 50
+    asserts:
+      - hasDocuments:
+          count: 2
+
+  - it: renders the first middleware as documented
+    documentIndex: 0
+    set:
+      ingress.middlewares:
+        - name: strip-api
+          spec:
+            stripPrefix:
+              prefixes:
+                - /api
+        - name: rate-limit
+          spec:
+            rateLimit:
+              average: 100
+              burst: 50
+    asserts:
+      - equal:
+          path: metadata.name
+          value: strip-api
+      - equal:
+          path: spec.stripPrefix.prefixes[0]
+          value: /api
+
+  - it: renders the second middleware as documented
+    documentIndex: 1
+    set:
+      ingress.middlewares:
+        - name: strip-api
+          spec:
+            stripPrefix:
+              prefixes:
+                - /api
+        - name: rate-limit
+          spec:
+            rateLimit:
+              average: 100
+              burst: 50
+    asserts:
+      - equal:
+          path: metadata.name
+          value: rate-limit
+      - equal:
+          path: spec.rateLimit.average
+          value: 100
+
+  - it: applies labels and optional annotations
+    set:
+      ingress.middlewares:
+        - name: strip-api
+          annotations:
+            description: strips the /api prefix
+          spec:
+            stripPrefix:
+              prefixes:
+                - /api
+    asserts:
+      - equal:
+          path: metadata.labels["app.kubernetes.io/managed-by"]
+          value: Helm
+      - equal:
+          path: metadata.annotations.description
+          value: strips the /api prefix
+
+  - it: fails when an entry has no name
+    set:
+      ingress.middlewares:
+        - spec:
+            stripPrefix:
+              prefixes:
+                - /api
+    asserts:
+      - failedTemplate:
+          errorMessage: "each entry in .Values.ingress.middlewares requires a 'name'"
+
+  - it: fails when an entry has no spec
+    set:
+      ingress.middlewares:
+        - name: strip-api
+    asserts:
+      - failedTemplate:
+          errorMessage: "each entry in .Values.ingress.middlewares requires a 'spec'"
