@@ -72,6 +72,10 @@ spec:
   adminEmails:
     {{- toYaml .Values.auth.adminEmails | nindent 4 }}
   {{- end }}
+  {{- if and .Values.auth.authorization (hasKey .Values.auth.authorization "restrictNamespaceAccess") }}
+  authorization:
+    restrictNamespaceAccess: {{ .Values.auth.authorization.restrictNamespaceAccess }}
+  {{- end }}
   {{- if and .Values.auth.localAuth .Values.auth.localAuth.enabled }}
   localAuth:
     enabled: true

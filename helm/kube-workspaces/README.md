@@ -275,6 +275,7 @@ guide with provider-specific notes — this table covers only the Helm values.
 | `auth.registration.allowedDomains` / `allowedEmails` | `[]` | Restrict auto-provisioning to matching email domains/addresses |
 | `auth.registration.requireApproval` | `false` | Require an admin to approve auto-provisioned users before they can log in |
 | `auth.adminEmails` | `[]` | Email addresses always granted the `admin` role, for bootstrapping OIDC admin access |
+| `auth.authorization.restrictNamespaceAccess` | `false` | Restrict non-admin users to namespaces explicitly assigned to them (personal + `namespaceAccess`) instead of all namespaces |
 | `auth.localAuth.enabled` | `false` | Enable local username/password authentication, independently of or alongside OIDC |
 | `auth.localAuth.bootstrapAdmin.email` | `admin@local` | Identifier for the auto-created default local admin user |
 | `auth.localAuth.bootstrapAdmin.skip` | `false` | Skip auto-creating the bootstrap admin (e.g. if one is already provisioned) |
