@@ -217,6 +217,7 @@ images. The chart vendors a catalog from
 | `ingress.enabled` | `false` | Render an `Ingress` |
 | `ingress.className` | `""` | `ingressClassName` (e.g. `traefik`, `nginx`) |
 | `ingress.annotations` | `{}` | e.g. `cert-manager.io/cluster-issuer` or ingress-controller-specific middleware |
+| `ingress.middlewares` | `[]` | Optional Traefik `Middleware` CRs (`traefik.io/v1alpha1`), rendered into the release namespace. Each entry is `{name, spec}`; `spec` is passed through verbatim. Reference one from an annotation as `<release-namespace>-<name>@kubernetescrd` |
 | `ingress.hosts` | one `workspaces.local` host, five paths | Host → paths mapping. **Overriding `hosts` replaces the whole list** — each host you supply needs its own complete `paths` list, or the chart fails the render rather than emit an Ingress rule with no paths |
 | `ingress.tls` | `[]` | `[{hosts: [...], secretName: ...}]` entries |
 
@@ -226,6 +227,23 @@ The default path set routes `/proxy` to the proxy Service, `/v1`, `/auth` and
 traffic if misrouted. See [`docs/proxy.md`](../../docs/proxy.md) for the full
 routing table and [`docs/domains.md`](../../docs/domains.md) for customizing
 hosts/paths without hand-editing the whole list.
+
+Traefik ingress controllers need a `stripPrefix` middleware to strip the `/api`
+prefix before requests reach the API service. The chart can render it for you:
+
+```yaml
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: kube-workspaces-system-kube-workspaces-strip-api@kubernetescrd
+  middlewares:
+    - name: kube-workspaces-strip-api
+      spec:
+        stripPrefix:
+          prefixes:
+            - /api
+```
 
 ### Authentication
 

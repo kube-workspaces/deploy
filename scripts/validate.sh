@@ -107,6 +107,11 @@ render_case auth-local-and-oidc \
   --set auth.localAuth.enabled=true
 render_case dex --set dex.enabled=true
 render_case ingress --set ingress.enabled=true
+render_case ingress-traefik \
+  --set ingress.enabled=true \
+  --set ingress.className=traefik \
+  --set 'ingress.middlewares[0].name=kube-workspaces-strip-api' \
+  --set 'ingress.middlewares[0].spec.stripPrefix.prefixes[0]=/api'
 render_case ingress-custom \
   --set ingress.enabled=true \
   --set ingress.className=nginx \
@@ -204,6 +209,12 @@ else
   else
     warn "CRD schema extraction failed; custom resources will be skipped"
   fi
+
+  # kubeconform lowercases {{.ResourceKind}} when resolving the local
+  # '{{.ResourceKind}}.json' template (see scripts/crd-to-schema.sh), so the
+  # vendored Traefik Middleware schema is named middleware.json to match.
+  # Vendored from datreeio/CRDs-catalog (traefik.io/middleware_v1alpha1.json).
+  cp "$REPO_ROOT/scripts/schemas/middleware.json" "$SCHEMA_DIR/"
 
   kc() {
     kubeconform \

@@ -25,6 +25,7 @@ The Helm chart exposes every hostname-dependent value. The values that matter:
 | `ingress.tls` | `[]` | TLS hosts + secret name |
 | `ingress.className` | `""` | e.g. `traefik`, `nginx` |
 | `ingress.annotations` | `{}` | e.g. `cert-manager.io/cluster-issuer` or traefik middleware |
+| `ingress.middlewares` | `[]` | Optional Traefik `Middleware` CRs (`traefik.io/v1alpha1`), each `{name, spec}`, rendered into the release namespace |
 
 The recommended deployment model is **single-host**: frontend, API, and proxy
 are all served from one domain. The frontend defaults to calling the API at
@@ -36,21 +37,9 @@ The API sets a host-only `kw-session` cookie — this means single-host keeps th
 cookie on one origin and avoids cross-origin cookie issues.
 
 **Traefik ingress controllers** need a `StripPrefix` middleware to strip `/api`
-before the API service handles the request:
-
-```yaml
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: kube-workspaces-strip-api
-  namespace: kube-workspaces-system
-spec:
-  stripPrefix:
-    prefixes:
-      - /api
-```
-
-With the middleware in place, configure the Helm values:
+before the API service handles the request. The Helm chart renders it from
+`ingress.middlewares` — the entry below produces a `Middleware` named
+`kube-workspaces-strip-api` in the release namespace, matched by the annotation:
 
 ```yaml
 api:
@@ -63,6 +52,12 @@ ingress:
   className: traefik
   annotations:
     traefik.ingress.kubernetes.io/router.middlewares: kube-workspaces-system-kube-workspaces-strip-api@kubernetescrd
+  middlewares:
+    - name: kube-workspaces-strip-api
+      spec:
+        stripPrefix:
+          prefixes:
+            - /api
   hosts:
     - host: workspaces.example.com
       paths:
@@ -213,9 +208,11 @@ Notes:
   examples.
 - ArgoCD renders the chart with `helm template` and applies the output as plain
   manifests — it does not create a Helm release, so `helm list` won't show it.
-- The middleware YAML should be applied before the Ingress references it, or
-  managed by a separate ArgoCD Application (the Ingress will still route
-  correctly even if the middleware is missing for a short time).
+- The chart renders the strip-api `Middleware` itself from `ingress.middlewares`,
+  so it is applied together with the Ingress in one sync. Only if you manage the
+  middleware out-of-band (e.g. a separate ArgoCD Application) should you care
+  about ordering: apply the `Middleware` before the Ingress references it — the
+  Ingress still routes correctly even if the middleware is missing briefly.
 
 ### Two-host setup (alternative)
 
