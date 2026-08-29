@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Classify the changes since the last tag and emit a release-notes preamble.
+# Classify the changes since the last tag and emit the full release notes.
 #
 # The point is to answer, up front, the question a reader actually has: does this
 # release change how the software behaves, or is it a version alignment?
@@ -8,6 +8,12 @@
 # four images to one number, so a component with no functional changes still gets
 # tagged. Saying so explicitly is much better than leaving someone to infer it
 # from a list of CI commits.
+#
+# The script emits the whole body: a preamble, per-repo upgrade instructions, and
+# a categorised commit list. The list is generated here rather than left to
+# GitHub's --generate-notes, which groups commits by pull request — commits that
+# land as direct pushes to main (this repo relies on admin-token pushes) have no
+# PR and would otherwise produce an empty "What's Changed" section.
 #
 # Usage: scripts/release-notes.sh [--repo NAME] [--from TAG] [--to REF]
 #                                 [--version VERSION]
@@ -45,7 +51,10 @@ if [ -z "$FROM" ]; then
 fi
 
 range="${FROM}..${TO}"
-subjects=$(git log "$range" --no-merges --format='%s' 2>/dev/null)
+# Capture short hash + subject so the list below can link each commit. --no-merges
+# keeps the squash/"direct push" history flat, which is what GitHub's per-PR notes
+# would show anyway.
+subjects=$(git log "$range" --no-merges --format='%h %s' 2>/dev/null)
 
 if [ -z "$subjects" ]; then
   echo "No commits since ${FROM}."
@@ -64,17 +73,17 @@ fi
 count_matching() { printf '%s\n' "$subjects" | grep -cE "$1" || true; }
 
 n_total=$(printf '%s\n' "$subjects" | grep -c . || true)
-n_breaking=$(count_matching '^[a-z]+(\([^)]*\))?!:')
-n_feat=$(count_matching '^feat(\([^)]*\))?!?:')
-n_fix=$(count_matching '^fix(\([^)]*\))?!?:')
-n_perf=$(count_matching '^perf(\([^)]*\))?!?:')
-n_refactor=$(count_matching '^(refactor|revert)(\([^)]*\))?!?:')
-n_sec=$(count_matching '^security(\([^)]*\))?!?:')
+n_breaking=$(count_matching ' [a-z]+(\([^)]*\))?!:')
+n_feat=$(count_matching ' feat(\([^)]*\))?!?:')
+n_fix=$(count_matching ' fix(\([^)]*\))?!?:')
+n_perf=$(count_matching ' perf(\([^)]*\))?!?:')
+n_refactor=$(count_matching ' (refactor|revert)(\([^)]*\))?!?:')
+n_sec=$(count_matching ' security(\([^)]*\))?!?:')
 
 # Non-functional prefixes.
-n_ci=$(count_matching '^(ci|build)(\([^)]*\))?:')
-n_docs=$(count_matching '^docs(\([^)]*\))?:')
-n_chore=$(count_matching '^(chore|style|test)(\([^)]*\))?:')
+n_ci=$(count_matching ' (ci|build)(\([^)]*\))?:')
+n_docs=$(count_matching ' docs(\([^)]*\))?:')
+n_chore=$(count_matching ' (chore|style|test)(\([^)]*\))?:')
 
 n_nonfunctional=$((n_ci + n_docs + n_chore))
 n_functional=$((n_feat + n_fix + n_perf + n_refactor + n_sec))
@@ -171,3 +180,63 @@ helm upgrade kube-workspaces \\
 EOF
     ;;
 esac
+
+# ---------------------------------------------------------------------------
+# Categorised commit list
+#
+# GitHub's --generate-notes groups commits by pull request and keys the
+# categories off PR labels, so direct pushes to main — how most of this repo's
+# changes actually land — fall through to an empty "What's Changed" section.
+# Instead we build the list here, grouping the commit subjects by conventional
+# prefix into the same headings .github/release.yml uses. GitHub auto-links the
+# bare short hashes, so no explicit URLs are needed.
+# ---------------------------------------------------------------------------
+
+# Commit lines whose prefix carries a `!` breaking marker (feat!, fix!, ...).
+# Shown once, under Breaking changes, mirroring release.yml where the breaking
+# label wins over the feature/fix label.
+breaking_lines=$(printf '%s\n' "$subjects" | grep -E ' [a-z]+(\([^)]*\))?!:' || true)
+# Non-breaking commits — the pool the normal categories are drawn from.
+plain_lines=$(printf '%s\n' "$subjects" | grep -vE ' [a-z]+(\([^)]*\))?!:' || true)
+
+# Print "- hash subject" for every line in a category; takes the heading and one
+# or more conventional prefixes.
+list_category() {
+  local title="$1"; shift
+  local pattern
+  pattern=$(printf ' (%s)(\\([^)]*\\))?!?:' "$(printf '%s|' "$@" | sed 's/|$//')")
+  local hits
+  hits=$(printf '%s\n' "$plain_lines" | grep -E "$pattern" || true)
+  if [ -n "$hits" ]; then
+    printf '\n### %s\n\n' "$title"
+    printf '%s\n' "$hits" | sed 's/^/- /'
+    printf '\n'
+  fi
+}
+
+if [ "$n_total" -gt 0 ]; then
+  echo "## What's Changed"
+
+  if [ -n "$breaking_lines" ]; then
+    printf '\n### ⚠️ Breaking changes\n\n'
+    printf '%s\n' "$breaking_lines" | sed 's/^/- /'
+    printf '\n'
+  fi
+  list_category '🔒 Security' 'security'
+  list_category '✨ Features' 'feat'
+  list_category '🐛 Fixes' 'fix'
+  list_category '📚 Documentation' 'docs'
+  list_category '🔧 CI and tooling' 'ci' 'build' 'chore' 'style' 'test'
+  list_category '⬆️ Dependencies' 'deps'
+
+  # Everything not matched above has no conventional prefix (or a bare
+  # imperative) — kept under "Other" rather than dropped, matching release.yml's
+  # catch-all "*" category.
+  others=$(printf '%s\n' "$plain_lines" | grep -vE \
+    ' (security|feat|fix|docs|ci|build|chore|style|test|deps)(\([^)]*\))?!?:' || true)
+  if [ -n "$others" ]; then
+    printf '\n### Other changes\n\n'
+    printf '%s\n' "$others" | sed 's/^/- /'
+    printf '\n'
+  fi
+fi
