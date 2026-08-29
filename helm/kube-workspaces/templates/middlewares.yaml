@@ -1,0 +1,28 @@
+{{- /*
+  Optional Traefik Middleware CRs (traefik.io/v1alpha1), declared in
+  .Values.ingress.middlewares. Each entry is {name, spec}; spec is passed
+  through verbatim so any middleware the Traefik CRD supports can be declared
+  from values.yaml without editing this template.
+
+  The Middleware is rendered into the release namespace (.Release.Namespace).
+  Traefik references a middleware on an Ingress router via a qualifying
+  annotation whose value is "<namespace>-<name>@kubernetescrd" — see
+  docs/domains.md for the strip-prefix example.
+*/ -}}
+{{- range .Values.ingress.middlewares }}
+{{- $name := required "each entry in .Values.ingress.middlewares requires a 'name'" .name }}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "kube-workspaces.labels" $ | nindent 4 }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- required "each entry in .Values.ingress.middlewares requires a 'spec'" .spec | toYaml | nindent 2 }}
+{{- end }}

@@ -76,6 +76,21 @@ ingress:
   enabled: false
   className: ""
   annotations: {}
+  # Optional Traefik Middleware CRs (traefik.io/v1alpha1) rendered into the
+  # release namespace. Each entry is {name, spec}; spec is passed through
+  # verbatim, so any middleware the Traefik CRD supports can be declared here.
+  # Attach them to the Ingress via annotations, e.g. Traefik stripPrefix:
+  #
+  #   ingress:
+  #     annotations:
+  #       traefik.ingress.kubernetes.io/router.middlewares: <release-namespace>-<name>@kubernetescrd
+  #     middlewares:
+  #       - name: kube-workspaces-strip-api
+  #         spec:
+  #           stripPrefix:
+  #             prefixes:
+  #               - /api
+  middlewares: []
   # Each host entry needs its own `paths` list. If you override `hosts` you must
   # supply `paths` too — a host with no paths renders an invalid Ingress.
   hosts:
