@@ -89,13 +89,20 @@ Bump the version badge in
 
 ## Release notes
 
-Notes are generated, not hand-written. Two parts combine:
+Notes are generated, not hand-written. `scripts/release-notes.sh` emits the
+whole body:
 
-1. **A preamble** from `scripts/release-notes.sh`, which classifies the commits
-   since the last tag and leads with what the reader needs to know.
-2. **A categorised commit list** appended by GitHub, grouped per
+1. **A preamble** that classifies the commits since the last tag and leads with
+   what the reader needs to know.
+2. **Upgrade instructions** tailored to the repo.
+3. **A categorised "What's Changed" list**, grouped per the headings in
    `.github/release.yml` — identical in all five repos, and enforced by
    `scripts/check-release-config.sh`.
+
+The commit list is built from commit subjects rather than left to GitHub's
+`--generate-notes`, which groups commits **by pull request** and keys categories
+off PR labels. Commits that land as direct pushes to `main` — common in this repo,
+see the quirk below — have no PR and would otherwise produce an empty list.
 
 ### Components with no functional changes
 
@@ -174,6 +181,11 @@ Branch protection on `deploy` requires pull requests but has
 `enforce_admins: false`, so commits made with an admin token can and did land
 directly on `main` — most of the test-suite and CI work arrived that way while it
 was being iterated against real runners.
+
+This used to leave the generated release notes with an empty "What's Changed"
+list: GitHub groups commits by PR, and a direct push has no PR. The notes are now
+generated from commit subjects by `scripts/release-notes.sh`, so they populate
+regardless of how the commits landed.
 
 The four component repositories were changed via PR throughout. If direct pushes
 to `deploy` are unwanted, set `enforce_admins: true`:

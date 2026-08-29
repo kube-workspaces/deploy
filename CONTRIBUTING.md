@@ -106,9 +106,11 @@ The five repositories are released together and share a version. See
 since the chart's `appVersion` must name component images that already exist.
 
 Release notes are generated, not hand-written: `scripts/release-notes.sh`
-produces a preamble (leading with whether the release changes behaviour at all)
-and GitHub appends a commit list categorised per `.github/release.yml`. Label
-your PRs so they land in the right section.
+produces the whole body — a preamble (leading with whether the release changes
+behaviour at all), upgrade steps, and a commit list categorised per
+`.github/release.yml`. The list is built from commit subjects, so it populates
+for direct pushes to `main` as well as PRs. Use conventional-commit prefixes
+(`feat:`, `fix:`, `docs:`, `ci:`, …) so commits land in the right section.
 
 ## Making Changes
 

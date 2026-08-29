@@ -138,15 +138,16 @@ jobs:
           VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          {
-            # --version, not --to HEAD: the notes quote the version in the
-            # upgrade command, and "HEAD" is not installable.
-            scripts/release-notes.sh --repo deploy \
-              --from "$(git describe --tags --abbrev=0)" \
-              --to HEAD --version "$VERSION"
-            echo
-            echo "<!-- The categorised commit list is appended by GitHub. -->"
-          } > /tmp/preamble.md
+          # --version, not --to HEAD: the notes quote the version in the
+          # upgrade command, and "HEAD" is not installable.
+          #
+          # release-notes.sh emits the whole body — preamble, upgrade steps and
+          # the categorised "What's Changed" list — so the release below does not
+          # need --generate-notes. That also fixes notes for direct pushes to
+          # main, which GitHub's per-PR list cannot group.
+          scripts/release-notes.sh --repo deploy \
+            --from "$(git describe --tags --abbrev=0)" \
+            --to HEAD --version "$VERSION" > /tmp/preamble.md
           cat /tmp/preamble.md
 
       - name: Summary
@@ -169,8 +170,8 @@ jobs:
           git tag -a "$VERSION" -m "$VERSION"
           git push origin "$VERSION"
 
-          # --generate-notes appends the categorised commit list, grouped per
-          # .github/release.yml, beneath our preamble.
+          # --notes-file carries the full body generated above (preamble +
+          # upgrade + categorised list); no --generate-notes needed.
           #
           # Use --notes-file rather than passing the body through a GitHub
           # expression: interpolating it into the shell makes bash treat its
@@ -180,7 +181,6 @@ jobs:
           gh release create "$VERSION" \
             --title "$VERSION" \
             --notes-file /tmp/preamble.md \
-            --generate-notes \
             --verify-tag
 
       - name: Dry run notice
