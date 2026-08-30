@@ -11,6 +11,43 @@ There are two supported ways to set your hostname, depending on how you deploy.
 > their own hostname via Helm values or a kustomize patch — the base should never
 > hardcode a specific operator's domain.
 
+## Choosing an ingress controller
+
+Kube Workspaces serves the frontend, API, and proxy from a single host using
+path-based routing. The only controller-specific requirement is stripping the
+`/api` prefix before a request reaches the API service, and passing WebSocket
+traffic through to the proxy for browser workspaces. Beyond that, most ingress
+controllers work as-is.
+
+| Controller | Strip `/api` via | Where you configure it | Notes |
+|------------|------------------|------------------------|-------|
+| **Traefik** (recommended) | `StripPrefix` middleware | `ingress.middlewares` — the chart renders the `Middleware` CR | No hand-written resources; WebSockets proxied natively |
+| **ingress-nginx** | `rewrite-target` annotation with regex capture groups | `ingress.annotations` + regex `paths` | Common on managed and self-hosted clusters |
+| **Any other controller** | Controller-specific rewrite or annotation | `ingress.annotations` | Route the paths below to the right services |
+
+Whichever controller you choose, the routing table is the same:
+
+| Path prefix | Service |
+|-------------|---------|
+| `/api`, `/v1`, `/auth`, `/openapi` | `kube-workspaces-api` |
+| `/proxy` | `kube-workspaces-proxy` |
+| `/` | `kube-workspaces-frontend` |
+
+### Picking one
+
+- **Prefer Traefik.** The chart renders the `StripPrefix` middleware from
+  `ingress.middlewares`, so there is nothing extra to deploy, and WebSocket
+  traffic (needed by noVNC and code-server) is proxied without extra flags.
+- **ingress-nginx** needs only annotations — no `Middleware` CRs — at the cost
+  of regex paths and a careful `rewrite-target`. See the example below.
+- **Anything else**: set the same six paths to the right services and enable
+  WebSocket support if the controller requires it. Where TLS terminates at an
+  upstream load balancer, leave `ingress.tls` unset.
+
+> The `kustomize/base` ingress ships with `ingressClassName: traefik`
+> hardcoded. If you use a different controller via Kustomize, override the
+> class in your overlay — see [Kustomize](#kustomize).
+
 ## Helm (recommended)
 
 The Helm chart exposes every hostname-dependent value. The values that matter:
