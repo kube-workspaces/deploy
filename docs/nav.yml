@@ -1,6 +1,3 @@
-- title: Reference
-  items:
-    - proxy
 - title: Getting Started
   items:
     - authentication
@@ -12,3 +9,6 @@
     - releasing
     - testing
     - security
+- title: Reference
+  items:
+    - proxy
