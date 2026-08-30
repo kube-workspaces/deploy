@@ -1,0 +1,31 @@
+name: Notify website of docs changes
+
+# When the docs/ folder changes, ask the website repo to rebuild so the docs
+# section of the site stays in sync. The website repo fetches this folder at
+# build time, so it only needs the event — no content is sent here.
+#
+# Requires a fine-grained PAT with "Contents: read and write" on the
+# kube-workspaces.github.io repo, stored as the WEBSITE_TRIGGER_TOKEN secret.
+
+on:
+  push:
+    branches: [main]
+    paths: ['docs/**']
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger website rebuild
+        env:
+          GH_TOKEN: ${{ secrets.WEBSITE_TRIGGER_TOKEN }}
+        run: |
+          curl -fsS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/kube-workspaces/kube-workspaces.github.io/dispatches \
+            -d '{"event_type":"docs-update"}'
