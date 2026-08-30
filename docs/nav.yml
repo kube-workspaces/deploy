@@ -5,11 +5,11 @@
 - title: Configuration
   items:
     - domains
-- title: Operations
+- title: Reference
+  items:
+    - proxy
+- title: Project Operations
   items:
     - releasing
     - testing
     - security
-- title: Reference
-  items:
-    - proxy

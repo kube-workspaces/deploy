@@ -20,19 +20,7 @@ Authentication is **opt-in** and disabled by default. When disabled, the system 
 
 ## Architecture
 
-```
-User Browser
-    |
-    v
-Frontend (Next.js) -- /auth/login --------------> API (/auth/login) --> OIDC Provider
-    |                                                   |
-    |                -- /auth/login/local (email+pw) -->|
-    |                                                    v
-    |                                             API (/auth/callback) <-- Provider callback
-    |                                                    |
-    v                                                    v
-Frontend (reads session)                         Sets httpOnly cookie (kw-session)
-```
+![Authentication flow](authentication-architecture.svg)
 
 - Session tokens are HMAC-SHA256 signed JWTs stored in a `kw-session` httpOnly cookie
 - The signing key is stored in a Kubernetes Secret, and is used for sessions

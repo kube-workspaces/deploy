@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 420" width="820" height="420"
+     role="img" aria-label="Kube Workspaces authentication flow"
+     font-family="ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+
+  <defs>
+    <marker id="a-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1f6feb"/>
+    </marker>
+  </defs>
+
+  <rect width="820" height="420" rx="12" fill="#0d1117"/>
+
+  <!-- User Browser -->
+  <rect x="30" y="30" width="180" height="64" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="120" y="58" text-anchor="middle" font-size="13" font-weight="600" fill="#c9d1d9">User Browser</text>
+  <text x="120" y="78" text-anchor="middle" font-size="10" fill="#6e7681">HTTPS · kw-session cookie</text>
+
+  <!-- OIDC Provider -->
+  <rect x="610" y="30" width="180" height="64" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="700" y="58" text-anchor="middle" font-size="13" font-weight="600" fill="#c9d1d9">OIDC Provider</text>
+  <text x="700" y="78" text-anchor="middle" font-size="10" fill="#6e7681">Dex · Okta · Auth0 · …</text>
+
+  <!-- Arrow: Browser -> Frontend -->
+  <line x1="120" y1="94" x2="120" y2="250" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#a-arr)"/>
+  <text x="132" y="180" font-size="10.5" fill="#6e7681">HTTPS</text>
+
+  <!-- Frontend (Next.js) -->
+  <rect x="30" y="250" width="220" height="100" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="30" y="250" width="220" height="32" rx="10" fill="#1c2d4a" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="30" y="266" width="220" height="16" fill="#1c2d4a"/>
+  <text x="140" y="270" text-anchor="middle" font-size="12" font-weight="600" fill="#58a6ff">Frontend (Next.js)</text>
+  <text x="42" y="302" font-size="10.5" fill="#8b949e">login page</text>
+  <text x="42" y="322" font-size="10.5" fill="#8b949e">reads session cookie</text>
+
+  <!-- Arrows: Frontend -> API -->
+  <line x1="250" y1="286" x2="470" y2="286" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#a-arr)"/>
+  <text x="360" y="276" text-anchor="middle" font-size="10" fill="#6e7681">/auth/login (OIDC)</text>
+  <line x1="250" y1="330" x2="470" y2="330" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#a-arr)"/>
+  <text x="360" y="352" text-anchor="middle" font-size="9.5" fill="#6e7681">/auth/login/local (email + password)</text>
+
+  <!-- API -->
+  <rect x="470" y="230" width="320" height="130" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="470" y="230" width="320" height="32" rx="10" fill="#1c2d4a" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="470" y="246" width="320" height="16" fill="#1c2d4a"/>
+  <text x="630" y="250" text-anchor="middle" font-size="12" font-weight="600" fill="#58a6ff">API</text>
+  <text x="482" y="282" font-size="10.5" fill="#8b949e">/auth/login · /auth/login/local</text>
+  <text x="482" y="302" font-size="10.5" fill="#8b949e">/auth/callback ← provider</text>
+  <text x="482" y="322" font-size="10.5" fill="#8b949e">sets kw-session httpOnly cookie</text>
+
+  <!-- Arrows: API <-> OIDC Provider -->
+  <line x1="720" y1="230" x2="720" y2="94" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#a-arr)"/>
+  <text x="732" y="170" font-size="10" fill="#6e7681">OIDC authorize</text>
+  <line x1="660" y1="94" x2="660" y2="230" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#a-arr)"/>
+  <text x="500" y="150" font-size="9.5" fill="#6e7681">callback → /auth/callback</text>
+</svg>
