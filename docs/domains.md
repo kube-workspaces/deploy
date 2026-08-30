@@ -160,8 +160,13 @@ ingress:
 
 ### ArgoCD
 
-Point your Application at the chart and put the values inline. Multi-source
-example (chart + CRDs):
+Argo CD syncs from the **git remote** (or a chart repository), so it deploys the
+last pushed revision rather than your local working tree. Set
+`destination.namespace` to the release namespace — Argo CD installs the chart
+there (the examples below use `kube-workspaces-system`).
+
+**Chart from the OCI registry (recommended).** The published chart ships the
+CRDs, so a single source is enough:
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -172,6 +177,52 @@ metadata:
 spec:
   destination:
     name: in-cluster
+    namespace: kube-workspaces-system
+  project: default
+  source:
+    chart: kube-workspaces
+    repoURL: ghcr.io/kube-workspaces/charts
+    targetRevision: 0.5.0
+    helm:
+      values: |
+        api:
+          externalHost: "workspaces.example.com"
+        ingress:
+          enabled: true
+          className: traefik
+          # ... hosts as above (single-host with /api route)
+        images: []
+        installExampleImages: false
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+```
+
+`CreateNamespace=true` creates the release namespace on first sync. Argo CD
+creates it but does not track it as a rendered resource, so `prune` never
+removes it. To have the Namespace rendered and tracked by Argo CD instead, set
+`namespaces.createReleaseNamespace: true` and drop the `CreateNamespace=true`
+sync option — see
+[Namespaces and `--create-namespace`](#namespaces-and---create-namespace).
+
+**Chart from the git repo (multi-source).** Use this when you want to track the
+chart source from the repository rather than a released chart, and manage the
+CRDs as a separate source:
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-workspaces
+  namespace: argocd
+spec:
+  destination:
+    name: in-cluster
+    namespace: kube-workspaces-system
   project: default
   sources:
     - repoURL: https://github.com/kube-workspaces/deploy.git
