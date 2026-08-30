@@ -1,5 +1,6 @@
 - title: Getting Started
   items:
+    - install
     - authentication
 - title: Configuration
   items:
