@@ -1,0 +1,14 @@
+- title: Getting Started
+  items:
+    - authentication
+- title: Configuration
+  items:
+    - domains
+- title: Reference
+  items:
+    - proxy
+- title: Operations
+  items:
+    - releasing
+    - testing
+    - security
