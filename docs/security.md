@@ -100,3 +100,8 @@ cluster.
 ## Reporting a vulnerability
 
 See [SECURITY.md](../SECURITY.md).
+
+---
+
+This guide is also rendered on the
+[Kube Workspaces website](https://kubeworkspaces.io/docs/security/).
