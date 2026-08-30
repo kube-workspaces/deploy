@@ -33,46 +33,7 @@ The request flows through the ingress controller (`/proxy` path) to the proxy se
 
 ## Component Architecture
 
-```
-┌─────────────────────────────────────────────────────┐
-│ Browser                                             │
-│ (kw-session cookie sent automatically)              │
-└───────────────────────────┬─────────────────────────┘
-                            │
-                            │ https://workspaces.example.com/proxy/{ns}/{name}/...
-                            ▼
-┌─────────────────────────────────────────────────────┐
-│ Ingress Controller (e.g. nginx/Traefik)             │
-│ (/proxy → kube-workspaces-proxy service)            │
-│ WebSocket timeouts enabled                          │
-└───────────────────────────┬─────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────┐
-│ kube-workspaces-proxy (ClusterIP Service :80)       │
-│                                                     │
-│   ┌───────────────────────────────────────────────┐ │
-│   │ proxy binary (Go, port 8080)                  │ │
-│   │                                               │ │
-│   │ 1. Auth middleware:                           │ │
-│   │    - Validates kw-session cookie (HMAC-256)   │ │
-│   │    - Checks user namespace access             │ │
-│   │    - Admins bypass checks                     │ │
-│   │    - Auth disabled → pass through             │ │
-│   │                                               │ │
-│   │ 2. Proxy handler:                             │ │
-│   │    - /proxy/{ns}/{name}/... → pod             │ │
-│   └───────────────────────────────────────────────┘ │
-└───────────────────────────┬─────────────────────────┘
-                            │
-                            │ http://{name}.{ns}.svc.cluster.local:80/{rest}
-                            │ (or :audioPort for /audio/ requests)
-                            ▼
-┌─────────────────────────────────────────────────────┐
-│ Workspace Pod (ClusterIP Service)                   │
-│ (code-server, filebrowser, VNC desktop, etc.)       │
-└─────────────────────────────────────────────────────┘
-```
+![Proxy component architecture](proxy-architecture.svg)
 
 ---
 

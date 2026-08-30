@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 680" width="720" height="680"
+     role="img" aria-label="Kube Workspaces proxy component architecture"
+     font-family="ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+
+  <defs>
+    <marker id="p-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1f6feb"/>
+    </marker>
+  </defs>
+
+  <rect width="720" height="680" rx="12" fill="#0d1117"/>
+
+  <!-- Browser -->
+  <rect x="120" y="30" width="480" height="70" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="360" y="62" text-anchor="middle" font-size="13.5" font-weight="600" fill="#c9d1d9">Browser</text>
+  <text x="360" y="84" text-anchor="middle" font-size="11" fill="#6e7681">kw-session cookie sent automatically</text>
+
+  <!-- Arrow: Browser -> Ingress -->
+  <line x1="360" y1="100" x2="360" y2="146" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#p-arr)"/>
+  <text x="372" y="128" font-size="10.5" fill="#6e7681">https://workspaces.example.com/proxy/{ns}/{name}/...</text>
+
+  <!-- Ingress -->
+  <rect x="120" y="150" width="480" height="84" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="120" y="150" width="480" height="34" rx="10" fill="#1c2d4a" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="120" y="168" width="480" height="16" fill="#1c2d4a"/>
+  <text x="360" y="172" text-anchor="middle" font-size="12" font-weight="600" fill="#58a6ff">Ingress Controller (nginx / Traefik)</text>
+  <text x="360" y="204" text-anchor="middle" font-size="11" fill="#c9d1d9">/proxy → kube-workspaces-proxy service</text>
+  <text x="360" y="222" text-anchor="middle" font-size="11" fill="#6e7681">WebSocket timeouts enabled</text>
+
+  <!-- Arrow: Ingress -> Proxy -->
+  <line x1="360" y1="234" x2="360" y2="280" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#p-arr)"/>
+
+  <!-- Proxy service -->
+  <rect x="80" y="284" width="560" height="256" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="80" y="284" width="560" height="36" rx="10" fill="#1c2d4a" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="80" y="304" width="560" height="16" fill="#1c2d4a"/>
+  <text x="360" y="306" text-anchor="middle" font-size="12" font-weight="600" fill="#58a6ff">kube-workspaces-proxy (ClusterIP Service :80)</text>
+
+  <rect x="100" y="336" width="520" height="188" rx="8" fill="#0d1117" stroke="#21262d" stroke-width="1.2"/>
+  <text x="112" y="358" font-size="11" font-weight="700" fill="#58a6ff">proxy binary (Go, port 8080)</text>
+
+  <text x="112" y="382" font-size="11" font-weight="600" fill="#c9d1d9">1. Auth middleware</text>
+  <text x="128" y="402" font-size="10.5" fill="#8b949e">• Validates kw-session cookie (HMAC-SHA256)</text>
+  <text x="128" y="421" font-size="10.5" fill="#8b949e">• Checks user namespace access</text>
+  <text x="128" y="440" font-size="10.5" fill="#8b949e">• Admins bypass checks</text>
+  <text x="128" y="459" font-size="10.5" fill="#8b949e">• Auth disabled → pass through</text>
+  <text x="112" y="485" font-size="11" font-weight="600" fill="#c9d1d9">2. Proxy handler</text>
+  <text x="128" y="505" font-size="10.5" fill="#8b949e">• /proxy/{ns}/{name}/... → pod</text>
+
+  <!-- Arrow: Proxy -> Pod -->
+  <line x1="360" y1="540" x2="360" y2="586" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#p-arr)"/>
+  <text x="372" y="560" font-size="10.5" fill="#6e7681">http://{name}.{ns}.svc.cluster.local:80/{rest}</text>
+  <text x="372" y="576" font-size="10.5" fill="#6e7681">(or :audioPort for /audio/ requests)</text>
+
+  <!-- Workspace pod -->
+  <rect x="120" y="590" width="480" height="70" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="360" y="622" text-anchor="middle" font-size="13.5" font-weight="600" fill="#c9d1d9">Workspace Pod (ClusterIP Service)</text>
+  <text x="360" y="644" text-anchor="middle" font-size="11" fill="#6e7681">code-server, filebrowser, VNC desktop, etc.</text>
+</svg>
