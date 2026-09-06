@@ -245,7 +245,7 @@ else
   fail "controller SA can create statefulsets in ${KW_WORKSPACE_NAMESPACE}"
 fi
 
-# Deployments back scratch workspaces; VirtualMachines back vm workspaces.
+# Deployments back scratch workspaces.
 if kubectl auth can-i create deployments \
     -n "$KW_WORKSPACE_NAMESPACE" \
     --as="system:serviceaccount:${KW_NAMESPACE}:${ctrl_sa}" \
@@ -255,13 +255,20 @@ else
   fail "controller SA can create deployments in ${KW_WORKSPACE_NAMESPACE}"
 fi
 
-if kubectl auth can-i create virtualmachines.kubevirt.io \
-    -n "$KW_WORKSPACE_NAMESPACE" \
-    --as="system:serviceaccount:${KW_NAMESPACE}:${ctrl_sa}" \
-    >/dev/null 2>&1; then
-  pass "controller SA can create virtualmachines in ${KW_WORKSPACE_NAMESPACE}"
+# VirtualMachines back vm workspaces. This RBAC is granted unconditionally, but
+# the resource only exists when the KubeVirt CRDs are installed — skip the check
+# otherwise (can-i returns false for an unknown resource regardless of RBAC).
+if kubectl get crd virtualmachines.kubevirt.io >/dev/null 2>&1; then
+  if kubectl auth can-i create virtualmachines.kubevirt.io \
+      -n "$KW_WORKSPACE_NAMESPACE" \
+      --as="system:serviceaccount:${KW_NAMESPACE}:${ctrl_sa}" \
+      >/dev/null 2>&1; then
+    pass "controller SA can create virtualmachines in ${KW_WORKSPACE_NAMESPACE}"
+  else
+    fail "controller SA can create virtualmachines in ${KW_WORKSPACE_NAMESPACE}"
+  fi
 else
-  fail "controller SA can create virtualmachines in ${KW_WORKSPACE_NAMESPACE}"
+  info "KubeVirt CRDs not installed — skipping virtualmachines RBAC check"
 fi
 
 # The proxy has its own SA in both paths and needs to read session secrets.
