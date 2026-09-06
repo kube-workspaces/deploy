@@ -29,7 +29,7 @@ Whichever controller you choose, the routing table is the same:
 
 | Path prefix | Service |
 |-------------|---------|
-| `/api`, `/v1`, `/auth`, `/openapi` | `kube-workspaces-api` |
+| `/api`, `/v1`, `/auth` | `kube-workspaces-api` |
 | `/proxy` | `kube-workspaces-proxy` |
 | `/` | `kube-workspaces-frontend` |
 
@@ -40,7 +40,7 @@ Whichever controller you choose, the routing table is the same:
   traffic (needed by noVNC and code-server) is proxied without extra flags.
 - **ingress-nginx** needs only annotations — no `Middleware` CRs — at the cost
   of regex paths and a careful `rewrite-target`. See the example below.
-- **Anything else**: set the same six paths to the right services and enable
+- **Anything else**: set the same five paths to the right services and enable
   WebSocket support if the controller requires it. Where TLS terminates at an
   upstream load balancer, leave `ingress.tls` unset.
 
@@ -113,11 +113,6 @@ ingress:
           backend:
             serviceName: kube-workspaces-api
             servicePort: 80
-        - path: /openapi
-          pathType: Prefix
-          backend:
-            serviceName: kube-workspaces-api
-            servicePort: 80
         - path: /proxy
           pathType: Prefix
           backend:
@@ -168,11 +163,6 @@ ingress:
             serviceName: kube-workspaces-api
             servicePort: 80
         - path: /auth(/|$)(.*)
-          pathType: ImplementationSpecific
-          backend:
-            serviceName: kube-workspaces-api
-            servicePort: 80
-        - path: /openapi(/|$)(.*)
           pathType: ImplementationSpecific
           backend:
             serviceName: kube-workspaces-api
@@ -322,7 +312,7 @@ ingress:
           backend:
             serviceName: kube-workspaces-api
             servicePort: 80
-        # ... /auth, /openapi, /proxy, /
+        # ... /auth, /proxy, /
     - host: api.workspaces.example.com
       paths:
         - path: /

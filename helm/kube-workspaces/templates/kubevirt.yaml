@@ -1,0 +1,40 @@
+{{- /*
+  Optional KubeVirt installation for `spec.type: vm` workspaces.
+
+  Renders the pinned upstream KubeVirt operator manifest (vendored verbatim in
+  files/kubevirt-operator.yaml — Namespace, CRDs, RBAC and the virt-operator
+  Deployment, all in the kubevirt namespace), then the KubeVirt CR that tells
+  the operator to roll out the platform.
+
+  The KubeVirt CR is a post-install/post-upgrade hook: it must not be created
+  before the operator's CRDs are established, or a fresh `helm install` races
+  and fails. ArgoCD maps the hook to a PostSync wave.
+
+  Uninstall note: disabling this flag removes the operator resources rendered
+  here, but the workload CRDs (virtualmachines.kubevirt.io etc.) are created
+  by virt-operator, not this chart, and are left behind.
+*/ -}}
+{{- if .Values.kubevirt.enabled }}
+{{ .Files.Get "files/kubevirt-operator.yaml" }}
+---
+apiVersion: kubevirt.io/v1
+kind: KubeVirt
+metadata:
+  name: kubevirt
+  namespace: kubevirt
+  annotations:
+    # Created after the operator so its CRDs are established first.
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  certificateRotateStrategy: {}
+  configuration:
+    developerConfiguration:
+      # useEmulation runs guests without /dev/kvm (slow, fine for kind/CI).
+      useEmulation: {{ .Values.kubevirt.useEmulation }}
+      featureGates: []
+    imagePullPolicy: IfNotPresent
+  customizeComponents: {}
+  imagePullPolicy: IfNotPresent
+  workloadUpdateStrategy: {}
+{{- end }}

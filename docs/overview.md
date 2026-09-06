@@ -1,10 +1,9 @@
 # Overview
 
 Kube Workspaces is a Kubernetes-native platform for managing container-based
-workspaces and full Linux desktops from a web browser. Workspaces run as pods
-in your own cluster, so every developer gets an isolated, reproducible
-environment without provisioning VMs — and the platform requires no external
-database.
+workspaces, virtual machines, and full Linux desktops from a web browser.
+Workspaces run in your own cluster, so every developer gets an isolated,
+reproducible environment — and the platform requires no external database.
 
 Modelled on the Kubeflow Notebooks architecture but as a standalone,
 lightweight solution.
@@ -25,10 +24,17 @@ Four loosely-coupled components are deployed to your cluster:
 - **Frontend** — a Next.js web UI for managing workspaces, volumes, users, and
   cluster resources.
 
-The controller turns each `Workspace` CR into a `StatefulSet` and `Service` in
-the cluster — a workspace is a real Kubernetes pod, so it can use any image,
-resource limits, or volume mounts. State lives in CRDs and Secrets; there is no
-separate database to run or back up.
+The controller turns each `Workspace` CR into a workload in the cluster, based
+on the workspace's `spec.type`:
+
+- **`container`** (default) — a `StatefulSet` + `Service`; the workspace is a
+  real Kubernetes pod, so it can use any image, resource limits, or volume mounts.
+- **`vm`** — a KubeVirt `VirtualMachine`; the main image is a containerDisk
+  containing a bootable guest OS. Access is via the serial console.
+- **`scratch`** — a plain `Deployment` with generated pod names (no persistent
+  identity).
+
+State lives in CRDs and Secrets; there is no separate database to run or back up.
 
 ## Key capabilities
 

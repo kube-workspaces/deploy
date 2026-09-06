@@ -274,6 +274,115 @@ pf_stop_all
 endgroup
 
 # ---------------------------------------------------------------------------
+# 5b. Workspace types (scratch Deployment; vm KubeVirt VirtualMachine)
+# ---------------------------------------------------------------------------
+
+group "workspace types"
+
+# scratch → plain Deployment with generated pod names, selected by workspace-name.
+SCRATCH_NAME="e2e-scratch"
+kubectl delete workspace "$SCRATCH_NAME" -n "$NS" --ignore-not-found >/dev/null 2>&1 || true
+if kubectl apply --server-side -f - >/dev/null 2>&1 <<EOF
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Workspace
+metadata:
+  name: ${SCRATCH_NAME}
+  namespace: ${NS}
+spec:
+  type: scratch
+  template:
+    spec:
+      containers:
+        - name: ${SCRATCH_NAME}
+          image: ${E2E_IMAGE}
+          ports:
+            - containerPort: ${E2E_PORT}
+              name: workspace-port
+EOF
+then
+  pass "scratch Workspace CR created"
+else
+  fail "scratch Workspace CR created"
+fi
+
+if kubectl rollout status "deployment/${SCRATCH_NAME}" -n "$NS" \
+    --timeout="${E2E_TIMEOUT:-240s}" >/dev/null 2>&1; then
+  pass "Deployment ${SCRATCH_NAME} rolled out"
+else
+  fail "Deployment ${SCRATCH_NAME} rolled out"
+fi
+check "scratch Service created" kubectl get "svc/${SCRATCH_NAME}" -n "$NS"
+scratch_selector=$(kubectl get "svc/${SCRATCH_NAME}" -n "$NS" \
+  -o jsonpath='{.spec.selector.workspace-name}' 2>/dev/null)
+check_equals "scratch Service selects workspace-name" "$SCRATCH_NAME" "$scratch_selector"
+scratch_ready=$(kubectl get workspace "$SCRATCH_NAME" -n "$NS" \
+  -o jsonpath='{.status.readyReplicas}' 2>/dev/null)
+check_equals "scratch Workspace status.readyReplicas is 1" "1" "${scratch_ready:-0}"
+
+# vm → KubeVirt VirtualMachine. Only exercised when the CRDs are installed.
+if kubectl get crd virtualmachines.kubevirt.io >/dev/null 2>&1; then
+  VM_NAME="e2e-vm"
+  kubectl delete workspace "$VM_NAME" -n "$NS" --ignore-not-found >/dev/null 2>&1 || true
+  if kubectl apply --server-side -f - >/dev/null 2>&1 <<EOF
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Workspace
+metadata:
+  name: ${VM_NAME}
+  namespace: ${NS}
+spec:
+  type: vm
+  template:
+    spec:
+      containers:
+        - name: ${VM_NAME}
+          image: ${E2E_VM_IMAGE:-quay.io/containerdisks/debian:12}
+          ports:
+            - containerPort: 22
+              name: ssh
+          resources:
+            requests:
+              memory: 256Mi
+EOF
+  then
+    pass "vm Workspace CR created"
+  else
+    fail "vm Workspace CR created"
+  fi
+
+  # The controller creates a VirtualMachine named after the workspace.
+  for _ in $(seq 1 30); do
+    if kubectl get "vm/${VM_NAME}" -n "$NS" >/dev/null 2>&1; then break; fi
+    sleep 2
+  done
+  check "VirtualMachine ${VM_NAME} was created" kubectl get "vm/${VM_NAME}" -n "$NS"
+
+  # spec.running must be true when not stopped.
+  vm_running=$(kubectl get "vm/${VM_NAME}" -n "$NS" -o jsonpath='{.spec.running}' 2>/dev/null)
+  check_equals "VirtualMachine spec.running is true" "true" "$vm_running"
+
+  # stop → spec.running false.
+  if pf_start kube-workspaces-api "$API_PORT" 80; then
+    code=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+      "http://127.0.0.1:${API_PORT}/v1/workspaces/${VM_NAME}/stop?namespace=${NS}")
+    check_equals "api stop vm workspace" "200" "$code"
+  fi
+  for _ in $(seq 1 30); do
+    vm_running=$(kubectl get "vm/${VM_NAME}" -n "$NS" -o jsonpath='{.spec.running}' 2>/dev/null)
+    if [ "$vm_running" = "false" ]; then break; fi
+    sleep 2
+  done
+  check_equals "stopped vm sets spec.running=false" "false" "$vm_running"
+
+  kubectl delete workspace "$VM_NAME" -n "$NS" --wait=true --timeout=120s >/dev/null 2>&1 || true
+else
+  info "KubeVirt CRDs not installed — skipping vm workspace assertions"
+fi
+
+kubectl delete workspace "$SCRATCH_NAME" -n "$NS" --wait=true --timeout=120s >/dev/null 2>&1 || true
+
+endgroup
+
+# ---------------------------------------------------------------------------
 # 6. Deletion cascades
 # ---------------------------------------------------------------------------
 

@@ -145,7 +145,7 @@ tests:
   - it: installs the curated examples by default
     asserts:
       - hasDocuments:
-          count: 5
+          count: 7
 
   - it: installs nothing when installExampleImages is false and no images are set
     set:
@@ -159,7 +159,7 @@ tests:
       installCatalogImages: true
     asserts:
       - hasDocuments:
-          count: 38
+          count: 40
 
   - it: installCatalogImages takes precedence over installExampleImages (no duplicates)
     set:
@@ -167,7 +167,7 @@ tests:
       installExampleImages: true
     asserts:
       - hasDocuments:
-          count: 38
+          count: 40
 
   - it: layers custom images on top of the default examples
     set:
@@ -177,7 +177,7 @@ tests:
           defaultPort: 80
     asserts:
       - hasDocuments:
-          count: 6
+          count: 8
 
   - it: layers custom images on top of the full catalog
     set:
@@ -188,4 +188,4 @@ tests:
           defaultPort: 80
     asserts:
       - hasDocuments:
-          count: 39
+          count: 41

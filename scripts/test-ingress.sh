@@ -194,7 +194,7 @@ else
   fail "/ returns the frontend's HTML"
 fi
 
-# /v1 and /openapi must reach the API, not be swallowed by the catch-all.
+# /v1 must reach the API, not be swallowed by the catch-all.
 retry_ingress "/v1/images routes to the api" "/v1/images" 200
 retry_ingress "/v1/namespaces routes to the api" "/v1/namespaces" 200
 

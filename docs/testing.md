@@ -118,6 +118,14 @@ Where Layer 1 proves the components start, this proves the platform works:
    leaving the CR in place; `/start` brings it back
 6. Deletes the CR and asserts the StatefulSet and Service are garbage-collected
 
+It also exercises the non-default `spec.type` values:
+
+- **scratch** — asserts a `Deployment` (not StatefulSet) is created and rolls
+  out, and that the Service selects the `workspace-name` label.
+- **vm** — only when the KubeVirt CRDs are installed; asserts a
+  `VirtualMachine` named after the workspace is created with `spec.running: true`,
+  and that `POST /stop` flips it to `spec.running: false`.
+
 A raw `Workspace` needs no matching `Image` CR — `Image` CRs only populate the
 UI/API catalog and supply defaults at creation time through the API.
 

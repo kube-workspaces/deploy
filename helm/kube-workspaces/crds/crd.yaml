@@ -8076,6 +8076,19 @@ spec:
                 required:
                 - spec
                 type: object
+              type:
+                default: container
+                description: |-
+                  Type selects the workload used to run the workspace.
+                  "container" (default) runs the pod template as a StatefulSet.
+                  "scratch" runs it as a plain Deployment (no persistent identity).
+                  "vm" runs it as a KubeVirt VirtualMachine; the main container image must be
+                  a containerDisk image containing a bootable guest disk.
+                enum:
+                - container
+                - vm
+                - scratch
+                type: string
             required:
             - template
             type: object
@@ -8191,7 +8204,6 @@ spec:
     storage: true
     subresources:
       status: {}
----
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -9880,6 +9892,15 @@ spec:
                 type: string
               tags:
                 description: Tags are optional labels for filtering/searching images.
+                items:
+                  type: string
+                type: array
+              workspaceTypes:
+                description: |-
+                  WorkspaceTypes lists the workspace types this image can be used with
+                  ("container", "vm", "scratch"). When empty, the image is offered for
+                  "container" workspaces only. VM images must be containerDisk images
+                  containing a bootable guest disk.
                 items:
                   type: string
                 type: array

@@ -157,6 +157,8 @@ links back to the section explaining it in context.
 | `serviceAccount.name` | `""` | Override the generated ServiceAccount name |
 | `serviceAccount.annotations` | `{}` | Annotations on the created ServiceAccount |
 | `workspaceRoles.create` | `true` | Install the `workspace-admin/editor/viewer-role` ClusterRoles the User controller binds per-namespace |
+| `kubevirt.enabled` | `false` | Install the vendored KubeVirt operator + KubeVirt CR (required for `spec.type: vm` workspaces). Not needed for container/scratch workspaces |
+| `kubevirt.useEmulation` | `false` | Run guests with software emulation — enable on nodes without `/dev/kvm` (kind, CI). Slow |
 | `nameOverride` / `fullnameOverride` | unset | Standard Helm chart naming overrides |
 
 ### Controller, API, Proxy, Frontend
@@ -206,8 +208,8 @@ images. The chart vendors a catalog from
 
 | Key | Default | Description |
 |-----|---------|--------------|
-| `installExampleImages` | `true` | Install a curated 5-image subset (code-server, debian-desktop, kasm, kasmweb-chrome, kasmweb-desktop) so a fresh install has something to launch immediately |
-| `installCatalogImages` | `false` | Install the full catalog (38+ images) instead of the curated subset. Takes precedence over `installExampleImages` when both are true |
+| `installExampleImages` | `true` | Install a curated 7-image subset (code-server, debian-desktop, kasm, kasmweb-chrome, kasmweb-desktop, plus alpine-vm and debian-vm for `spec.type: vm`) so a fresh install has something to launch immediately |
+| `installCatalogImages` | `false` | Install the full catalog (40+ images) instead of the curated subset. Takes precedence over `installExampleImages` when both are true |
 | `images` | `[]` | Additional/custom `Image` CRs layered on top of whichever catalog set is installed. Each entry needs an RFC 1123-compliant `name`; every other field is passed through to the `Image` spec verbatim — see [`values.yaml`](values.yaml) for the shape |
 
 ### Ingress
@@ -218,11 +220,11 @@ images. The chart vendors a catalog from
 | `ingress.className` | `""` | `ingressClassName` (e.g. `traefik`, `nginx`) |
 | `ingress.annotations` | `{}` | e.g. `cert-manager.io/cluster-issuer` or ingress-controller-specific middleware |
 | `ingress.middlewares` | `[]` | Optional Traefik `Middleware` CRs (`traefik.io/v1alpha1`), rendered into the release namespace. Each entry is `{name, spec}`; `spec` is passed through verbatim. Reference one from an annotation as `<release-namespace>-<name>@kubernetescrd` |
-| `ingress.hosts` | one `workspaces.local` host, five paths | Host → paths mapping. **Overriding `hosts` replaces the whole list** — each host you supply needs its own complete `paths` list, or the chart fails the render rather than emit an Ingress rule with no paths |
+| `ingress.hosts` | one `workspaces.local` host, four paths | Host → paths mapping. **Overriding `hosts` replaces the whole list** — each host you supply needs its own complete `paths` list, or the chart fails the render rather than emit an Ingress rule with no paths |
 | `ingress.tls` | `[]` | `[{hosts: [...], secretName: ...}]` entries |
 
-The default path set routes `/proxy` to the proxy Service, `/v1`, `/auth` and
-`/openapi` to the API Service, and everything else (`/`) to the frontend —
+The default path set routes `/proxy` to the proxy Service, `/v1` and `/auth` to
+the API Service, and everything else (`/`) to the frontend —
 **not** `/proxy` to the API, which has no routes there and 404s all workspace
 traffic if misrouted. See [`docs/proxy.md`](../../docs/proxy.md) for the full
 routing table and [`docs/domains.md`](../../docs/domains.md) for customizing

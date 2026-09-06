@@ -20,6 +20,14 @@ issued by real ACME providers; see [Customizing your domain](domains.md).
 No images need to be built: the manifests reference the published
 `ghcr.io/kube-workspaces/*` images.
 
+**Optional — VM workspaces.** `spec.type: vm` requires
+[KubeVirt](https://kubevirt.io) to be installed in the cluster first (it is not
+bundled). On a local/kind cluster without nested virtualization, enable
+software emulation in the KubeVirt CR (`spec.configuration.developerConfiguration.useEmulation: true`).
+The controller detects the KubeVirt CRDs and reports a `KubeVirtNotInstalled`
+status condition on any `vm` workspace created without them; container and
+scratch workspaces work regardless.
+
 > **CRDs must use server-side apply.** The `Workspace` CRD embeds a full
 > Kubernetes `PodSpec` and is ~658 KiB, far over the 256 KiB
 > `last-applied-configuration` annotation limit. Plain `kubectl apply -f` fails
@@ -72,8 +80,8 @@ see [Customizing your domain](domains.md#kustomize).
 
 ## Helm
 
-The chart ships the CRDs and, by default, a curated catalog of 5 example
-images.
+The chart ships the CRDs and, by default, a curated catalog of example images
+(including Alpine and Debian VM images for `spec.type: vm`).
 
 From the published chart, without cloning this repository:
 
@@ -94,7 +102,7 @@ helm install kube-workspaces helm/kube-workspaces/ \
 
 | Setting | Default | Effect |
 |---------|---------|--------|
-| `installExampleImages` | `true` | Curated set of 5 example images |
+| `installExampleImages` | `true` | Curated set of example images (incl. Alpine + Debian VMs) |
 | `installCatalogImages` | `false` | Install the full vendored catalog instead |
 | `images` | `[]` | Add your own `Image` CRs regardless of the catalog setting |
 

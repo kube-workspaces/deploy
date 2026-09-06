@@ -113,11 +113,6 @@ ingress:
           backend:
             serviceName: kube-workspaces-api
             servicePort: 80
-        - path: /openapi
-          pathType: Prefix
-          backend:
-            serviceName: kube-workspaces-api
-            servicePort: 80
         # Frontend catches everything else, including the /admin, /workspaces
         # and /volumes page routes.
         - path: /
@@ -154,10 +149,11 @@ namespaces:
 # and `make sync-images` in this repo.
 #
 # installExampleImages: install a small curated set of Image CRs (currently
-# 5: code-server, debian-desktop, kasm, kasmweb-chrome, kasmweb-desktop) so a
-# first-time install has something to launch immediately.
+# 7: code-server, debian-desktop, kasm, kasmweb-chrome, kasmweb-desktop, plus
+# alpine-vm and debian-vm for `spec.type: vm`) so a first-time install has
+# something to launch immediately.
 installExampleImages: true
-# installCatalogImages: install the FULL image catalog (38+ Image CRs) instead
+# installCatalogImages: install the FULL image catalog (40+ Image CRs) instead
 # of just the curated examples. Takes precedence over installExampleImages
 # when true.
 installCatalogImages: false
@@ -238,6 +234,17 @@ auth:
 # Install workspace RBAC ClusterRoles (used by User controller for RoleBindings)
 workspaceRoles:
   create: true
+
+# KubeVirt (optional) — required for `spec.type: vm` workspaces.
+# Not needed for container/scratch workspaces.
+kubevirt:
+  # enabled installs the pinned upstream KubeVirt operator (vendored in
+  # files/kubevirt-operator.yaml) plus the KubeVirt CR that rolls out the
+  # platform into the kubevirt namespace.
+  enabled: false
+  # useEmulation runs guests in software emulation (no /dev/kvm required).
+  # Slow but works everywhere — enable for kind/CI/nodes without KVM.
+  useEmulation: false
 
 # Bundled Dex OIDC provider (optional).
 # Set dex.enabled=true and configure connectors to use Dex as the OIDC provider.

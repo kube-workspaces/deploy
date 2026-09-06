@@ -245,6 +245,25 @@ else
   fail "controller SA can create statefulsets in ${KW_WORKSPACE_NAMESPACE}"
 fi
 
+# Deployments back scratch workspaces; VirtualMachines back vm workspaces.
+if kubectl auth can-i create deployments \
+    -n "$KW_WORKSPACE_NAMESPACE" \
+    --as="system:serviceaccount:${KW_NAMESPACE}:${ctrl_sa}" \
+    >/dev/null 2>&1; then
+  pass "controller SA can create deployments in ${KW_WORKSPACE_NAMESPACE}"
+else
+  fail "controller SA can create deployments in ${KW_WORKSPACE_NAMESPACE}"
+fi
+
+if kubectl auth can-i create virtualmachines.kubevirt.io \
+    -n "$KW_WORKSPACE_NAMESPACE" \
+    --as="system:serviceaccount:${KW_NAMESPACE}:${ctrl_sa}" \
+    >/dev/null 2>&1; then
+  pass "controller SA can create virtualmachines in ${KW_WORKSPACE_NAMESPACE}"
+else
+  fail "controller SA can create virtualmachines in ${KW_WORKSPACE_NAMESPACE}"
+fi
+
 # The proxy has its own SA in both paths and needs to read session secrets.
 proxy_sa=$(kubectl get deployment/kube-workspaces-proxy -n "$KW_NAMESPACE" \
   -o jsonpath='{.spec.template.spec.serviceAccountName}' 2>/dev/null)

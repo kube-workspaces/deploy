@@ -306,9 +306,9 @@ see [Image Catalog Sync](CONTRIBUTING.md#image-catalog-sync) in
 CONTRIBUTING.md for how that vendoring works.
 
 - **Kustomize**: `make install-images` applies the full vendored `images.yaml`
-  (currently 38 images). `kustomize/base` does not create any `Image` CRs on
+  (currently 40 images). `kustomize/base` does not create any `Image` CRs on
   its own — this is a required separate step.
-- **Helm**: installs a curated set of 5 example images by default
+- **Helm**: installs a curated set of 7 example images by default
   (`installExampleImages: true`). Set `installCatalogImages: true` to install
   the full catalog instead, or `installExampleImages: false` to install
   neither. Add your own images via the `images:` values list regardless of

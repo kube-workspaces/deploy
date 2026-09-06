@@ -26,13 +26,6 @@ spec:
             name: kube-workspaces-api
             port:
               number: 80
-      - path: /openapi
-        pathType: Prefix
-        backend:
-          service:
-            name: kube-workspaces-api
-            port:
-              number: 80
       - path: /proxy
         pathType: Prefix
         backend:

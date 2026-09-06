@@ -66,7 +66,7 @@ All target `kube-workspaces-system` namespace.
 - `defaultEnv` supports `{{namespace}}` and `{{name}}` placeholders.
 - Auth is opt-in (disabled by default). Use Helm `auth.enabled: true` or `make auth-enable`.
 - PlatformConfig CRD is cluster-scoped singleton named `default`.
-- Helm installs a curated 5-image subset by default (`installExampleImages: true`); set `installCatalogImages: true` for the full catalog.
+- Helm installs a curated 7-image subset by default (`installExampleImages: true`); set `installCatalogImages: true` for the full catalog.
 
 ## CRD Sync
 

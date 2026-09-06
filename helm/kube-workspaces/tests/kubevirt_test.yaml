@@ -1,0 +1,73 @@
+# Unit tests for the optional KubeVirt template.
+#
+# kubevirt.enabled=false by default — VM workspaces need KubeVirt, but most
+# installs are container-only, so the ~500 KiB operator manifest and its CRDs
+# must not render unless asked for.
+#
+# Assertions use fixed document indexes: the vendored operator manifest
+# (files/kubevirt-operator.yaml) has a stable document order, and name-based
+# selectors are ambiguous here (both the Namespace and the KubeVirt CR are
+# named "kubevirt"; "virt-operator" substring-matches "kubevirt-operator").
+suite: kubevirt
+templates:
+  - kubevirt.yaml
+tests:
+  - it: renders nothing by default
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders the operator and KubeVirt CR when enabled
+    set:
+      kubevirt:
+        enabled: true
+    asserts:
+      # 10 operator docs (Namespace, PriorityClass, CRD, SA, Role, ClusterRole
+      # x2, RoleBinding, ClusterRoleBinding, Deployment) + the KubeVirt CR.
+      - hasDocuments:
+          count: 11
+      - isKind:
+          of: Deployment
+        documentIndex: 9
+      - equal:
+          path: metadata.name
+          value: virt-operator
+        documentIndex: 9
+      - isKind:
+          of: KubeVirt
+        documentIndex: 10
+      - equal:
+          path: metadata.namespace
+          value: kubevirt
+        documentIndex: 10
+
+  - it: defaults useEmulation to false (real KVM)
+    set:
+      kubevirt:
+        enabled: true
+    asserts:
+      - equal:
+          path: spec.configuration.developerConfiguration.useEmulation
+          value: false
+        documentIndex: 10
+
+  - it: sets useEmulation for kind/CI when asked
+    set:
+      kubevirt:
+        enabled: true
+        useEmulation: true
+    asserts:
+      - equal:
+          path: spec.configuration.developerConfiguration.useEmulation
+          value: true
+        documentIndex: 10
+
+  - it: creates the KubeVirt CR as a post-install hook (CRD race)
+    set:
+      kubevirt:
+        enabled: true
+    asserts:
+      - equal:
+          path: metadata.annotations["helm.sh/hook"]
+          value: post-install,post-upgrade
+        documentIndex: 10
