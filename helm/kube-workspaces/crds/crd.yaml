@@ -8292,6 +8292,12 @@ spec:
                 items:
                   type: string
                 type: array
+              defaultCloudInit:
+                description: |-
+                  DefaultCloudInit indicates the image has cloud-init baked in. When true,
+                  user-data (e.g. a user/password from DefaultUser/DefaultPassword) can be
+                  seeded into the guest at first boot.
+                type: boolean
               defaultCredentials:
                 description: DefaultCredentials are the default login credentials
                   for this image.
@@ -9758,6 +9764,12 @@ spec:
                   - name
                   type: object
                 type: array
+              defaultPassword:
+                description: |-
+                  DefaultPassword is the default password for DefaultUser. Only set when the
+                  image has a known default password for this user; leave empty/unset when
+                  there is no known default (e.g. the guest uses no password).
+                type: string
               defaultPath:
                 description: Default URL path for connecting (e.g. "/vnc.html?resize=remote").
                 type: string
