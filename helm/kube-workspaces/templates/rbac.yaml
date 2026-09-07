@@ -44,7 +44,7 @@ rules:
     verbs: ["*"]
   - apiGroups: [""]
     resources: ["secrets"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: [""]
     resources: ["resourcequotas"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
