@@ -40,6 +40,7 @@ spec:
   image: quay.io/kubevirt/alpine-container-disk-demo:20260906_007c02cac1
   imageHomepageURL: https://quay.io/repository/kubevirt/alpine-container-disk-demo
   sourceURL: https://github.com/kubevirt/kubevirt/tree/main/containerimages
+  defaultUser: root
   workspaceTypes:
   - vm
 ---
@@ -182,6 +183,9 @@ spec:
   image: quay.io/containerdisks/debian:12
   imageHomepageURL: https://quay.io/repository/containerdisks/debian
   sourceURL: https://github.com/kubevirt/containerdisks
+  defaultUser: root
+  defaultPassword: debian
+  defaultCloudInit: true
   workspaceTypes:
   - vm
 ---
