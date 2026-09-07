@@ -6,9 +6,12 @@
   Deployment, all in the kubevirt namespace), then the KubeVirt CR that tells
   the operator to roll out the platform.
 
-  The KubeVirt CR is a post-install/post-upgrade hook: it must not be created
-  before the operator's CRDs are established, or a fresh `helm install` races
-  and fails. ArgoCD maps the hook to a PostSync wave.
+  The KubeVirt CR is an ordinary manifest, NOT a Helm hook: making it a
+  before-hook-creation hook deletes and recreates the CR on every chart
+  upgrade, which makes virt-operator tear down the whole platform (CRDs,
+  virt-controller/handler, and every VirtualMachine). The CRD for the CR is
+  rendered above in files/kubevirt-operator.yaml, so a fresh install applies
+  cleanly in order.
 
   Uninstall note: disabling this flag removes the operator resources rendered
   here, but the workload CRDs (virtualmachines.kubevirt.io etc.) are created
@@ -22,10 +25,6 @@ kind: KubeVirt
 metadata:
   name: kubevirt
   namespace: kubevirt
-  annotations:
-    # Created after the operator so its CRDs are established first.
-    "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-delete-policy": before-hook-creation
 spec:
   certificateRotateStrategy: {}
   configuration:
