@@ -29,7 +29,7 @@ export KIND_CLUSTER KIND_NODE_IMAGE
 
 # Image CR catalog is vendored from kube-workspaces/image-catalog at this
 # pinned release. Bump deliberately with `make sync-images`.
-IMAGE_CATALOG_VERSION ?= v0.2.0
+IMAGE_CATALOG_VERSION ?= v0.2.1
 IMAGE_CATALOG_REPO ?= kube-workspaces/image-catalog
 
 # Install pinned test tools into .bin/ (gitignored).
