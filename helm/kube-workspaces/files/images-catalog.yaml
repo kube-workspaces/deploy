@@ -184,7 +184,7 @@ spec:
   - gui
   defaultPort: 22
   homepageURL: https://www.debian.org
-  image: quay.io/containerdisks/debian:12
+  image: quay.io/containerdisks/debian:13
   imageHomepageURL: https://quay.io/repository/containerdisks/debian
   sourceURL: https://github.com/kubevirt/containerdisks
   defaultUser: debian
