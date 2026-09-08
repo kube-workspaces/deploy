@@ -245,6 +245,11 @@ kubevirt:
   # useEmulation runs guests in software emulation (no /dev/kvm required).
   # Slow but works everywhere — enable for kind/CI/nodes without KVM.
   useEmulation: false
+  # cdi installs the Containerized Data Importer (files/cdi-operator.yaml)
+  # plus the CDI CR. Required for Image images with persistentRootDisk: true
+  # (DataVolume-backed VM root disks). Ignored unless kubevirt.enabled.
+  cdi:
+    enabled: true
 
 # Bundled Dex OIDC provider (optional).
 # Set dex.enabled=true and configure connectors to use Dex as the OIDC provider.

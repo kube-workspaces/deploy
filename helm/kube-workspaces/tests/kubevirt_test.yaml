@@ -4,10 +4,11 @@
 # installs are container-only, so the ~500 KiB operator manifest and its CRDs
 # must not render unless asked for.
 #
-# Assertions use fixed document indexes: the vendored operator manifest
-# (files/kubevirt-operator.yaml) has a stable document order, and name-based
-# selectors are ambiguous here (both the Namespace and the KubeVirt CR are
-# named "kubevirt"; "virt-operator" substring-matches "kubevirt-operator").
+# Assertions use fixed document indexes: the vendored operator manifests
+# (files/kubevirt-operator.yaml, files/cdi-operator.yaml) have a stable
+# document order, and name-based selectors are ambiguous here (the Namespace
+# and the KubeVirt CR are both named "kubevirt"; "virt-operator"
+# substring-matches "kubevirt-operator").
 suite: kubevirt
 templates:
   - kubevirt.yaml
@@ -17,10 +18,12 @@ tests:
       - hasDocuments:
           count: 0
 
-  - it: renders the operator and KubeVirt CR when enabled
+  - it: renders the operator and KubeVirt CR when enabled (CDI off)
     set:
       kubevirt:
         enabled: true
+        cdi:
+          enabled: false
     asserts:
       # 10 operator docs (Namespace, PriorityClass, CRD, SA, Role, ClusterRole
       # x2, RoleBinding, ClusterRoleBinding, Deployment) + the KubeVirt CR.
@@ -40,6 +43,29 @@ tests:
           path: metadata.namespace
           value: kubevirt
         documentIndex: 10
+
+  - it: renders the CDI operator and CDI CR by default alongside KubeVirt
+    set:
+      kubevirt:
+        enabled: true
+    asserts:
+      # 11 KubeVirt docs + 8 CDI operator docs + the CDI CR.
+      - hasDocuments:
+          count: 20
+      - isKind:
+          of: Deployment
+        documentIndex: 18
+      - equal:
+          path: metadata.name
+          value: cdi-operator
+        documentIndex: 18
+      - isKind:
+          of: CDI
+        documentIndex: 19
+      - equal:
+          path: metadata.namespace
+          value: cdi
+        documentIndex: 19
 
   - it: defaults useEmulation to false (real KVM)
     set:
@@ -62,12 +88,18 @@ tests:
           value: true
         documentIndex: 10
 
-  - it: creates the KubeVirt CR as a post-install hook (CRD race)
+  # Regression pin: the KubeVirt CR must NOT be a Helm hook. A
+  # before-hook-creation hook is deleted and recreated on every upgrade, which
+  # makes virt-operator tear down the whole platform (CRDs, virt-controller/
+  # handler, every VirtualMachine). Same for the CDI CR.
+  - it: renders the KubeVirt and CDI CRs without Helm hooks
     set:
       kubevirt:
         enabled: true
     asserts:
-      - equal:
+      - isNull:
           path: metadata.annotations["helm.sh/hook"]
-          value: post-install,post-upgrade
         documentIndex: 10
+      - isNull:
+          path: metadata.annotations["helm.sh/hook"]
+        documentIndex: 19

@@ -36,4 +36,23 @@ spec:
   customizeComponents: {}
   imagePullPolicy: IfNotPresent
   workloadUpdateStrategy: {}
+{{- if .Values.kubevirt.cdi.enabled }}
+---
+# Containerized Data Importer: the pinned upstream operator manifest
+# (files/cdi-operator.yaml) plus the CDI CR that rolls out the importer,
+# uploader, cloner and controller workloads into the cdi namespace.
+# Required for persistentRootDisk images, which back the VM root disk with a
+# DataVolume that CDI imports from the container disk image (registry source).
+# Same uninstall caveat as KubeVirt: the cdi CRDs are created by cdi-operator
+# and left behind when the flag is disabled.
+{{ .Files.Get "files/cdi-operator.yaml" }}
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: CDI
+metadata:
+  name: cdi
+  namespace: cdi
+spec:
+  imagePullPolicy: IfNotPresent
+{{- end }}
 {{- end }}
