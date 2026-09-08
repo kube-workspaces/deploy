@@ -91,6 +91,7 @@ tests:
             needsNoopSW: true
           persistentRootDisk: true
           memoryLimit: 4Gi
+          memoryRequest: 5Gi
           workspaceTypes: [vm]
     asserts:
       - equal:
@@ -120,6 +121,9 @@ tests:
       - equal:
           path: spec.memoryLimit
           value: 4Gi
+      - equal:
+          path: spec.memoryRequest
+          value: 5Gi
       - equal:
           path: spec.workspaceTypes[0]
           value: vm
