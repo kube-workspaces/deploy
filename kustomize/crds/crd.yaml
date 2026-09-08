@@ -9842,6 +9842,24 @@ spec:
                   - url
                   type: object
                 type: array
+              memoryLimit:
+                description: |-
+                  MemoryLimit overrides the VM domain memory for vm workspaces (e.g. "4Gi").
+                  Useful for desktop images that need more memory than the container-default
+                  memory requests/limits. Empty means use the container's resources as-is.
+                type: string
+              persistentRootDisk:
+                description: |-
+                  PersistentRootDisk indicates the VM root disk should be a DataVolume
+                  backing-persistent PVC imported from the container disk image (via CDI)
+                  rather than an ephemeral containerDisk. Requires a storage class that CDI
+                  can provision. Ignored for non-vm workspaces.
+                type: boolean
+              persistentRootDiskSize:
+                description: |-
+                  PersistentRootDiskSize is the requested root PVC size when
+                  PersistentRootDisk is true (e.g. "10Gi"). Defaults to "10Gi" when empty.
+                type: string
               privileged:
                 description: Privileged indicates that containers using this image
                   should run in privileged mode.

@@ -89,6 +89,9 @@ tests:
               port: 4901
           proxyConfig:
             needsNoopSW: true
+          persistentRootDisk: true
+          memoryLimit: 4Gi
+          workspaceTypes: [vm]
     asserts:
       - equal:
           path: spec.category
@@ -111,6 +114,15 @@ tests:
       - equal:
           path: spec.proxyConfig.needsNoopSW
           value: true
+      - equal:
+          path: spec.persistentRootDisk
+          value: true
+      - equal:
+          path: spec.memoryLimit
+          value: 4Gi
+      - equal:
+          path: spec.workspaceTypes[0]
+          value: vm
 
   # 'name' and 'displayName' are template inputs, not CRD spec fields.
   - it: does not leak the name key into the spec
@@ -145,7 +157,7 @@ tests:
   - it: installs the curated examples by default
     asserts:
       - hasDocuments:
-          count: 7
+          count: 8
 
   - it: installs nothing when installExampleImages is false and no images are set
     set:
@@ -159,7 +171,7 @@ tests:
       installCatalogImages: true
     asserts:
       - hasDocuments:
-          count: 40
+          count: 41
 
   - it: installCatalogImages takes precedence over installExampleImages (no duplicates)
     set:
@@ -167,7 +179,7 @@ tests:
       installExampleImages: true
     asserts:
       - hasDocuments:
-          count: 40
+          count: 41
 
   - it: layers custom images on top of the default examples
     set:
@@ -177,7 +189,7 @@ tests:
           defaultPort: 80
     asserts:
       - hasDocuments:
-          count: 8
+          count: 9
 
   - it: layers custom images on top of the full catalog
     set:
@@ -188,4 +200,4 @@ tests:
           defaultPort: 80
     asserts:
       - hasDocuments:
-          count: 41
+          count: 42

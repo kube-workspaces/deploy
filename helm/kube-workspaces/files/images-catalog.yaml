@@ -166,6 +166,52 @@ spec:
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
 metadata:
+  name: debian-gnome
+  annotations:
+    catalog.kubeworkspaces.io/example: "true"
+spec:
+  displayName: Debian GNOME Desktop
+  description: Debian Linux virtual machine with a full GNOME desktop, accessibly
+    via the graphical VNC display console. The root disk is a persistent DataVolume
+    (CDI registry import), so the desktop and any changes survive restarts. GNOME
+    is installed by cloud-init on first boot and uses 4Gi of memory by default.
+  category: Desktop
+  tags:
+  - vm
+  - linux
+  - debian
+  - desktop
+  - gui
+  defaultPort: 22
+  homepageURL: https://www.debian.org
+  image: quay.io/containerdisks/debian:12
+  imageHomepageURL: https://quay.io/repository/containerdisks/debian
+  sourceURL: https://github.com/kubevirt/containerdisks
+  defaultUser: debian
+  defaultPassword: debian
+  defaultCloudInit: true
+  defaultUserData: |
+    #cloud-config
+    ssh_pwauth: true
+    chpasswd:
+      expire: false
+      list: |
+        debian:debian
+    package_update: true
+    packages:
+    - task-gnome-desktop
+    - qemu-guest-agent
+    runcmd:
+    - systemctl set-default graphical.target
+  persistentRootDisk: true
+  persistentRootDiskSize: 20Gi
+  memoryLimit: 4Gi
+  workspaceTypes:
+  - vm
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
   name: debian-vm
   annotations:
     catalog.kubeworkspaces.io/example: "true"
