@@ -94,12 +94,13 @@ a policy decision for the cluster operator — use PodDefaults, admission contro
 (Kyverno, Gatekeeper) or Pod Security Standards on the `workspaces` namespace.
 
 **Virtual machines.** `spec.type: vm` runs a KubeVirt `VirtualMachine` whose root
-disk comes from the workspace's image as an ephemeral containerDisk. The guest
-runs as the unprivileged `qemu` user inside a virt-launcher pod; it is not a
-sandbox boundary beyond what KubeVirt provides. The controller needs
-`virtualmachines`/`virtualmachineinstances` RBAC for this, which is granted
-unconditionally — if you do not want VM workspaces, restrict who can set
-`spec.type` via admission policy.
+disk comes from the workspace's image — either an ephemeral containerDisk or,
+when the Image declares `persistentRootDisk`, a CDI-imported DataVolume-backed
+PVC. The guest runs as the unprivileged `qemu` user inside a virt-launcher pod;
+it is not a sandbox boundary beyond what KubeVirt provides. The controller needs
+`virtualmachines`/`virtualmachineinstances` (and, for persistent root disks,
+`datavolumes`) RBAC for this, which is granted unconditionally — if you do not
+want VM workspaces, restrict who can set `spec.type` via admission policy.
 
 **Network policy.** None is shipped. The proxy needs to reach arbitrary workspace
 pods, so a useful default policy depends on how workspaces are namespaced in your

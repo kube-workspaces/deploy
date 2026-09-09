@@ -66,7 +66,10 @@ All target `kube-workspaces-system` namespace.
 - `defaultEnv` supports `{{namespace}}` and `{{name}}` placeholders.
 - Auth is opt-in (disabled by default). Use Helm `auth.enabled: true` or `make auth-enable`.
 - PlatformConfig CRD is cluster-scoped singleton named `default`.
-- Helm installs a curated 7-image subset by default (`installExampleImages: true`); set `installCatalogImages: true` for the full catalog.
+- Helm installs a curated 8-image subset by default (`installExampleImages: true`); set `installCatalogImages: true` for the full catalog.
+- There are seven `kubeworkspaces.io` CRDs (Workspace, Image, User, AuthConfig, PlatformConfig, PodDefault, SshKey); `kustomize/crds/` must render 7 (see `scripts/validate.sh`).
+- KubeVirt is optional and off by default (`kubevirt.enabled: false`). `kubevirt.useEmulation` enables software emulation (no `/dev/kvm`); `kubevirt.cdi.enabled` installs CDI for persistent VM root disks; `kubevirt.gpuPassthrough.permittedHostDevices` allowlists GPU/PCI devices for VM passthrough.
+- ArgoCD latest-image workflow: the ArgoCD app pins component image `tag: latest` (rides main pushes live) but pins the chart to a `targetRevision` — chart-side changes (e.g. `kubevirt.gpuPassthrough`) only apply after the coordinated `targetRevision` bump.
 
 ## CRD Sync
 

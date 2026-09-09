@@ -33,11 +33,11 @@ that runs on every push, and it catches the majority of real breakage:
 - the Helm chart renders across a matrix of values combinations — auth on/off,
   Dex, ingress variants, namespace toggles, custom image tags
 - rendered output validates against the Kubernetes schema, **including our own
-  CRDs**: `scripts/crd-to-schema.sh` extracts JSON Schema from the six CRDs so
+  CRDs**: `scripts/crd-to-schema.sh` extracts JSON Schema from the seven CRDs so
   `Workspace`, `Image` and friends are genuinely validated rather than skipped
 - the CRDs vendored into `helm/kube-workspaces/crds/` match `kustomize/crds/`
   (this is `make check-helm-crds`)
-- structural CRD checks: all six present, correct API group, every version has a
+- structural CRD checks: all seven present, correct API group, every version has a
   schema, and the `Workspace` CRD is still over the 256 KiB client-side apply
   limit that makes `--server-side` mandatory
 - no Deployment inherits the `default` ServiceAccount, every referenced SA is
@@ -65,7 +65,7 @@ make test-deploy-argocd       # Argo CD syncing both Applications
 All of them converge on `scripts/smoke.sh`, which asserts the *outcome* rather
 than the mechanism, so it is method-agnostic:
 
-- all six CRDs Established
+- all seven CRDs Established
 - all four Deployments Available, all pods Ready, **zero restarts**
 - API: `/healthz`, `/v1/workspaces`, `/v1/namespaces`, `/v1/volumes`,
   `/v1/images`, `/platform/config`, valid `/openapi3.json`, and a 404 on an

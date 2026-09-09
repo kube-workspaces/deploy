@@ -29,8 +29,11 @@ on the workspace's `spec.type`:
 
 - **`container`** (default) — a `StatefulSet` + `Service`; the workspace is a
   real Kubernetes pod, so it can use any image, resource limits, or volume mounts.
-- **`vm`** — a KubeVirt `VirtualMachine`; the main image is a containerDisk
-  containing a bootable guest OS. Access is via the serial console.
+- **`vm`** — a KubeVirt `VirtualMachine`; the main image is a containerDisk (or
+  a CDI-imported persistent DataVolume root) containing a bootable guest OS.
+  Access is via the serial console, a web SSH console, and a noVNC graphical
+  display. Full GUI/GNOME desktops are supported via the `debian-gnome` image
+  with KVM acceleration and an optional virtio-gpu display.
 - **`scratch`** — a plain `Deployment` with generated pod names (no persistent
   identity).
 
@@ -40,6 +43,9 @@ State lives in CRDs and Secrets; there is no separate database to run or back up
 
 - **Full PodSpec flexibility** — a workspace wraps a complete Kubernetes
   `PodSpec`, so any container configuration works.
+- **Virtual machines** — KubeVirt-backed `vm` workspaces with serial console,
+  web SSH console, and noVNC display; persistent root disks (CDI DataVolumes),
+  GPU passthrough, and virtio-gpu displays.
 - **Browser-based access** — a built-in reverse proxy exposes workspace web UIs
   (VS Code Server, Jupyter, noVNC desktops, and anything else that serves HTTP)
   through the frontend, with full WebSocket support.

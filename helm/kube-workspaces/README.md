@@ -84,7 +84,8 @@ it). Remove them explicitly if you are decommissioning the platform entirely:
 kubectl delete crd \
   workspaces.kubeworkspaces.io images.kubeworkspaces.io \
   users.kubeworkspaces.io authconfigs.kubeworkspaces.io \
-  platformconfigs.kubeworkspaces.io poddefaults.kubeworkspaces.io
+  platformconfigs.kubeworkspaces.io poddefaults.kubeworkspaces.io \
+  sshkeys.kubeworkspaces.io
 ```
 
 Deleting the CRDs deletes every custom resource of those kinds, cluster-wide.
@@ -159,6 +160,8 @@ links back to the section explaining it in context.
 | `workspaceRoles.create` | `true` | Install the `workspace-admin/editor/viewer-role` ClusterRoles the User controller binds per-namespace |
 | `kubevirt.enabled` | `false` | Install the vendored KubeVirt operator + KubeVirt CR (required for `spec.type: vm` workspaces). Not needed for container/scratch workspaces |
 | `kubevirt.useEmulation` | `false` | Run guests with software emulation — enable on nodes without `/dev/kvm` (kind, CI). Slow |
+| `kubevirt.cdi.enabled` | `true` | Install the vendored CDI (Containerized Data Importer) + CDI CR, required for `persistentRootDisk` DataVolume-backed VM root disks (e.g. `debian-gnome`) |
+| `kubevirt.gpuPassthrough.permittedHostDevices` | `{}` | Allowlist host GPU/PCI devices in the KubeVirt CR (`pciHostDevices`/`mediatedDevices`) so VMs can attach them via `gpu_request`. Requires IOMMU/VFIO and a device plugin advertising the resource — see [install.md](../../docs/install.md) |
 | `nameOverride` / `fullnameOverride` | unset | Standard Helm chart naming overrides |
 
 ### Controller, API, Proxy, Frontend
@@ -208,7 +211,7 @@ images. The chart vendors a catalog from
 
 | Key | Default | Description |
 |-----|---------|--------------|
-| `installExampleImages` | `true` | Install a curated 7-image subset (code-server, debian-desktop, kasm, kasmweb-chrome, kasmweb-desktop, plus alpine-vm and debian-vm for `spec.type: vm`) so a fresh install has something to launch immediately |
+| `installExampleImages` | `true` | Install a curated 8-image subset (code-server, debian-desktop, kasm, kasmweb-chrome, kasmweb-desktop, plus alpine-vm, debian-vm and debian-gnome for `spec.type: vm`) so a fresh install has something to launch immediately |
 | `installCatalogImages` | `false` | Install the full catalog (40+ images) instead of the curated subset. Takes precedence over `installExampleImages` when both are true |
 | `images` | `[]` | Additional/custom `Image` CRs layered on top of whichever catalog set is installed. Each entry needs an RFC 1123-compliant `name`; every other field is passed through to the `Image` spec verbatim — see [`values.yaml`](values.yaml) for the shape |
 

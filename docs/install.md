@@ -66,6 +66,17 @@ The controller translates a workspace's `gpu_request` into a KubeVirt
 without the prerequisites above the VM will fail to schedule and the error
 surfaces in the workspace status.
 
+**GPU display without a physical GPU — virtio-gpu.** Real GPU passthrough needs
+the IOMMU/VFIO/device-plugin setup above and a discrete GPU on the host. When
+you only want a faster, paravirtual **display** for a desktop guest (no host
+GPU), set `videoDevice: virtio` on the Image CR. The controller then emits
+`domain.devices.video: {type: virtio}` on the VM (the virtio-gpu display,
+enabled by default in KubeVirt's `VideoConfig` feature gate), giving better
+noVNC performance and arbitrary guest-set resolutions than VGA emulation. The
+`debian-gnome` example image ships with `videoDevice: virtio`; see the
+[Image catalog](https://github.com/kube-workspaces/image-catalog) for the field
+reference.
+
 > **CRDs must use server-side apply.** The `Workspace` CRD embeds a full
 > Kubernetes `PodSpec` and is ~658 KiB, far over the 256 KiB
 > `last-applied-configuration` annotation limit. Plain `kubectl apply -f` fails
@@ -119,7 +130,8 @@ see [Customizing your domain](domains.md#kustomize).
 ## Helm
 
 The chart ships the CRDs and, by default, a curated catalog of example images
-(including Alpine and Debian VM images for `spec.type: vm`).
+(including Alpine, Debian, and the Debian GNOME desktop VM images for
+`spec.type: vm`).
 
 From the published chart, without cloning this repository:
 
@@ -198,6 +210,7 @@ kubectl wait --for=condition=Established \
   crd/workspaces.kubeworkspaces.io crd/images.kubeworkspaces.io \
   crd/users.kubeworkspaces.io crd/authconfigs.kubeworkspaces.io \
   crd/platformconfigs.kubeworkspaces.io crd/poddefaults.kubeworkspaces.io \
+  crd/sshkeys.kubeworkspaces.io \
   --timeout=60s
 
 kubectl wait --for=condition=Available deployment --all \
