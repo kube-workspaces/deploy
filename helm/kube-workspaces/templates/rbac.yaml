@@ -74,7 +74,10 @@ rules:
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: ["kubevirt.io"]
     resources: ["virtualmachineinstances"]
-    verbs: ["get", "list", "watch"]
+    # delete: the API's /reboot endpoint restarts a VM by deleting its VMI
+    # (KubeVirt recreates it from the parent VM), so the shared manager
+    # ServiceAccount needs to remove them, not just observe them.
+    verbs: ["get", "list", "watch", "delete"]
   # The API's VM serial console bridge dials the KubeVirt console subresource
   # (apis/subresources.kubevirt.io/.../virtualmachineinstances/{name}/console);
   # the shared controller/API ServiceAccount needs read access to it. The VNC

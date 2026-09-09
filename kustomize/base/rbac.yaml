@@ -65,7 +65,10 @@ rules:
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: ["kubevirt.io"]
     resources: ["virtualmachineinstances"]
-    verbs: ["get", "list", "watch"]
+    # delete: the API's /reboot endpoint restarts a VM by deleting its VMI
+    # (KubeVirt recreates it from the parent VM), so the shared manager
+    # ServiceAccount needs to remove them, not just observe them.
+    verbs: ["get", "list", "watch", "delete"]
   - apiGroups: ["subresources.kubevirt.io"]
     resources: ["virtualmachineinstances/console", "virtualmachineinstances/vnc"]
     verbs: ["get"]
