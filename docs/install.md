@@ -28,6 +28,44 @@ The controller detects the KubeVirt CRDs and reports a `KubeVirtNotInstalled`
 status condition on any `vm` workspace created without them; container and
 scratch workspaces work regardless.
 
+**Optional — GPU passthrough for VM workspaces.** VM workspaces accept a
+`gpu_request` (same field as container workspaces). To actually pass a GPU
+through to a guest, three conditions must hold:
+
+1. **Host IOMMU + VFIO.** The GPU-bearing nodes must boot with IOMMU enabled
+   (`intel_iommu=on` / `amd_iommu=on`), and the GPU bound to `vfio-pci`. This is
+   the standard KubeVirt host-device prerequisite.
+2. **A device plugin advertising the resource.** The GPU resource (e.g.
+   `nvidia.com/gpu`) must be allocatable on the nodes. For NVIDIA this is the
+   GPU Operator (sandbox device plugin / vGPU manager). For bare PCI/mediated
+   devices KubeVirt's built-in device plugin discovers them — but only once
+   they are **permitted** in step 3.
+3. **Permitted in the KubeVirt CR.** Allowlist the device so KubeVirt can hand
+   it to VMs:
+
+   ```yaml
+   kubevirt:
+     gpuPassthrough:
+       permittedHostDevices:
+         pciHostDevices:
+           - pciVendorSelector: "10DE:1EB8"
+             resourceName: "nvidia.com/TU104GL_Tesla_T4"
+         mediatedDevices:
+           - mdevNameSelector: "GRID T4-1Q"
+             resourceName: "nvidia.com/GRID_T4-1Q"
+   ```
+
+   (Vendor/product selectors come from `lspci`; mediated device selectors from
+   `/sys/bus/pci/devices/*/mdev_supported_types/*/name`. When the device
+   plugin advertises the resource directly, e.g. the NVIDIA GPU Operator's
+   `nvidia.com/gpu`, asking for it by name still requires it to be permitted
+   here before it can be assigned to a VM.)
+
+The controller translates a workspace's `gpu_request` into a KubeVirt
+`domain.devices.gpus` passthrough declaration plus the matching resource limit;
+without the prerequisites above the VM will fail to schedule and the error
+surfaces in the workspace status.
+
 > **CRDs must use server-side apply.** The `Workspace` CRD embeds a full
 > Kubernetes `PodSpec` and is ~658 KiB, far over the 256 KiB
 > `last-applied-configuration` annotation limit. Plain `kubectl apply -f` fails

@@ -32,6 +32,9 @@ spec:
       # useEmulation runs guests without /dev/kvm (slow, fine for kind/CI).
       useEmulation: {{ .Values.kubevirt.useEmulation }}
       featureGates: []
+    {{- if .Values.kubevirt.gpuPassthrough.permittedHostDevices }}
+    permittedHostDevices: {{- toYaml .Values.kubevirt.gpuPassthrough.permittedHostDevices | nindent 6 }}
+    {{- end }}
     imagePullPolicy: IfNotPresent
   customizeComponents: {}
   imagePullPolicy: IfNotPresent

@@ -250,6 +250,22 @@ kubevirt:
   # (DataVolume-backed VM root disks). Ignored unless kubevirt.enabled.
   cdi:
     enabled: true
+  # gpuPassthrough allowlists host GPU/PCI devices in the KubeVirt CR
+  # (spec.configuration.permittedHostDevices) so VMs can attach them via
+  # `domain.devices.gpus`. A device plugin must advertise the matching
+  # resourceName on the GPU nodes (e.g. the NVIDIA GPU Operator / sandbox
+  # device plugin), and the host must have IOMMU enabled. See deploy docs.
+  # Example (NVIDIA Tesla T4 PCI passthrough + a GRID vGPU mediated device):
+  #   gpuPassthrough:
+  #     permittedHostDevices:
+  #       pciHostDevices:
+  #         - pciVendorSelector: "10DE:1EB8"
+  #           resourceName: "nvidia.com/TU104GL_Tesla_T4"
+  #       mediatedDevices:
+  #         - mdevNameSelector: "GRID T4-1Q"
+  #           resourceName: "nvidia.com/GRID_T4-1Q"
+  gpuPassthrough:
+    permittedHostDevices: {}
 
 # Bundled Dex OIDC provider (optional).
 # Set dex.enabled=true and configure connectors to use Dex as the OIDC provider.

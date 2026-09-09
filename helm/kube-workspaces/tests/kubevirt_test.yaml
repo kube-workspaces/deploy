@@ -103,3 +103,46 @@ tests:
       - isNull:
           path: metadata.annotations["helm.sh/hook"]
         documentIndex: 19
+
+  - it: renders no permittedHostDevices by default
+    set:
+      kubevirt:
+        enabled: true
+    asserts:
+      - isNull:
+          path: spec.configuration.permittedHostDevices
+        documentIndex: 10
+
+  - it: renders permittedHostDevices from gpuPassthrough values
+    set:
+      kubevirt:
+        enabled: true
+        cdi:
+          enabled: false
+        gpuPassthrough:
+          permittedHostDevices:
+            pciHostDevices:
+              - pciVendorSelector: "10DE:1EB8"
+                resourceName: "nvidia.com/TU104GL_Tesla_T4"
+            mediatedDevices:
+              - mdevNameSelector: "GRID T4-1Q"
+                resourceName: "nvidia.com/GRID_T4-1Q"
+    asserts:
+      - hasDocuments:
+          count: 11
+      - equal:
+          path: spec.configuration.permittedHostDevices.pciHostDevices[0].pciVendorSelector
+          value: "10DE:1EB8"
+        documentIndex: 10
+      - equal:
+          path: spec.configuration.permittedHostDevices.pciHostDevices[0].resourceName
+          value: "nvidia.com/TU104GL_Tesla_T4"
+        documentIndex: 10
+      - equal:
+          path: spec.configuration.permittedHostDevices.mediatedDevices[0].mdevNameSelector
+          value: "GRID T4-1Q"
+        documentIndex: 10
+      - equal:
+          path: spec.configuration.permittedHostDevices.mediatedDevices[0].resourceName
+          value: "nvidia.com/GRID_T4-1Q"
+        documentIndex: 10
