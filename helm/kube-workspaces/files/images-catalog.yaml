@@ -207,6 +207,7 @@ spec:
   persistentRootDiskSize: 20Gi
   memoryLimit: 4Gi
   memoryRequest: 5Gi
+  videoDevice: virtio
   workspaceTypes:
   - vm
 ---

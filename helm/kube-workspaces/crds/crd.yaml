@@ -9944,6 +9944,22 @@ spec:
                 items:
                   type: string
                 type: array
+              videoDevice:
+                description: |-
+                  VideoDevice overrides the KubeVirt domain video device type for vm
+                  workspaces (sets domain.devices.video.type). "virtio" attaches the
+                  virtio-gpu paravirtual display (recommended for modern desktop guests
+                  with virtio graphics drivers); other valid values are "vga", "bochs",
+                  "cirrus" and "ramfb". Empty uses KubeVirt's default auto-attach (VGA for
+                  BIOS, bochs for EFI) and leaves domain.devices.video unset. Ignored for
+                  non-vm workspaces.
+                enum:
+                - virtio
+                - vga
+                - bochs
+                - cirrus
+                - ramfb
+                type: string
               workspaceTypes:
                 description: |-
                   WorkspaceTypes lists the workspace types this image can be used with
