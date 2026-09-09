@@ -112,7 +112,7 @@ test-dump:
 # CRDs are the single source of truth in kustomize/crds/ and are vendored into
 # the Helm chart's crds/ directory so `helm install` creates them automatically.
 HELM_CRDS := crd.yaml kubeworkspaces.io_users.yaml kubeworkspaces.io_authconfigs.yaml \
-	kubeworkspaces.io_platformconfigs.yaml kubeworkspaces.io_poddefaults.yaml
+	kubeworkspaces.io_platformconfigs.yaml kubeworkspaces.io_poddefaults.yaml kubeworkspaces.io_sshkeys.yaml
 
 # Copy CRDs from kustomize/crds/ into the Helm chart's crds/ directory
 sync-helm-crds:
