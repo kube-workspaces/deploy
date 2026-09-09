@@ -73,7 +73,7 @@ GPU), set `videoDevice: virtio` on the Image CR. The controller then emits
 `domain.devices.video: {type: virtio}` on the VM (the virtio-gpu display,
 enabled by default in KubeVirt's `VideoConfig` feature gate), giving better
 noVNC performance and arbitrary guest-set resolutions than VGA emulation. The
-`debian-gnome` example image ships with `videoDevice: virtio`; see the
+`debian-xfce` example image ships with `videoDevice: virtio`; see the
 [Image catalog](https://github.com/kube-workspaces/image-catalog) for the field
 reference.
 
@@ -130,7 +130,7 @@ see [Customizing your domain](domains.md#kustomize).
 ## Helm
 
 The chart ships the CRDs and, by default, a curated catalog of example images
-(including Alpine, Debian, and the Debian GNOME desktop VM images for
+(including Alpine, Debian, and the Debian Desktop XFCE VM images for
 `spec.type: vm`).
 
 From the published chart, without cloning this repository:

@@ -3,7 +3,7 @@ kind: Image
 metadata:
   name: alpine-vm
   annotations:
-    catalog.kubeworkspaces.io/example: "true"
+    catalog.kubeworkspaces.io/example: 'true'
 spec:
   displayName: Alpine VM
   description: Alpine Linux virtual machine (KubeVirt containerDisk). Boots a minimal
@@ -27,7 +27,7 @@ kind: Image
 metadata:
   name: code-server
   annotations:
-    catalog.kubeworkspaces.io/example: "true"
+    catalog.kubeworkspaces.io/example: 'true'
 spec:
   defaultArgs:
   - --bind-addr
@@ -58,16 +58,19 @@ spec:
   defaultHomedir: /home/coder
   defaultUID: 1000
   defaultInitContainers:
-    - name: volume-permissions
-      image: busybox:1.37
-      command: ["sh", "-c", "chown -R {{uid}}:{{uid}} /home/coder"]
+  - name: volume-permissions
+    image: busybox:1.37
+    command:
+    - sh
+    - -c
+    - chown -R {{uid}}:{{uid}} /home/coder
 ---
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
 metadata:
   name: debian-desktop
   annotations:
-    catalog.kubeworkspaces.io/example: "true"
+    catalog.kubeworkspaces.io/example: 'true'
 spec:
   defaultPath: /vnc.html?resize=remote
   defaultPort: 6901
@@ -88,8 +91,8 @@ spec:
     rewriteHostAbsolutePaths: true
     audioPort: 6902
   additionalPorts:
-    - name: audio
-      port: 6902
+  - name: audio
+    port: 6902
   sourceURL: https://github.com/flaccid/container-debian-desktop
   defaultUser: admin
   defaultHomedir: /home/admin
@@ -97,15 +100,16 @@ spec:
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
 metadata:
-  name: debian-gnome
+  name: debian-xfce
   annotations:
-    catalog.kubeworkspaces.io/example: "true"
+    catalog.kubeworkspaces.io/example: 'true'
 spec:
-  displayName: Debian GNOME Desktop
-  description: Debian Linux virtual machine with a full GNOME desktop, accessibly
+  displayName: Debian Desktop XFCE
+  description: Debian Linux virtual machine with a lightweight XFCE desktop, accessible
     via the graphical VNC display console. The root disk is a persistent DataVolume
-    (CDI registry import), so the desktop and any changes survive restarts. GNOME
-    is installed by cloud-init on first boot and uses 4Gi of memory by default.
+    (CDI registry import), so the desktop and any changes survive restarts. XFCE is
+    installed by cloud-init on first boot and uses 4Gi of memory by default. Supports
+    fluid display resize (the guest follows the console window size).
   category: Desktop
   tags:
   - vm
@@ -113,6 +117,7 @@ spec:
   - debian
   - desktop
   - gui
+  - xfce
   defaultPort: 22
   homepageURL: https://www.debian.org
   image: quay.io/containerdisks/debian:13
@@ -121,19 +126,36 @@ spec:
   defaultUser: debian
   defaultPassword: debian
   defaultCloudInit: true
-  defaultUserData: |
-    #cloud-config
-    ssh_pwauth: true
-    chpasswd:
-      expire: false
-      list: |
-        debian:debian
-    package_update: true
-    packages:
-    - task-gnome-desktop
-    - qemu-guest-agent
-    runcmd:
-    - systemctl set-default graphical.target
+  defaultUserData: "#cloud-config\nssh_pwauth: true\nchpasswd:\n  expire: false\n\
+    \  list: |\n    debian:debian\npackage_update: true\npackages:\n- task-xfce-desktop\n\
+    - qemu-guest-agent\nwrite_files:\n# Autologin the default user straight into an\
+    \ XFCE session.\n- path: /etc/lightdm/lightdm.conf.d/50-autologin.conf\n  permissions:\
+    \ \"0644\"\n  content: |\n    [Seat:*]\n    user-session=xfce\n    autologin-user=debian\n\
+    \    autologin-session=xfce\n    autologin-user-timeout=0\n    logind-check-graphical=false\n\
+    # Apply the virtio-gpu EDID preferred mode to the active X display\n# whenever\
+    \ the VNC client resizes the window. QEMU emits a DRM \"change\"\n# uevent on\
+    \ VNC SetDesktopSize; the new size is the first (preferred)\n# mode in /sys/class/drm/card0-*/modes.\n\
+    - path: /usr/local/sbin/kw-display-resize\n  permissions: \"0755\"\n  content:\
+    \ |\n    #!/bin/bash\n    set -u\n    MODES=$(ls /sys/class/drm/card0-*/modes\
+    \ 2>/dev/null | head -n1)\n    [ -n \"$MODES\" ] || exit 0\n    PREFERRED=$(head\
+    \ -n1 \"$MODES\")\n    [ -n \"$PREFERRED\" ] || exit 0\n    ACTIVE_VT=$(cat /sys/class/tty/tty0/active\
+    \ 2>/dev/null)\n    VTN=\"\"\n    case \"$ACTIVE_VT\" in tty*) VTN=${ACTIVE_VT#tty}\
+    \ ;; esac\n    DISPLAY_NUM=\"\"\n    if [ -n \"$VTN\" ]; then\n      DISPLAY_NUM=$(ps\
+    \ -eo args= | grep \"[X]org\" | grep \"vt$VTN\" \\\n        | grep -oE \":[0-9]+\"\
+    \ | head -n1)\n    fi\n    if [ -z \"$DISPLAY_NUM\" ]; then\n      DISPLAY_NUM=$(ps\
+    \ -eo lstart=,args= 2>/dev/null | grep \"[X]org\" \\\n        | sort -k1,5 | tail\
+    \ -n1 | grep -oE \":[0-9]+\" | head -n1)\n    fi\n    [ -n \"$DISPLAY_NUM\" ]\
+    \ || exit 0\n    XAUTH=$(ls /var/run/lightdm/root/ 2>/dev/null | grep -F \"$DISPLAY_NUM\"\
+    \ \\\n      | head -n1)\n    [ -n \"$XAUTH\" ] || XAUTH=$(ls /var/run/lightdm/root/\
+    \ 2>/dev/null \\\n      | tail -n1)\n    [ -n \"$XAUTH\" ] || exit 0\n    export\
+    \ DISPLAY=\"$DISPLAY_NUM\" XAUTHORITY=\"/var/run/lightdm/root/$XAUTH\"\n    CURRENT=$(xrandr\
+    \ 2>/dev/null | grep -oE 'current [0-9]+ x [0-9]+' \\\n      | head -n1)\n   \
+    \ if [ \"$CURRENT\" != \"current ${PREFERRED%x*} x ${PREFERRED#*x}\" ]; then\n\
+    \      xrandr --output Virtual-1 --auto 2>/dev/null || true\n    fi\n- path: /etc/udev/rules.d/99-kw-display-resize.rules\n\
+    \  permissions: \"0644\"\n  content: |\n    ACTION==\"change\", SUBSYSTEM==\"\
+    drm\", RUN+=\"/usr/local/sbin/kw-display-resize\"\nruncmd:\n- systemctl set-default\
+    \ graphical.target\n- udevadm control --reload-rules\n- udevadm trigger --subsystem-match=drm\
+    \ --action=change || true\n"
   persistentRootDisk: true
   persistentRootDiskSize: 20Gi
   memoryLimit: 4Gi
@@ -147,7 +169,7 @@ kind: Image
 metadata:
   name: debian-vm
   annotations:
-    catalog.kubeworkspaces.io/example: "true"
+    catalog.kubeworkspaces.io/example: 'true'
 spec:
   displayName: Debian VM
   description: Debian Linux virtual machine (KubeVirt containerDisk). Boots a full
@@ -173,7 +195,7 @@ kind: Image
 metadata:
   name: kasm
   annotations:
-    catalog.kubeworkspaces.io/example: "true"
+    catalog.kubeworkspaces.io/example: 'true'
 spec:
   defaultEnv:
   - name: KASM_PORT
@@ -205,7 +227,7 @@ kind: Image
 metadata:
   name: kasmweb-chrome
   annotations:
-    catalog.kubeworkspaces.io/example: "true"
+    catalog.kubeworkspaces.io/example: 'true'
 spec:
   defaultCredentials:
     password: password
@@ -239,7 +261,7 @@ kind: Image
 metadata:
   name: kasmweb-desktop
   annotations:
-    catalog.kubeworkspaces.io/example: "true"
+    catalog.kubeworkspaces.io/example: 'true'
 spec:
   defaultCredentials:
     password: password

@@ -32,8 +32,9 @@ on the workspace's `spec.type`:
 - **`vm`** — a KubeVirt `VirtualMachine`; the main image is a containerDisk (or
   a CDI-imported persistent DataVolume root) containing a bootable guest OS.
   Access is via the serial console, a web SSH console, and a noVNC graphical
-  display. Full GUI/GNOME desktops are supported via the `debian-gnome` image
-  with KVM acceleration and an optional virtio-gpu display.
+  display. Full GUI desktops are supported via the `debian-xfce` image
+  with KVM acceleration, a virtio-gpu display, and fluid window-driven guest
+  display resize.
 - **`scratch`** — a plain `Deployment` with generated pod names (no persistent
   identity).
 
