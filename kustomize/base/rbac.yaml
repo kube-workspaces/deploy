@@ -34,7 +34,7 @@ rules:
     resources: ["statefulsets"]
     verbs: ["*"]
   - apiGroups: [""]
-    resources: ["services", "pods", "pods/log", "pods/exec", "events", "persistentvolumeclaims", "namespaces"]
+    resources: ["services", "pods", "pods/log", "pods/exec", "events", "persistentvolumeclaims", "namespaces", "endpoints"]
     verbs: ["*"]
   - apiGroups: [""]
     resources: ["secrets"]
