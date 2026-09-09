@@ -64,13 +64,13 @@ tests:
       value: ClusterRole
     asserts:
       - equal:
-          path: rules[8].resources[0]
+          path: rules[9].resources[0]
           value: secrets
       - notContains:
-          path: rules[8].verbs
+          path: rules[9].verbs
           content: create
       - notContains:
-          path: rules[8].verbs
+          path: rules[9].verbs
           content: delete
 
   - it: renders cross-namespace Role and RoleBinding in kube-workspaces-system when local auth is enabled and release namespace differs
