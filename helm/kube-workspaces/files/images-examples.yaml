@@ -132,30 +132,44 @@ spec:
     \ XFCE session.\n- path: /etc/lightdm/lightdm.conf.d/50-autologin.conf\n  permissions:\
     \ \"0644\"\n  content: |\n    [Seat:*]\n    user-session=xfce\n    autologin-user=debian\n\
     \    autologin-session=xfce\n    autologin-user-timeout=0\n    logind-check-graphical=false\n\
-    # Apply the virtio-gpu EDID preferred mode to the active X display\n# whenever\
-    \ the VNC client resizes the window. QEMU emits a DRM \"change\"\n# uevent on\
-    \ VNC SetDesktopSize; the new size is the first (preferred)\n# mode in /sys/class/drm/card0-*/modes.\n\
-    - path: /usr/local/sbin/kw-display-resize\n  permissions: \"0755\"\n  content:\
-    \ |\n    #!/bin/bash\n    set -u\n    MODES=$(ls /sys/class/drm/card0-*/modes\
-    \ 2>/dev/null | head -n1)\n    [ -n \"$MODES\" ] || exit 0\n    PREFERRED=$(head\
-    \ -n1 \"$MODES\")\n    [ -n \"$PREFERRED\" ] || exit 0\n    ACTIVE_VT=$(cat /sys/class/tty/tty0/active\
-    \ 2>/dev/null)\n    VTN=\"\"\n    case \"$ACTIVE_VT\" in tty*) VTN=${ACTIVE_VT#tty}\
-    \ ;; esac\n    DISPLAY_NUM=\"\"\n    if [ -n \"$VTN\" ]; then\n      DISPLAY_NUM=$(ps\
-    \ -eo args= | grep \"[X]org\" | grep \"vt$VTN\" \\\n        | grep -oE \":[0-9]+\"\
-    \ | head -n1)\n    fi\n    if [ -z \"$DISPLAY_NUM\" ]; then\n      DISPLAY_NUM=$(ps\
-    \ -eo lstart=,args= 2>/dev/null | grep \"[X]org\" \\\n        | sort -k1,5 | tail\
-    \ -n1 | grep -oE \":[0-9]+\" | head -n1)\n    fi\n    [ -n \"$DISPLAY_NUM\" ]\
-    \ || exit 0\n    XAUTH=$(ls /var/run/lightdm/root/ 2>/dev/null | grep -F \"$DISPLAY_NUM\"\
-    \ \\\n      | head -n1)\n    [ -n \"$XAUTH\" ] || XAUTH=$(ls /var/run/lightdm/root/\
-    \ 2>/dev/null \\\n      | tail -n1)\n    [ -n \"$XAUTH\" ] || exit 0\n    export\
-    \ DISPLAY=\"$DISPLAY_NUM\" XAUTHORITY=\"/var/run/lightdm/root/$XAUTH\"\n    CURRENT=$(xrandr\
-    \ 2>/dev/null | grep -oE 'current [0-9]+ x [0-9]+' \\\n      | head -n1)\n   \
-    \ if [ \"$CURRENT\" != \"current ${PREFERRED%x*} x ${PREFERRED#*x}\" ]; then\n\
-    \      xrandr --output Virtual-1 --auto 2>/dev/null || true\n    fi\n- path: /etc/udev/rules.d/99-kw-display-resize.rules\n\
-    \  permissions: \"0644\"\n  content: |\n    ACTION==\"change\", SUBSYSTEM==\"\
-    drm\", RUN+=\"/usr/local/sbin/kw-display-resize\"\nruncmd:\n- systemctl set-default\
-    \ graphical.target\n- udevadm control --reload-rules\n- udevadm trigger --subsystem-match=drm\
-    \ --action=change || true\n"
+    # Apply the virtio-gpu EDID preferred mode to the active X display. When\n# the\
+    \ VNC client resizes the window, QEMU processes SetDesktopSize and\n# updates\
+    \ the guest EDID; the new size becomes the first (preferred) mode\n# in /sys/class/drm/card0-*/modes.\
+    \ A tiny systemd service polls that file\n# and applies the new size with `xrandr\
+    \ --auto`. Polling (rather than a\n# udev RUN rule) avoids the uevent-storm races\
+    \ where concurrent handlers\n# could apply a stale size.\n- path: /usr/local/sbin/kw-display-resized\n\
+    \  permissions: \"0755\"\n  content: |\n    #!/bin/bash\n    set -u\n    POLL=0.5\n\
+    \    MODES=\"\"\n    find_modes() {\n      MODES=$(ls /sys/class/drm/card0-*/modes\
+    \ 2>/dev/null | head -n1)\n    }\n    find_display() {\n      local active_vt\
+    \ vtn\n      active_vt=$(cat /sys/class/tty/tty0/active 2>/dev/null)\n      vtn=\"\
+    \"\n      case \"$active_vt\" in tty*) vtn=${active_vt#tty} ;; esac\n      DISPLAY_NUM=\"\
+    \"\n      if [ -n \"$vtn\" ]; then\n        DISPLAY_NUM=$(ps -eo args= | grep\
+    \ \"[X]org\" | grep \"vt$vtn\" \\\n          | grep -oE \":[0-9]+\" | head -n1)\n\
+    \      fi\n      if [ -z \"$DISPLAY_NUM\" ]; then\n        DISPLAY_NUM=$(ps -eo\
+    \ lstart=,args= 2>/dev/null | grep \"[X]org\" \\\n          | sort -k1,5 | tail\
+    \ -n1 | grep -oE \":[0-9]+\" | head -n1)\n      fi\n      XAUTH=\"\"\n      if\
+    \ [ -n \"$DISPLAY_NUM\" ]; then\n        XAUTH=$(ls /var/run/lightdm/root/ 2>/dev/null\
+    \ \\\n          | grep -F \"$DISPLAY_NUM\" | head -n1)\n        [ -n \"$XAUTH\"\
+    \ ] || XAUTH=$(ls /var/run/lightdm/root/ 2>/dev/null \\\n          | tail -n1)\n\
+    \      fi\n    }\n    apply() {\n      local preferred current\n      preferred=$(head\
+    \ -n1 \"$MODES\" 2>/dev/null)\n      [ -n \"$preferred\" ] || return 0\n     \
+    \ find_display\n      [ -n \"$DISPLAY_NUM\" ] && [ -n \"$XAUTH\" ] || return 0\n\
+    \      current=$(DISPLAY=\"$DISPLAY_NUM\" \\\n        XAUTHORITY=\"/var/run/lightdm/root/$XAUTH\"\
+    \ xrandr 2>/dev/null \\\n        | grep -oE 'current [0-9]+ x [0-9]+' | head -n1)\n\
+    \      if [ \"$current\" != \"current ${preferred%x*} x ${preferred#*x}\" ]; then\n\
+    \        DISPLAY=\"$DISPLAY_NUM\" \\\n          XAUTHORITY=\"/var/run/lightdm/root/$XAUTH\"\
+    \ \\\n          xrandr --output Virtual-1 --auto 2>/dev/null || true\n      fi\n\
+    \    }\n    last=\"\"\n    while true; do\n      find_modes\n      if [ -n \"\
+    $MODES\" ]; then\n        cur=$(head -n1 \"$MODES\" 2>/dev/null)\n        if [\
+    \ -n \"$cur\" ] && [ \"$cur\" != \"$last\" ]; then\n          sleep \"$POLL\"\n\
+    \          find_modes\n          apply\n          last=$(head -n1 \"$MODES\" 2>/dev/null)\n\
+    \        fi\n      fi\n      sleep \"$POLL\"\n    done\n- path: /etc/systemd/system/kw-display-resize.service\n\
+    \  permissions: \"0644\"\n  content: |\n    [Unit]\n    Description=Apply virtio-gpu\
+    \ EDID preferred mode to the active X display\n    After=display-manager.service\n\
+    \n    [Service]\n    ExecStart=/usr/local/sbin/kw-display-resized\n    Restart=always\n\
+    \    RestartSec=2\n\n    [Install]\n    WantedBy=multi-user.target\nruncmd:\n\
+    - systemctl set-default graphical.target\n- systemctl daemon-reload\n- systemctl\
+    \ enable --now kw-display-resize.service\n"
   persistentRootDisk: true
   persistentRootDiskSize: 20Gi
   memoryLimit: 4Gi
