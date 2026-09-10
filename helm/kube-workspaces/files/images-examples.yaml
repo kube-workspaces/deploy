@@ -3,7 +3,7 @@ kind: Image
 metadata:
   name: alpine-vm
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   displayName: Alpine VM
   description: Alpine Linux virtual machine (KubeVirt containerDisk). Boots a minimal
@@ -27,7 +27,7 @@ kind: Image
 metadata:
   name: code-server
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   defaultArgs:
   - --bind-addr
@@ -58,19 +58,16 @@ spec:
   defaultHomedir: /home/coder
   defaultUID: 1000
   defaultInitContainers:
-  - name: volume-permissions
-    image: busybox:1.37
-    command:
-    - sh
-    - -c
-    - chown -R {{uid}}:{{uid}} /home/coder
+    - name: volume-permissions
+      image: busybox:1.37
+      command: ["sh", "-c", "chown -R {{uid}}:{{uid}} /home/coder"]
 ---
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
 metadata:
   name: debian-desktop
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   defaultPath: /vnc.html?resize=remote
   defaultPort: 6901
@@ -91,8 +88,8 @@ spec:
     rewriteHostAbsolutePaths: true
     audioPort: 6902
   additionalPorts:
-  - name: audio
-    port: 6902
+    - name: audio
+      port: 6902
   sourceURL: https://github.com/flaccid/container-debian-desktop
   defaultUser: admin
   defaultHomedir: /home/admin
@@ -100,90 +97,9 @@ spec:
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
 metadata:
-  name: debian-xfce
-  annotations:
-    catalog.kubeworkspaces.io/example: 'true'
-spec:
-  displayName: Debian Desktop XFCE
-  description: Debian Linux virtual machine with a lightweight XFCE desktop, accessible
-    via the graphical VNC display console. The root disk is a persistent DataVolume
-    (CDI registry import), so the desktop and any changes survive restarts. XFCE is
-    installed by cloud-init on first boot and uses 4Gi of memory by default. Supports
-    fluid display resize (the guest follows the console window size).
-  category: Desktop
-  tags:
-  - vm
-  - linux
-  - debian
-  - desktop
-  - gui
-  - xfce
-  defaultPort: 22
-  homepageURL: https://www.debian.org
-  image: quay.io/containerdisks/debian:13
-  imageHomepageURL: https://quay.io/repository/containerdisks/debian
-  sourceURL: https://github.com/kubevirt/containerdisks
-  defaultUser: debian
-  defaultPassword: debian
-  defaultCloudInit: true
-  defaultUserData: "#cloud-config\nssh_pwauth: true\nchpasswd:\n  expire: false\n\
-    \  list: |\n    debian:debian\npackage_update: true\npackages:\n- task-xfce-desktop\n\
-    - qemu-guest-agent\nwrite_files:\n# Autologin the default user straight into an\
-    \ XFCE session.\n- path: /etc/lightdm/lightdm.conf.d/50-autologin.conf\n  permissions:\
-    \ \"0644\"\n  content: |\n    [Seat:*]\n    user-session=xfce\n    autologin-user=debian\n\
-    \    autologin-session=xfce\n    autologin-user-timeout=0\n    logind-check-graphical=false\n\
-    # Apply the virtio-gpu EDID preferred mode to the active X display. When\n# the\
-    \ VNC client resizes the window, QEMU processes SetDesktopSize and\n# updates\
-    \ the guest EDID; the new size becomes the first (preferred) mode\n# in /sys/class/drm/card0-*/modes.\
-    \ A tiny systemd service polls that file\n# and applies the new size with `xrandr\
-    \ --auto`. Polling (rather than a\n# udev RUN rule) avoids the uevent-storm races\
-    \ where concurrent handlers\n# could apply a stale size.\n- path: /usr/local/sbin/kw-display-resized\n\
-    \  permissions: \"0755\"\n  content: |\n    #!/bin/bash\n    set -u\n    POLL=0.5\n\
-    \    MODES=\"\"\n    find_modes() {\n      MODES=$(ls /sys/class/drm/card0-*/modes\
-    \ 2>/dev/null | head -n1)\n    }\n    find_display() {\n      local active_vt\
-    \ vtn\n      active_vt=$(cat /sys/class/tty/tty0/active 2>/dev/null)\n      vtn=\"\
-    \"\n      case \"$active_vt\" in tty*) vtn=${active_vt#tty} ;; esac\n      DISPLAY_NUM=\"\
-    \"\n      if [ -n \"$vtn\" ]; then\n        DISPLAY_NUM=$(ps -eo args= | grep\
-    \ \"[X]org\" | grep \"vt$vtn\" \\\n          | grep -oE \":[0-9]+\" | head -n1)\n\
-    \      fi\n      if [ -z \"$DISPLAY_NUM\" ]; then\n        DISPLAY_NUM=$(ps -eo\
-    \ lstart=,args= 2>/dev/null | grep \"[X]org\" \\\n          | sort -k1,5 | tail\
-    \ -n1 | grep -oE \":[0-9]+\" | head -n1)\n      fi\n      XAUTH=\"\"\n      if\
-    \ [ -n \"$DISPLAY_NUM\" ]; then\n        XAUTH=$(ls /var/run/lightdm/root/ 2>/dev/null\
-    \ \\\n          | grep -F \"$DISPLAY_NUM\" | head -n1)\n        [ -n \"$XAUTH\"\
-    \ ] || XAUTH=$(ls /var/run/lightdm/root/ 2>/dev/null \\\n          | tail -n1)\n\
-    \      fi\n    }\n    apply() {\n      local preferred current\n      preferred=$(head\
-    \ -n1 \"$MODES\" 2>/dev/null)\n      [ -n \"$preferred\" ] || return 0\n     \
-    \ find_display\n      [ -n \"$DISPLAY_NUM\" ] && [ -n \"$XAUTH\" ] || return 0\n\
-    \      current=$(DISPLAY=\"$DISPLAY_NUM\" \\\n        XAUTHORITY=\"/var/run/lightdm/root/$XAUTH\"\
-    \ xrandr 2>/dev/null \\\n        | grep -oE 'current [0-9]+ x [0-9]+' | head -n1)\n\
-    \      if [ \"$current\" != \"current ${preferred%x*} x ${preferred#*x}\" ]; then\n\
-    \        DISPLAY=\"$DISPLAY_NUM\" \\\n          XAUTHORITY=\"/var/run/lightdm/root/$XAUTH\"\
-    \ \\\n          xrandr --output Virtual-1 --auto 2>/dev/null || true\n      fi\n\
-    \    }\n    last=\"\"\n    while true; do\n      find_modes\n      if [ -n \"\
-    $MODES\" ]; then\n        cur=$(head -n1 \"$MODES\" 2>/dev/null)\n        if [\
-    \ -n \"$cur\" ] && [ \"$cur\" != \"$last\" ]; then\n          sleep \"$POLL\"\n\
-    \          find_modes\n          apply\n          last=$(head -n1 \"$MODES\" 2>/dev/null)\n\
-    \        fi\n      fi\n      sleep \"$POLL\"\n    done\n- path: /etc/systemd/system/kw-display-resize.service\n\
-    \  permissions: \"0644\"\n  content: |\n    [Unit]\n    Description=Apply virtio-gpu\
-    \ EDID preferred mode to the active X display\n    After=display-manager.service\n\
-    \n    [Service]\n    ExecStart=/usr/local/sbin/kw-display-resized\n    Restart=always\n\
-    \    RestartSec=2\n\n    [Install]\n    WantedBy=multi-user.target\nruncmd:\n\
-    - systemctl set-default graphical.target\n- systemctl daemon-reload\n- systemctl\
-    \ enable --now kw-display-resize.service\n"
-  persistentRootDisk: true
-  persistentRootDiskSize: 20Gi
-  memoryLimit: 4Gi
-  memoryRequest: 5Gi
-  videoDevice: virtio
-  workspaceTypes:
-  - vm
----
-apiVersion: kubeworkspaces.io/v1alpha1
-kind: Image
-metadata:
   name: debian-vm
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   displayName: Debian VM
   description: Debian Linux virtual machine (KubeVirt containerDisk). Boots a full
@@ -207,9 +123,155 @@ spec:
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
 metadata:
+  name: debian-xfce
+  annotations:
+    catalog.kubeworkspaces.io/example: "true"
+spec:
+  displayName: Debian Desktop XFCE
+  description: Debian Linux virtual machine with a lightweight XFCE desktop,
+    accessible via the graphical VNC display console. The root disk is a
+    persistent DataVolume (CDI registry import), so the desktop and any changes
+    survive restarts. XFCE is installed by cloud-init on first boot and uses 4Gi
+    of memory by default. Supports fluid display resize (the guest follows the
+    console window size).
+  category: Desktop
+  tags:
+  - vm
+  - linux
+  - debian
+  - desktop
+  - gui
+  - xfce
+  defaultPort: 22
+  homepageURL: https://www.debian.org
+  image: quay.io/containerdisks/debian:13
+  imageHomepageURL: https://quay.io/repository/containerdisks/debian
+  sourceURL: https://github.com/kubevirt/containerdisks
+  defaultUser: debian
+  defaultPassword: debian
+  defaultCloudInit: true
+  defaultUserData: |
+    #cloud-config
+    ssh_pwauth: true
+    chpasswd:
+      expire: false
+      list: |
+        debian:debian
+    package_update: true
+    packages:
+    - task-xfce-desktop
+    - qemu-guest-agent
+    write_files:
+    # Autologin the default user straight into an XFCE session.
+    - path: /etc/lightdm/lightdm.conf.d/50-autologin.conf
+      permissions: "0644"
+      content: |
+        [Seat:*]
+        user-session=xfce
+        autologin-user=debian
+        autologin-session=xfce
+        autologin-user-timeout=0
+        logind-check-graphical=false
+    # Apply the virtio-gpu EDID preferred mode to the active X display. When
+    # the VNC client resizes the window, QEMU processes SetDesktopSize and
+    # updates the guest EDID; the new size becomes the first (preferred) mode
+    # in /sys/class/drm/card0-*/modes. A tiny systemd service polls that file
+    # and applies the new size with `xrandr --auto`. Polling (rather than a
+    # udev RUN rule) avoids the uevent-storm races where concurrent handlers
+    # could apply a stale size.
+    - path: /usr/local/sbin/kw-display-resized
+      permissions: "0755"
+      content: |
+        #!/bin/bash
+        set -u
+        POLL=0.5
+        MODES=""
+        find_modes() {
+          MODES=$(ls /sys/class/drm/card0-*/modes 2>/dev/null | head -n1)
+        }
+        find_display() {
+          local active_vt vtn
+          active_vt=$(cat /sys/class/tty/tty0/active 2>/dev/null)
+          vtn=""
+          case "$active_vt" in tty*) vtn=${active_vt#tty} ;; esac
+          DISPLAY_NUM=""
+          if [ -n "$vtn" ]; then
+            DISPLAY_NUM=$(ps -eo args= | grep "[X]org" | grep "vt$vtn" \
+              | grep -oE ":[0-9]+" | head -n1)
+          fi
+          if [ -z "$DISPLAY_NUM" ]; then
+            DISPLAY_NUM=$(ps -eo lstart=,args= 2>/dev/null | grep "[X]org" \
+              | sort -k1,5 | tail -n1 | grep -oE ":[0-9]+" | head -n1)
+          fi
+          XAUTH=""
+          if [ -n "$DISPLAY_NUM" ]; then
+            XAUTH=$(ls /var/run/lightdm/root/ 2>/dev/null \
+              | grep -F "$DISPLAY_NUM" | head -n1)
+            [ -n "$XAUTH" ] || XAUTH=$(ls /var/run/lightdm/root/ 2>/dev/null \
+              | tail -n1)
+          fi
+        }
+        apply() {
+          local preferred current
+          preferred=$(head -n1 "$MODES" 2>/dev/null)
+          [ -n "$preferred" ] || return 0
+          find_display
+          [ -n "$DISPLAY_NUM" ] && [ -n "$XAUTH" ] || return 0
+          current=$(DISPLAY="$DISPLAY_NUM" \
+            XAUTHORITY="/var/run/lightdm/root/$XAUTH" xrandr 2>/dev/null \
+            | grep -oE 'current [0-9]+ x [0-9]+' | head -n1)
+          if [ "$current" != "current ${preferred%x*} x ${preferred#*x}" ]; then
+            DISPLAY="$DISPLAY_NUM" \
+              XAUTHORITY="/var/run/lightdm/root/$XAUTH" \
+              xrandr --output Virtual-1 --auto 2>/dev/null || true
+          fi
+        }
+        last=""
+        while true; do
+          find_modes
+          if [ -n "$MODES" ]; then
+            cur=$(head -n1 "$MODES" 2>/dev/null)
+            if [ -n "$cur" ] && [ "$cur" != "$last" ]; then
+              sleep "$POLL"
+              find_modes
+              apply
+              last=$(head -n1 "$MODES" 2>/dev/null)
+            fi
+          fi
+          sleep "$POLL"
+        done
+    - path: /etc/systemd/system/kw-display-resize.service
+      permissions: "0644"
+      content: |
+        [Unit]
+        Description=Apply virtio-gpu EDID preferred mode to the active X display
+        After=display-manager.service
+
+        [Service]
+        ExecStart=/usr/local/sbin/kw-display-resized
+        Restart=always
+        RestartSec=2
+
+        [Install]
+        WantedBy=multi-user.target
+    runcmd:
+    - systemctl set-default graphical.target
+    - systemctl daemon-reload
+    - systemctl enable --now kw-display-resize.service
+  persistentRootDisk: true
+  persistentRootDiskSize: 20Gi
+  memoryLimit: 4Gi
+  memoryRequest: 5Gi
+  videoDevice: virtio
+  workspaceTypes:
+  - vm
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
   name: kasm
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   defaultEnv:
   - name: KASM_PORT
@@ -241,7 +303,7 @@ kind: Image
 metadata:
   name: kasmweb-chrome
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   defaultCredentials:
     password: password
@@ -275,7 +337,7 @@ kind: Image
 metadata:
   name: kasmweb-desktop
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   defaultCredentials:
     password: password

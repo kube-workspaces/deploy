@@ -25,7 +25,7 @@ kind: Image
 metadata:
   name: alpine-vm
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   displayName: Alpine VM
   description: Alpine Linux virtual machine (KubeVirt containerDisk). Boots a minimal
@@ -76,7 +76,7 @@ kind: Image
 metadata:
   name: code-server
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   defaultArgs:
   - --bind-addr
@@ -107,12 +107,9 @@ spec:
   defaultHomedir: /home/coder
   defaultUID: 1000
   defaultInitContainers:
-  - name: volume-permissions
-    image: busybox:1.37
-    command:
-    - sh
-    - -c
-    - chown -R {{uid}}:{{uid}} /home/coder
+    - name: volume-permissions
+      image: busybox:1.37
+      command: ["sh", "-c", "chown -R {{uid}}:{{uid}} /home/coder"]
 ---
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
@@ -121,9 +118,9 @@ metadata:
 spec:
   defaultPath: /
   defaultPort: 8000
-  description: "GCHQ's CyberChef \u2014 The Cyber Swiss Army Knife. Encoding, decoding,\
-    \ encryption, compression, hashing, and hundreds of data manipulation operations\
-    \ in the browser."
+  description: "GCHQ's CyberChef — The Cyber Swiss Army Knife. Encoding, decoding,
+    encryption, compression, hashing, and hundreds of data manipulation operations
+    in the browser."
   category: Tool
   displayName: CyberChef
   homepageURL: https://gchq.github.io/CyberChef
@@ -139,7 +136,7 @@ kind: Image
 metadata:
   name: debian-desktop
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   defaultPath: /vnc.html?resize=remote
   defaultPort: 6901
@@ -160,8 +157,8 @@ spec:
     rewriteHostAbsolutePaths: true
     audioPort: 6902
   additionalPorts:
-  - name: audio
-    port: 6902
+    - name: audio
+      port: 6902
   sourceURL: https://github.com/flaccid/container-debian-desktop
   defaultUser: admin
   defaultHomedir: /home/admin
@@ -169,90 +166,9 @@ spec:
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
 metadata:
-  name: debian-xfce
-  annotations:
-    catalog.kubeworkspaces.io/example: 'true'
-spec:
-  displayName: Debian Desktop XFCE
-  description: Debian Linux virtual machine with a lightweight XFCE desktop, accessible
-    via the graphical VNC display console. The root disk is a persistent DataVolume
-    (CDI registry import), so the desktop and any changes survive restarts. XFCE is
-    installed by cloud-init on first boot and uses 4Gi of memory by default. Supports
-    fluid display resize (the guest follows the console window size).
-  category: Desktop
-  tags:
-  - vm
-  - linux
-  - debian
-  - desktop
-  - gui
-  - xfce
-  defaultPort: 22
-  homepageURL: https://www.debian.org
-  image: quay.io/containerdisks/debian:13
-  imageHomepageURL: https://quay.io/repository/containerdisks/debian
-  sourceURL: https://github.com/kubevirt/containerdisks
-  defaultUser: debian
-  defaultPassword: debian
-  defaultCloudInit: true
-  defaultUserData: "#cloud-config\nssh_pwauth: true\nchpasswd:\n  expire: false\n\
-    \  list: |\n    debian:debian\npackage_update: true\npackages:\n- task-xfce-desktop\n\
-    - qemu-guest-agent\nwrite_files:\n# Autologin the default user straight into an\
-    \ XFCE session.\n- path: /etc/lightdm/lightdm.conf.d/50-autologin.conf\n  permissions:\
-    \ \"0644\"\n  content: |\n    [Seat:*]\n    user-session=xfce\n    autologin-user=debian\n\
-    \    autologin-session=xfce\n    autologin-user-timeout=0\n    logind-check-graphical=false\n\
-    # Apply the virtio-gpu EDID preferred mode to the active X display. When\n# the\
-    \ VNC client resizes the window, QEMU processes SetDesktopSize and\n# updates\
-    \ the guest EDID; the new size becomes the first (preferred) mode\n# in /sys/class/drm/card0-*/modes.\
-    \ A tiny systemd service polls that file\n# and applies the new size with `xrandr\
-    \ --auto`. Polling (rather than a\n# udev RUN rule) avoids the uevent-storm races\
-    \ where concurrent handlers\n# could apply a stale size.\n- path: /usr/local/sbin/kw-display-resized\n\
-    \  permissions: \"0755\"\n  content: |\n    #!/bin/bash\n    set -u\n    POLL=0.5\n\
-    \    MODES=\"\"\n    find_modes() {\n      MODES=$(ls /sys/class/drm/card0-*/modes\
-    \ 2>/dev/null | head -n1)\n    }\n    find_display() {\n      local active_vt\
-    \ vtn\n      active_vt=$(cat /sys/class/tty/tty0/active 2>/dev/null)\n      vtn=\"\
-    \"\n      case \"$active_vt\" in tty*) vtn=${active_vt#tty} ;; esac\n      DISPLAY_NUM=\"\
-    \"\n      if [ -n \"$vtn\" ]; then\n        DISPLAY_NUM=$(ps -eo args= | grep\
-    \ \"[X]org\" | grep \"vt$vtn\" \\\n          | grep -oE \":[0-9]+\" | head -n1)\n\
-    \      fi\n      if [ -z \"$DISPLAY_NUM\" ]; then\n        DISPLAY_NUM=$(ps -eo\
-    \ lstart=,args= 2>/dev/null | grep \"[X]org\" \\\n          | sort -k1,5 | tail\
-    \ -n1 | grep -oE \":[0-9]+\" | head -n1)\n      fi\n      XAUTH=\"\"\n      if\
-    \ [ -n \"$DISPLAY_NUM\" ]; then\n        XAUTH=$(ls /var/run/lightdm/root/ 2>/dev/null\
-    \ \\\n          | grep -F \"$DISPLAY_NUM\" | head -n1)\n        [ -n \"$XAUTH\"\
-    \ ] || XAUTH=$(ls /var/run/lightdm/root/ 2>/dev/null \\\n          | tail -n1)\n\
-    \      fi\n    }\n    apply() {\n      local preferred current\n      preferred=$(head\
-    \ -n1 \"$MODES\" 2>/dev/null)\n      [ -n \"$preferred\" ] || return 0\n     \
-    \ find_display\n      [ -n \"$DISPLAY_NUM\" ] && [ -n \"$XAUTH\" ] || return 0\n\
-    \      current=$(DISPLAY=\"$DISPLAY_NUM\" \\\n        XAUTHORITY=\"/var/run/lightdm/root/$XAUTH\"\
-    \ xrandr 2>/dev/null \\\n        | grep -oE 'current [0-9]+ x [0-9]+' | head -n1)\n\
-    \      if [ \"$current\" != \"current ${preferred%x*} x ${preferred#*x}\" ]; then\n\
-    \        DISPLAY=\"$DISPLAY_NUM\" \\\n          XAUTHORITY=\"/var/run/lightdm/root/$XAUTH\"\
-    \ \\\n          xrandr --output Virtual-1 --auto 2>/dev/null || true\n      fi\n\
-    \    }\n    last=\"\"\n    while true; do\n      find_modes\n      if [ -n \"\
-    $MODES\" ]; then\n        cur=$(head -n1 \"$MODES\" 2>/dev/null)\n        if [\
-    \ -n \"$cur\" ] && [ \"$cur\" != \"$last\" ]; then\n          sleep \"$POLL\"\n\
-    \          find_modes\n          apply\n          last=$(head -n1 \"$MODES\" 2>/dev/null)\n\
-    \        fi\n      fi\n      sleep \"$POLL\"\n    done\n- path: /etc/systemd/system/kw-display-resize.service\n\
-    \  permissions: \"0644\"\n  content: |\n    [Unit]\n    Description=Apply virtio-gpu\
-    \ EDID preferred mode to the active X display\n    After=display-manager.service\n\
-    \n    [Service]\n    ExecStart=/usr/local/sbin/kw-display-resized\n    Restart=always\n\
-    \    RestartSec=2\n\n    [Install]\n    WantedBy=multi-user.target\nruncmd:\n\
-    - systemctl set-default graphical.target\n- systemctl daemon-reload\n- systemctl\
-    \ enable --now kw-display-resize.service\n"
-  persistentRootDisk: true
-  persistentRootDiskSize: 20Gi
-  memoryLimit: 4Gi
-  memoryRequest: 5Gi
-  videoDevice: virtio
-  workspaceTypes:
-  - vm
----
-apiVersion: kubeworkspaces.io/v1alpha1
-kind: Image
-metadata:
   name: debian-vm
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   displayName: Debian VM
   description: Debian Linux virtual machine (KubeVirt containerDisk). Boots a full
@@ -270,6 +186,152 @@ spec:
   defaultUser: root
   defaultPassword: debian
   defaultCloudInit: true
+  workspaceTypes:
+  - vm
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: debian-xfce
+  annotations:
+    catalog.kubeworkspaces.io/example: "true"
+spec:
+  displayName: Debian Desktop XFCE
+  description: Debian Linux virtual machine with a lightweight XFCE desktop,
+    accessible via the graphical VNC display console. The root disk is a
+    persistent DataVolume (CDI registry import), so the desktop and any changes
+    survive restarts. XFCE is installed by cloud-init on first boot and uses 4Gi
+    of memory by default. Supports fluid display resize (the guest follows the
+    console window size).
+  category: Desktop
+  tags:
+  - vm
+  - linux
+  - debian
+  - desktop
+  - gui
+  - xfce
+  defaultPort: 22
+  homepageURL: https://www.debian.org
+  image: quay.io/containerdisks/debian:13
+  imageHomepageURL: https://quay.io/repository/containerdisks/debian
+  sourceURL: https://github.com/kubevirt/containerdisks
+  defaultUser: debian
+  defaultPassword: debian
+  defaultCloudInit: true
+  defaultUserData: |
+    #cloud-config
+    ssh_pwauth: true
+    chpasswd:
+      expire: false
+      list: |
+        debian:debian
+    package_update: true
+    packages:
+    - task-xfce-desktop
+    - qemu-guest-agent
+    write_files:
+    # Autologin the default user straight into an XFCE session.
+    - path: /etc/lightdm/lightdm.conf.d/50-autologin.conf
+      permissions: "0644"
+      content: |
+        [Seat:*]
+        user-session=xfce
+        autologin-user=debian
+        autologin-session=xfce
+        autologin-user-timeout=0
+        logind-check-graphical=false
+    # Apply the virtio-gpu EDID preferred mode to the active X display. When
+    # the VNC client resizes the window, QEMU processes SetDesktopSize and
+    # updates the guest EDID; the new size becomes the first (preferred) mode
+    # in /sys/class/drm/card0-*/modes. A tiny systemd service polls that file
+    # and applies the new size with `xrandr --auto`. Polling (rather than a
+    # udev RUN rule) avoids the uevent-storm races where concurrent handlers
+    # could apply a stale size.
+    - path: /usr/local/sbin/kw-display-resized
+      permissions: "0755"
+      content: |
+        #!/bin/bash
+        set -u
+        POLL=0.5
+        MODES=""
+        find_modes() {
+          MODES=$(ls /sys/class/drm/card0-*/modes 2>/dev/null | head -n1)
+        }
+        find_display() {
+          local active_vt vtn
+          active_vt=$(cat /sys/class/tty/tty0/active 2>/dev/null)
+          vtn=""
+          case "$active_vt" in tty*) vtn=${active_vt#tty} ;; esac
+          DISPLAY_NUM=""
+          if [ -n "$vtn" ]; then
+            DISPLAY_NUM=$(ps -eo args= | grep "[X]org" | grep "vt$vtn" \
+              | grep -oE ":[0-9]+" | head -n1)
+          fi
+          if [ -z "$DISPLAY_NUM" ]; then
+            DISPLAY_NUM=$(ps -eo lstart=,args= 2>/dev/null | grep "[X]org" \
+              | sort -k1,5 | tail -n1 | grep -oE ":[0-9]+" | head -n1)
+          fi
+          XAUTH=""
+          if [ -n "$DISPLAY_NUM" ]; then
+            XAUTH=$(ls /var/run/lightdm/root/ 2>/dev/null \
+              | grep -F "$DISPLAY_NUM" | head -n1)
+            [ -n "$XAUTH" ] || XAUTH=$(ls /var/run/lightdm/root/ 2>/dev/null \
+              | tail -n1)
+          fi
+        }
+        apply() {
+          local preferred current
+          preferred=$(head -n1 "$MODES" 2>/dev/null)
+          [ -n "$preferred" ] || return 0
+          find_display
+          [ -n "$DISPLAY_NUM" ] && [ -n "$XAUTH" ] || return 0
+          current=$(DISPLAY="$DISPLAY_NUM" \
+            XAUTHORITY="/var/run/lightdm/root/$XAUTH" xrandr 2>/dev/null \
+            | grep -oE 'current [0-9]+ x [0-9]+' | head -n1)
+          if [ "$current" != "current ${preferred%x*} x ${preferred#*x}" ]; then
+            DISPLAY="$DISPLAY_NUM" \
+              XAUTHORITY="/var/run/lightdm/root/$XAUTH" \
+              xrandr --output Virtual-1 --auto 2>/dev/null || true
+          fi
+        }
+        last=""
+        while true; do
+          find_modes
+          if [ -n "$MODES" ]; then
+            cur=$(head -n1 "$MODES" 2>/dev/null)
+            if [ -n "$cur" ] && [ "$cur" != "$last" ]; then
+              sleep "$POLL"
+              find_modes
+              apply
+              last=$(head -n1 "$MODES" 2>/dev/null)
+            fi
+          fi
+          sleep "$POLL"
+        done
+    - path: /etc/systemd/system/kw-display-resize.service
+      permissions: "0644"
+      content: |
+        [Unit]
+        Description=Apply virtio-gpu EDID preferred mode to the active X display
+        After=display-manager.service
+
+        [Service]
+        ExecStart=/usr/local/sbin/kw-display-resized
+        Restart=always
+        RestartSec=2
+
+        [Install]
+        WantedBy=multi-user.target
+    runcmd:
+    - systemctl set-default graphical.target
+    - systemctl daemon-reload
+    - systemctl enable --now kw-display-resize.service
+  persistentRootDisk: true
+  persistentRootDiskSize: 20Gi
+  memoryLimit: 4Gi
+  memoryRequest: 5Gi
+  videoDevice: virtio
   workspaceTypes:
   - vm
 ---
@@ -354,9 +416,9 @@ metadata:
 spec:
   defaultPath: /
   defaultPort: 80
-  description: "Web-based file manager \u2014 browse, upload, download, delete, rename,\
-    \ and edit files through a clean web interface. Perfect for managing persistent\
-    \ volumes."
+  description: Web-based file manager — browse, upload, download, delete, rename,
+    and edit files through a clean web interface. Perfect for managing persistent
+    volumes.
   category: Tool
   tags:
   - files
@@ -367,16 +429,13 @@ spec:
   image: filebrowser/filebrowser:latest
   imageHomepageURL: https://hub.docker.com/r/filebrowser/filebrowser
   defaultEnv:
-  - name: FB_BASE_URL
-    value: /proxy/{{namespace}}/{{name}}
+    - name: FB_BASE_URL
+      value: /proxy/{{namespace}}/{{name}}
   defaultUID: 1000
   defaultInitContainers:
-  - name: volume-permissions
-    image: busybox:1.37
-    command:
-    - sh
-    - -c
-    - chown -R {{uid}}:{{uid}} /srv
+    - name: volume-permissions
+      image: busybox:1.37
+      command: ["sh", "-c", "chown -R {{uid}}:{{uid}} /srv"]
   proxyConfig:
     needsNoopSW: true
     preservePathPrefix: true
@@ -427,11 +486,9 @@ spec:
   category: Game
   tags:
   - puzzle
-  displayName: '2048'
+  displayName: "2048"
   homepageURL: https://github.com/gabrielecirulli/2048
-  icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="2" y="2"
-    width="20" height="20" rx="3" fill="#edc22e"/><text x="12" y="16" font-family="sans-serif"
-    font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">2048</text></svg>
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3" fill="#edc22e"/><text x="12" y="16" font-family="sans-serif" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">2048</text></svg>'
   image: cnrock/2048:latest
   imageHomepageURL: https://hub.docker.com/r/cnrock/2048
 ---
@@ -444,9 +501,9 @@ spec:
   - name: GF_SERVER_ROOT_URL
     value: /proxy/{{namespace}}/{{name}}/
   - name: GF_SERVER_SERVE_FROM_SUB_PATH
-    value: 'true'
+    value: "true"
   - name: GF_AUTH_ANONYMOUS_ENABLED
-    value: 'true'
+    value: "true"
   - name: GF_AUTH_ANONYMOUS_ORG_ROLE
     value: Admin
   defaultPath: /
@@ -489,9 +546,9 @@ spec:
   sourceURL: https://github.com/jlesage/docker-chromium
   defaultEnv:
   - name: WEB_AUDIO
-    value: '1'
+    value: "1"
   - name: KEEP_APP_RUNNING
-    value: '1'
+    value: "1"
   proxyConfig:
     rewriteHostAbsolutePaths: true
 ---
@@ -516,9 +573,9 @@ spec:
   sourceURL: https://github.com/jlesage/docker-firefox
   defaultEnv:
   - name: WEB_AUDIO
-    value: '1'
+    value: "1"
   - name: KEEP_APP_RUNNING
-    value: '1'
+    value: "1"
   proxyConfig:
     rewriteHostAbsolutePaths: true
 ---
@@ -593,7 +650,7 @@ kind: Image
 metadata:
   name: kasm
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   defaultEnv:
   - name: KASM_PORT
@@ -625,7 +682,7 @@ kind: Image
 metadata:
   name: kasmweb-chrome
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   defaultCredentials:
     password: password
@@ -659,7 +716,7 @@ kind: Image
 metadata:
   name: kasmweb-desktop
   annotations:
-    catalog.kubeworkspaces.io/example: 'true'
+    catalog.kubeworkspaces.io/example: "true"
 spec:
   defaultCredentials:
     password: password
@@ -703,12 +760,7 @@ spec:
   - documents
   displayName: LibreOffice
   homepageURL: https://www.libreoffice.org
-  icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="#18A303"
-    d="M349.1 0c-5-.1-9.8 3-11.8 7.5-1.9 4.5-.8 10.1 2.7 13.5l106.4 106.6c3.4 3.4
-    9 4.6 13.5 2.8s7.7-6.5 7.8-11.3V12.3C467.7 5.9 461.8 0 455.2 0z"/><path fill="#18A303"
-    d="M56.8 0C49.9.1 44.4 5.7 44.4 12.6v486.8c0 6.9 5.5 12.5 12.4 12.6h398.3c7 0
-    12.6-5.6 12.6-12.6V185.9c0-3.4-1.3-6.6-3.7-9L291.7 3.8c-2.3-2.4-5.6-3.8-9-3.9H56.8z"/><path
-    fill="#fff" d="M69.4 25.2h208.1l165 165.8v295.8H69.4z"/></svg>
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="#18A303" d="M349.1 0c-5-.1-9.8 3-11.8 7.5-1.9 4.5-.8 10.1 2.7 13.5l106.4 106.6c3.4 3.4 9 4.6 13.5 2.8s7.7-6.5 7.8-11.3V12.3C467.7 5.9 461.8 0 455.2 0z"/><path fill="#18A303" d="M56.8 0C49.9.1 44.4 5.7 44.4 12.6v486.8c0 6.9 5.5 12.5 12.4 12.6h398.3c7 0 12.6-5.6 12.6-12.6V185.9c0-3.4-1.3-6.6-3.7-9L291.7 3.8c-2.3-2.4-5.6-3.8-9-3.9H56.8z"/><path fill="#fff" d="M69.4 25.2h208.1l165 165.8v295.8H69.4z"/></svg>'
   image: linuxserver/libreoffice:latest
   imageHomepageURL: https://hub.docker.com/r/linuxserver/libreoffice
   sourceURL: https://github.com/linuxserver/docker-libreoffice
@@ -796,9 +848,7 @@ spec:
   - retro
   displayName: Pac-Man (HTML5)
   homepageURL: https://github.com/platzhersh/pacman-canvas
-  icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48
-    2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="#FFD700"/><path
-    d="M12 12L22 6V18z" fill="#1a1a2e"/><circle cx="10" cy="7" r="1.5" fill="#1a1a2e"/></svg>
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="#FFD700"/><path d="M12 12L22 6V18z" fill="#1a1a2e"/><circle cx="10" cy="7" r="1.5" fill="#1a1a2e"/></svg>'
   image: uzyexe/pacman:latest
   imageHomepageURL: https://hub.docker.com/r/uzyexe/pacman
 ---
@@ -852,7 +902,7 @@ spec:
   sourceURL: https://github.com/rocker-org/rocker-versioned2
   defaultEnv:
   - name: DISABLE_AUTH
-    value: 'true'
+    value: "true"
   defaultUser: rstudio
   defaultHomedir: /home/rstudio
   defaultUID: 1000
@@ -866,16 +916,14 @@ metadata:
 spec:
   defaultPath: /
   defaultPort: 80
-  description: Classic Snake game on HTML5 canvas. Arrow keys to control. Single self-contained
-    HTML file.
+  description: Classic Snake game on HTML5 canvas. Arrow keys to control. Single
+    self-contained HTML file.
   category: Game
   tags:
   - arcade
   - retro
   displayName: Snake
-  icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12h4v3h4v-3h4v-3h4v3h2"
-    stroke="#4caf50" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle
-    cx="21" cy="9" r="1.5" fill="#4caf50"/></svg>
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12h4v3h4v-3h4v-3h4v3h2" stroke="#4caf50" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="21" cy="9" r="1.5" fill="#4caf50"/></svg>'
   image: jmartej204/snake-game:latest
 ---
 apiVersion: kubeworkspaces.io/v1alpha1
@@ -913,10 +961,7 @@ spec:
   - retro
   displayName: Tetris
   homepageURL: https://github.com/jakesgordon/javascript-tetris
-  icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="2"
-    width="5" height="5" fill="#00f0f0"/><rect x="9" y="2" width="5" height="5" fill="#00f0f0"/><rect
-    x="9" y="7" width="5" height="5" fill="#00f0f0"/><rect x="14" y="7" width="5"
-    height="5" fill="#00f0f0"/></svg>
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="2" width="5" height="5" fill="#00f0f0"/><rect x="9" y="2" width="5" height="5" fill="#00f0f0"/><rect x="9" y="7" width="5" height="5" fill="#00f0f0"/><rect x="14" y="7" width="5" height="5" fill="#00f0f0"/></svg>'
   image: uzyexe/tetris:latest
   imageHomepageURL: https://hub.docker.com/r/uzyexe/tetris
 ---
@@ -1001,12 +1046,12 @@ metadata:
 spec:
   defaultPath: /
   defaultPort: 7681
-  description: "Share your terminal over the web. Lightweight web-based terminal emulator\
-    \ \u2014 run any CLI app in a browser."
+  description: Share your terminal over the web. Lightweight web-based terminal emulator
+    — run any CLI app in a browser.
   category: Tool
   displayName: ttyd Web Terminal
   homepageURL: https://github.com/tsl0922/ttyd
-  icon: "\U0001F4BB"
+  icon: 💻
   image: tsl0922/ttyd:latest
   imageHomepageURL: https://hub.docker.com/r/tsl0922/ttyd
   proxyConfig:
@@ -1030,9 +1075,7 @@ spec:
   - editor
   displayName: VSCodium
   homepageURL: https://vscodium.com
-  icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5
-    0L5.8 9.3 2.3 6.8 0 8v8l2.3 1.2 3.5-2.5L17.5 24 24 21.4V2.6L17.5 0zm-1 4.4v15.2l-8.5-7.6
-    8.5-7.6z" fill="#2f80ed"/></svg>
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 0L5.8 9.3 2.3 6.8 0 8v8l2.3 1.2 3.5-2.5L17.5 24 24 21.4V2.6L17.5 0zm-1 4.4v15.2l-8.5-7.6 8.5-7.6z" fill="#2f80ed"/></svg>'
   image: linuxserver/vscodium:latest
   imageHomepageURL: https://hub.docker.com/r/linuxserver/vscodium
   sourceURL: https://github.com/linuxserver/docker-vscodium
@@ -1160,12 +1203,7 @@ spec:
   - word
   displayName: Wordle
   homepageURL: https://github.com/cwackerfuss/react-wordle
-  icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="2" y="8"
-    width="5" height="5" rx="0.5" fill="#6aaa64"/><rect x="8" y="8" width="5" height="5"
-    rx="0.5" fill="#c9b458"/><rect x="14" y="8" width="5" height="5" rx="0.5" fill="#6aaa64"/><rect
-    x="2" y="14" width="5" height="5" rx="0.5" fill="#787c7e"/><rect x="8" y="14"
-    width="5" height="5" rx="0.5" fill="#6aaa64"/><rect x="14" y="14" width="5" height="5"
-    rx="0.5" fill="#787c7e"/></svg>
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="2" y="8" width="5" height="5" rx="0.5" fill="#6aaa64"/><rect x="8" y="8" width="5" height="5" rx="0.5" fill="#c9b458"/><rect x="14" y="8" width="5" height="5" rx="0.5" fill="#6aaa64"/><rect x="2" y="14" width="5" height="5" rx="0.5" fill="#787c7e"/><rect x="8" y="14" width="5" height="5" rx="0.5" fill="#6aaa64"/><rect x="14" y="14" width="5" height="5" rx="0.5" fill="#787c7e"/></svg>'
   image: modem7/wordle:legacy
   imageHomepageURL: https://hub.docker.com/r/modem7/wordle
 ---
@@ -1186,8 +1224,7 @@ spec:
   - python
   displayName: Apache Zeppelin
   homepageURL: https://zeppelin.apache.org
-  icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16l-2
-    3H6L4 6zm0 5h16l-2 3H6L4 11zm2 5h12l-1.5 2.5H7.5L6 16z" fill="#3071a9"/></svg>
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 6h16l-2 3H6L4 6zm0 5h16l-2 3H6L4 11zm2 5h12l-1.5 2.5H7.5L6 16z" fill="#3071a9"/></svg>'
   image: apache/zeppelin:0.12.1
   imageHomepageURL: https://hub.docker.com/r/apache/zeppelin
   sourceURL: https://github.com/apache/zeppelin
