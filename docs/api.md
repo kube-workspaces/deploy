@@ -1,7 +1,7 @@
 # API Reference
 
 <div class="api-bar">
-  REST API OpenAPI 3 specification &mdash; raw: <a href="/docs/openapi3.json">JSON</a> &middot; <a href="/docs/openapi3.yaml">YAML</a>
+  REST API OpenAPI 3 specification &mdash; raw: <a href="/docs/spec/openapi3.json">JSON</a> &middot; <a href="/docs/spec/openapi3.yaml">YAML</a>
 </div>
 <div id="api-redoc" style="height: calc(100vh - 100px);"></div>
 
@@ -10,7 +10,7 @@
 (function () {
   var el = document.getElementById('api-redoc');
   if (el && window.Redoc && window.Redoc.init) {
-    window.Redoc.init('/docs/openapi3.json', {
+    window.Redoc.init('/docs/spec/openapi3.json', {
       theme: {
         colors: { primary: { main: '#2563eb' } },
         typography: { fontFamily: 'Inter, system-ui, sans-serif', fontSize: '14px' },
