@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 # generate-godoc.sh - Generates Markdown documentation for the Go packages in
-# the controller and api repositories, then writes the combined output into the
-# api repo for embedding in the API server.
+# the controller, api and proxy repositories, then writes the combined output
+# into the api repo for embedding in the API server.
 #
 # NOTE: this script predates the monorepo split. The components now live in
-# separate repositories, so it needs the controller and api repos checked out
-# alongside this one:
+# separate repositories, so it needs the controller, api and proxy repos
+# checked out alongside this one:
 #
 #   src/github/kube-workspaces/
 #     ├── api/
 #     ├── controller/
+#     ├── proxy/
 #     └── deploy/      <- you are here
 #
-# Override the locations with CONTROLLER_DIR / API_DIR if your layout differs.
+# Override the locations with CONTROLLER_DIR / API_DIR / PROXY_DIR if your
+# layout differs.
 #
 # Usage: ./scripts/generate-godoc.sh
 # Output: $API_DIR/cmd/kube_workspaces/godoc/
@@ -25,18 +27,20 @@ SIBLINGS="$(cd "$DEPLOY_DIR/.." && pwd)"
 
 CONTROLLER_DIR="${CONTROLLER_DIR:-$SIBLINGS/controller}"
 API_DIR="${API_DIR:-$SIBLINGS/api}"
+PROXY_DIR="${PROXY_DIR:-$SIBLINGS/proxy}"
 
-for d in "$CONTROLLER_DIR" "$API_DIR"; do
+for d in "$CONTROLLER_DIR" "$API_DIR" "$PROXY_DIR"; do
   if [ ! -f "$d/go.mod" ]; then
     cat >&2 <<EOF
 error: expected a Go module at $d
 
 The components live in separate repositories since the monorepo
 (github.com/flaccid/kube-workspaces, now archived) was split. Clone them
-alongside this repo, or set CONTROLLER_DIR / API_DIR explicitly:
+alongside this repo, or set CONTROLLER_DIR / API_DIR / PROXY_DIR explicitly:
 
   git clone https://github.com/kube-workspaces/controller "$SIBLINGS/controller"
   git clone https://github.com/kube-workspaces/api "$SIBLINGS/api"
+  git clone https://github.com/kube-workspaces/proxy "$SIBLINGS/proxy"
 EOF
     exit 1
   fi
@@ -53,6 +57,7 @@ fi
 echo "Generating Go documentation..."
 echo "  controller: $CONTROLLER_DIR"
 echo "  api:        $API_DIR"
+echo "  proxy:      $PROXY_DIR"
 echo "  output:     $OUTPUT_DIR"
 
 # Create output directory
@@ -66,8 +71,10 @@ BRANCH="main"
 module_path() { awk '/^module /{print $2; exit}' "$1/go.mod"; }
 CONTROLLER_MODULE="$(module_path "$CONTROLLER_DIR")"
 API_MODULE="$(module_path "$API_DIR")"
+PROXY_MODULE="$(module_path "$PROXY_DIR")"
 CONTROLLER_URL="https://${CONTROLLER_MODULE}"
 API_URL="https://${API_MODULE}"
+PROXY_URL="https://${PROXY_MODULE}"
 
 # Go version each module declares, for the index metadata.
 go_version() { awk '/^go /{print $2; exit}' "$1/go.mod"; }
@@ -125,6 +132,32 @@ for pkg in "${API_PACKAGES[@]}"; do
     echo "" >> "$API_OUT"
 done
 
+# --- Proxy Module ---
+echo "  -> Proxy module ($PROXY_DIR)"
+cd "$PROXY_DIR"
+
+PROXY_OUT="$OUTPUT_DIR/proxy.md"
+: > "$PROXY_OUT"
+
+PROXY_PACKAGES=(
+    "./cmd/proxy"
+    "./internal/auth"
+    "./internal/k8s"
+    "./internal/proxy"
+)
+
+for pkg in "${PROXY_PACKAGES[@]}"; do
+    echo "     - $pkg"
+    gomarkdoc --format github \
+        --repository.url "$PROXY_URL" \
+        --repository.default-branch "$BRANCH" \
+        --repository.path "/" \
+        "$pkg" >> "$PROXY_OUT" 2>/dev/null || {
+        gomarkdoc --format github "$pkg" >> "$PROXY_OUT"
+    }
+    echo "" >> "$PROXY_OUT"
+done
+
 # --- Index metadata ---
 cat > "$OUTPUT_DIR/index.json" << EOF
 {
@@ -154,6 +187,19 @@ cat > "$OUTPUT_DIR/index.json" << EOF
         "internal/proxy",
         "internal/exec"
       ]
+    },
+    {
+      "name": "Proxy",
+      "path": "proxy",
+      "goVersion": "$(go_version "$PROXY_DIR")",
+      "module": "${PROXY_MODULE}",
+      "description": "Reverse proxy for workspace traffic (/proxy/{ns}/{name}/...)",
+      "packages": [
+        "cmd/proxy",
+        "internal/auth",
+        "internal/k8s",
+        "internal/proxy"
+      ]
     }
   ]
 }
@@ -162,4 +208,5 @@ EOF
 echo "Done. Generated:"
 echo "  - controller.md ($(wc -l < "$CONTROLLER_OUT") lines)"
 echo "  - api.md ($(wc -l < "$API_OUT") lines)"
+echo "  - proxy.md ($(wc -l < "$PROXY_OUT") lines)"
 echo "  - index.json"
