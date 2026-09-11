@@ -110,7 +110,8 @@ jobs:
               "https://ghcr.io/token?scope=repository:kube-workspaces/${c}:pull&service=ghcr.io" \
               | jq -r '.token')
             found=""
-            # The components tag bare (0.2.0); frontend currently tags v-prefixed.
+            # The components tag bare (0.2.0); the check also accepts the
+            # v-prefixed form for older tags.
             for tag in "$bare" "$VERSION"; do
               code=$(curl -sSL -o /dev/null -w '%{http_code}' \
                 -H "Authorization: Bearer ${token}" \
