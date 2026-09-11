@@ -17,7 +17,18 @@
         sidebar: { width: '260px' }
       },
       hideDownloadButton: false,
-      expandResponses: '200',
+      expandResponses: '200,201',
+      hideHostname: true,
+      generateCodeSamples: {
+        skipOptionalParameters: true,
+        languages: [
+          { lang: 'curl', label: 'cURL' },
+          { lang: 'Node.js', label: 'Node.js' },
+          { lang: 'JavaScript', label: 'JavaScript' },
+          { lang: 'Python', label: 'Python' },
+          { lang: 'Go', label: 'Go' }
+        ]
+      },
       pathInMiddlePanel: true,
       scrollYOffset: 0,
       nativeScrollbars: true
