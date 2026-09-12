@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 700" width="940" height="700"
+     role="img" aria-label="Kube Workspaces virtual machine architecture"
+     font-family="ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+
+  <defs>
+    <marker id="vm-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1f6feb"/>
+    </marker>
+  </defs>
+
+  <rect width="940" height="700" rx="12" fill="#0d1117"/>
+
+  <!-- Column headings -->
+  <text x="240" y="26" text-anchor="middle" font-size="11.5" font-weight="600" fill="#58a6ff">Access — how the browser reaches a VM guest</text>
+  <text x="700" y="26" text-anchor="middle" font-size="11.5" font-weight="600" fill="#58a6ff">Provisioning — how the controller creates the VM</text>
+
+  <!-- ================= LEFT: Access path ================= -->
+
+  <!-- Frontend -->
+  <rect x="20" y="44" width="440" height="56" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="240" y="72" text-anchor="middle" font-size="13" font-weight="600" fill="#c9d1d9">Browser — Next.js frontend</text>
+  <text x="240" y="90" text-anchor="middle" font-size="10.5" fill="#6e7681">Connect (noVNC) · Console (serial) · SSH buttons</text>
+
+  <!-- Arrow: Frontend -> Ingress -->
+  <line x1="240" y1="100" x2="240" y2="136" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#vm-arr)"/>
+
+  <!-- Ingress -->
+  <rect x="20" y="136" width="440" height="70" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="20" y="136" width="440" height="32" rx="10" fill="#1c2d4a" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="20" y="152" width="440" height="16" fill="#1c2d4a"/>
+  <text x="240" y="158" text-anchor="middle" font-size="12" font-weight="600" fill="#58a6ff">Ingress Controller (nginx / Traefik)</text>
+  <text x="240" y="184" text-anchor="middle" font-size="10.5" fill="#c9d1d9">/api/* and /auth/* → kube-workspaces-api</text>
+  <text x="240" y="199" text-anchor="middle" font-size="10.5" fill="#6e7681">/proxy/* → kube-workspaces-proxy (container workspaces)</text>
+
+  <!-- Arrow: Ingress -> API -->
+  <line x1="240" y1="206" x2="240" y2="240" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#vm-arr)"/>
+
+  <!-- API bridges -->
+  <rect x="20" y="240" width="440" height="200" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="20" y="240" width="440" height="34" rx="10" fill="#1c2d4a" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="20" y="258" width="440" height="16" fill="#1c2d4a"/>
+  <text x="240" y="262" text-anchor="middle" font-size="12" font-weight="600" fill="#58a6ff">kube-workspaces-api (Go / Goa, port 8090)</text>
+
+  <rect x="34" y="286" width="412" height="142" rx="8" fill="#0d1117" stroke="#21262d" stroke-width="1.2"/>
+  <text x="46" y="308" font-size="10.5" fill="#8b949e">1. Auth middleware — kw-session cookie (HMAC-SHA256),</text>
+  <text x="56" y="322" font-size="10.5" fill="#8b949e">namespace access, editor/admin role required</text>
+  <text x="46" y="344" font-size="10.5" fill="#8b949e">2. GET /v1/workspaces/{name}/exec → serial console bridge</text>
+  <text x="56" y="358" font-size="10.5" fill="#8b949e">(dispatches on spec.type: vm)</text>
+  <text x="46" y="380" font-size="10.5" fill="#8b949e">3. GET /v1/workspaces/{name}/vnc → VNC bridge,</text>
+  <text x="56" y="394" font-size="10.5" fill="#8b949e">raw RFB bytes to noVNC (canvas)</text>
+  <text x="46" y="416" font-size="10.5" fill="#8b949e">4. GET /v1/workspaces/{name}/ssh → web SSH bridge</text>
+  <text x="56" y="430" font-size="10.5" fill="#8b949e">(x/crypto/ssh, client supplies the private key)</text>
+  <text x="240" y="461" text-anchor="middle" font-size="10.5" fill="#6e7681">console/vnc/ssh are single-session: take-over + status + 6h idle TTL</text>
+
+  <!-- Arrow: API -> KubeVirt subresources -->
+  <line x1="240" y1="440" x2="240" y2="474" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#vm-arr)"/>
+
+  <!-- KubeVirt subresources -->
+  <rect x="20" y="474" width="440" height="70" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="20" y="474" width="440" height="32" rx="10" fill="#1c2d4a" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="20" y="490" width="440" height="16" fill="#1c2d4a"/>
+  <text x="240" y="496" text-anchor="middle" font-size="12" font-weight="600" fill="#58a6ff">KubeVirt subresources (API server)</text>
+  <text x="240" y="522" text-anchor="middle" font-size="10.5" fill="#c9d1d9">…/virtualmachineinstances/{name}/console · …/vnc</text>
+  <text x="240" y="537" text-anchor="middle" font-size="10.5" fill="#6e7681">SSH dials the Service Endpoints: launcher pod IP :22 (masquerade DNAT)</text>
+
+  <!-- ================= RIGHT: Provisioning path ================= -->
+
+  <!-- Workspace CR -->
+  <rect x="480" y="44" width="440" height="56" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="700" y="72" text-anchor="middle" font-size="13" font-weight="600" fill="#c9d1d9">Workspace CR — spec.type: vm</text>
+  <text x="700" y="90" text-anchor="middle" font-size="10.5" fill="#6e7681">spec.template stays container-shaped (PodSpec schema) · name === VM name</text>
+
+  <!-- Arrow: Workspace CR -> Image/SshKey CRs -->
+  <line x1="700" y1="100" x2="700" y2="136" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#vm-arr)"/>
+
+  <!-- Image CR + SshKey CR -->
+  <rect x="480" y="136" width="440" height="70" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="700" y="163" text-anchor="middle" font-size="12" font-weight="600" fill="#c9d1d9">Image CR · SshKey CR</text>
+  <text x="700" y="184" text-anchor="middle" font-size="10.5" fill="#8b949e">root disk (containerDisk / persistent DataVolume) · cloud-init defaults · video device</text>
+  <text x="700" y="199" text-anchor="middle" font-size="10.5" fill="#8b949e">owner's SSH public keys (namespace-scoped, one CR per user)</text>
+
+  <!-- Arrow: Image/SshKey -> Controller -->
+  <line x1="700" y1="206" x2="700" y2="240" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#vm-arr)"/>
+
+  <!-- Controller -->
+  <rect x="480" y="240" width="440" height="200" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="480" y="240" width="440" height="34" rx="10" fill="#1c2d4a" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="480" y="258" width="440" height="16" fill="#1c2d4a"/>
+  <text x="700" y="262" text-anchor="middle" font-size="12" font-weight="600" fill="#58a6ff">controller (kubebuilder) — generateVirtualMachine</text>
+
+  <rect x="494" y="286" width="412" height="142" rx="8" fill="#0d1117" stroke="#21262d" stroke-width="1.2"/>
+  <text x="506" y="308" font-size="10.5" fill="#8b949e">1. Reads Workspace spec.template + Image CR + SshKey CRs</text>
+  <text x="506" y="330" font-size="10.5" fill="#8b949e">2. containerDisk root → or registry-import DataVolume when</text>
+  <text x="516" y="344" font-size="10.5" fill="#8b949e">the image opts in (persistentRootDisk)</text>
+  <text x="506" y="366" font-size="10.5" fill="#8b949e">3. Single masquerade NIC forwarding the container ports;</text>
+  <text x="516" y="380" font-size="10.5" fill="#8b949e">deterministic MAC pinned from the workspace name (FNV-1a)</text>
+  <text x="506" y="402" font-size="10.5" fill="#8b949e">4. cloud-init userData: users/password, SSH keys, network,</text>
+  <text x="516" y="416" font-size="10.5" fill="#8b949e">desktop resize watcher</text>
+  <text x="700" y="446" text-anchor="middle" font-size="10.5" fill="#6e7681">domain.cpu/cores + guest memory · GPU passthrough (gpus[]) · video.type · spec.running = !stopped</text>
+
+  <!-- Arrow: Controller -> VirtualMachine -->
+  <line x1="700" y1="440" x2="700" y2="474" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#vm-arr)"/>
+
+  <!-- VirtualMachine -->
+  <rect x="480" y="474" width="440" height="70" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="480" y="474" width="440" height="32" rx="10" fill="#1c2d4a" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="480" y="490" width="440" height="16" fill="#1c2d4a"/>
+  <text x="700" y="496" text-anchor="middle" font-size="12" font-weight="600" fill="#58a6ff">KubeVirt VirtualMachine (kubevirt.io)</text>
+  <text x="700" y="522" text-anchor="middle" font-size="10.5" fill="#c9d1d9">VMI template labels (workspace-name) drive the controller's pod watch</text>
+  <text x="700" y="537" text-anchor="middle" font-size="10.5" fill="#6e7681">workspace status reports ready only when the VMI is Running</text>
+
+  <!-- Arrows into the virt-launcher -->
+  <line x1="240" y1="544" x2="240" y2="588" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#vm-arr)"/>
+  <line x1="700" y1="544" x2="700" y2="588" stroke="#1f6feb" stroke-width="1.8" marker-end="url(#vm-arr)"/>
+
+  <!-- virt-launcher / guest -->
+  <rect x="80" y="588" width="780" height="82" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="470" y="614" text-anchor="middle" font-size="13" font-weight="600" fill="#c9d1d9">virt-launcher pod — QEMU guest (/dev/kvm when available)</text>
+  <text x="470" y="636" text-anchor="middle" font-size="10.5" fill="#8b949e">Guest boots the root disk; cloud-init configures users/password, SSH keys, and the NIC</text>
+  <text x="470" y="652" text-anchor="middle" font-size="10.5" fill="#6e7681">Masquerade NIC gives the guest cluster-network access; container workspaces keep using the /proxy path (no KubeVirt)</text>
+</svg>

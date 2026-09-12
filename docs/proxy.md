@@ -1187,3 +1187,11 @@ An application is **incompatible** if it:
 2. File an issue upstream requesting path prefix configuration
 3. Consider forking or patching the app
 4. As a last resort, do not support that app as a workspace image
+
+---
+
+## See also
+
+- [Virtual Machines](vm.md) — KubeVirt `vm` workspaces, whose access (serial
+  console, noVNC display, web SSH) flows through the API bridges rather than
+  the proxy

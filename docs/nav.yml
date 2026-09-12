@@ -11,6 +11,7 @@
 - title: Reference
   items:
     - proxy
+    - vm
     - api
 - title: Project Operations
   items:

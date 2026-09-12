@@ -83,6 +83,7 @@ into the deployment manifests and exposed through the UI.
 - [Authentication](authentication.md) — enable OIDC or local auth
 - [Customizing your domain](domains.md) — hostnames and ingress routing
 - [Proxy](proxy.md) — how workspace traffic is routed
+- [Virtual Machines](vm.md) — KubeVirt VM workspaces, serial console, noVNC display, and web SSH
 - [Security](security.md) — what is hardened by default
 - [Releasing](releasing.md) — how releases are cut
 - [Testing](testing.md) — the test suite and how to run it
