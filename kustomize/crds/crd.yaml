@@ -9944,6 +9944,18 @@ spec:
                 items:
                   type: string
                 type: array
+              soundDevice:
+                description: |-
+                  SoundDevice overrides the KubeVirt domain sound device model for vm
+                  workspaces (sets domain.devices.sound.model). Valid values are "ac97"
+                  and "ich9". Empty uses KubeVirt's default (no sound device) and leaves
+                  domain.devices.sound unset. Ignored for non-vm workspaces. Enabling
+                  this activates the QEMU VNC audio pseudo-encoding for Tier 0 audio
+                  playback.
+                enum:
+                - ac97
+                - ich9
+                type: string
               videoDevice:
                 description: |-
                   VideoDevice overrides the KubeVirt domain video device type for vm
