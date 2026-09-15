@@ -332,10 +332,12 @@ spec:
   memoryLimit: 4Gi
   memoryRequest: 5Gi
   videoDevice: virtio
-  # AC97 sound card enables guest audio over QEMU's VNC audio channel (Tier 0
-  # audio playback in the desktop client). The guest needs an audio server
-  # (ALSA/pulse/pipewire) configured to output to the AC97 device.
-  soundDevice: ac97
+  # Intel HDA sound card (ich9) enables guest audio over QEMU's VNC audio
+  # channel (Tier 0 audio playback in the desktop client). ich9/intel-hda is
+  # available on all QEMU builds (AC97 may be compiled out), and Debian ships
+  # snd-hda-intel with generic analog playback. The guest runs an audio server
+  # (ALSA/pulse/pipewire) configured to output to the HDA device.
+  soundDevice: ich9
   workspaceTypes:
   - vm
 ---
