@@ -47,7 +47,7 @@ rules:
     verbs: ["*"]
   - apiGroups: [""]
     resources: ["secrets"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
   - apiGroups: [""]
     resources: ["resourcequotas"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
@@ -106,7 +106,10 @@ subjects:
 # holding local users' bcrypt password hashes. These Secrets always live in
 # the release namespace regardless of a user's personal namespace, so write
 # access is scoped to this namespace only rather than added to the cluster-wide
-# ClusterRole above (which keeps read-only access to Secrets everywhere else).
+# ClusterRole above (which otherwise keeps Secrets read-only; the workspace
+# controller additionally needs full Secret verbs cluster-wide because it backs
+# vm workspaces' cloud-init user-data with a Secret in each workspace's own
+# personal namespace when the payload exceeds KubeVirt's 2048-byte inline limit).
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
