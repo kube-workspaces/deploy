@@ -263,6 +263,10 @@ spec:
   memoryLimit: 4Gi
   memoryRequest: 5Gi
   videoDevice: virtio
+  # AC97 sound card enables guest audio over QEMU's VNC audio channel (Tier 0
+  # audio playback in the desktop client). The guest needs an audio server
+  # (ALSA/pulse/pipewire) configured to output to the AC97 device.
+  soundDevice: ac97
   workspaceTypes:
   - vm
 ---
