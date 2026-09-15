@@ -238,6 +238,27 @@ the two talk RFB end-to-end (including `SetDesktopSize` for fluid resize). Like
 the console, VNC is a single-session, last-wins subresource, guarded by the same
 registry with a strict 409 (no silent take-over for the display).
 
+#### Adaptive Quality Controller (AQC)
+
+The VNC display includes an **Adaptive Quality Controller** that dynamically
+tunes the visual experience based on real-time network conditions:
+
+- **Metrics Engine:** The frontend hooks the underlying WebSocket to measure
+  **throughput** (bytes/sec) and **RTT** (latency). RTT is measured by
+  injecting VNC `FramebufferUpdateRequest` messages and timing the server's
+  response.
+- **Adaptive Quality:** Based on these metrics, the controller selects one of
+  three quality tiers (Poor, Fair, Good) and updates `rfb.qualityLevel` and
+  `rfb.compressionLevel` on the fly. A 3-second **hysteresis** prevents
+  quality "flapping" during jittery network conditions.
+- **Lossless Refresh:** To ensure a sharp image for static content, the
+  controller detects when motion stops. After 1 second of idle time, it
+  triggers a **lossless full-screen refresh** (quality level 9), ensuring
+  text and UI elements are perfectly sharp even if they were blocky during
+  motion.
+- **Server-side Logging:** The API bridge includes a `throughputLogger` (enabled via
+  `AQC_DEBUG_THROUGHPUT=1` on the API pod) for server-side bandwidth monitoring.
+
 ### Web SSH — `GET /v1/workspaces/{name}/ssh`
 
 A browser-native SSH into the guest:
