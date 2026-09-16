@@ -253,11 +253,64 @@ tunes the visual experience based on real-time network conditions:
   quality "flapping" during jittery network conditions.
 - **Lossless Refresh:** To ensure a sharp image for static content, the
   controller detects when motion stops. After 1 second of idle time, it
-  triggers a **lossless full-screen refresh** (quality level 9), ensuring
-  text and UI elements are perfectly sharp even if they were blocky during
-  motion.
+  requests a full-screen refresh at quality level 9 to improve static text and
+  UI clarity. **QEMU quality level 9 still permits JPEG**; it does not guarantee
+  lossless pixels. True lossless mode requires omitting the JPEG-quality
+  pseudo-encoding from a new encoding list, as described below.
 - **Server-side Logging:** The API bridge includes a `throughputLogger` (enabled via
   `AQC_DEBUG_THROUGHPUT=1` on the API pod) for server-side bandwidth monitoring.
+
+#### Native desktop client — adaptive RFB quality
+
+**Status (2026-09-16):** the native client's RFB controller core is implemented
+and tested locally. It is opt-in through `rfb.Config.Quality`; normal viewer
+sessions do not enable it yet. Viewer enablement, session request-cadence
+integration, and live performance tuning remain pending.
+
+The native client uses the same API `/vnc` WebSocket bridge to QEMU. Its
+controller lives in `desktop-client/internal/rfb/adaptive.go`, with connection
+wiring in `internal/rfb/conn.go`. This is client-side behavior: it requires no
+additional guest agent, Helm value, API setting, or proxy route.
+
+When enabled, the controller:
+
+- Samples framebuffer bytes, changed pixel area, decoder occupancy, and
+  request-to-update latency in 400 ms windows. Audio traffic is excluded from
+  the framebuffer byte samples. Latency is a response-time proxy, not ping RTT;
+  incremental requests can wait for guest damage. Decoder occupancy includes
+  time waiting for incoming data, not just CPU processing.
+- Starts at **Good**, drops one tier immediately under throughput, latency, or
+  decoder pressure, and recovers one tier after 2 seconds of continuous
+  headroom. It re-sends `SetEncodings` while preserving audio and other feature
+  advertisements.
+- After sustained low motion (600 ms, evaluated on the sampling cadence),
+  switches to lossless and requests one non-incremental full-screen repaint.
+  The repaint itself is suppressed from motion feedback so it does not cause
+  repeated idle refreshes.
+- Exposes a recommended request interval through `Conn.QualityInterval()`:
+  16 ms while active and 80 ms while idle. The session loop still needs to
+  consume this recommendation.
+
+The initial tier table is **provisional**, awaiting a live video/scrolling probe
+sweep. These are pressure thresholds, not measured network capacity:
+
+| Tier | Tight JPEG quality | Compression level | Throughput pressure threshold |
+|------|--------------------|-------------------|-------------------------------|
+| Poor | 3 | 9 | 500,000 bytes/s |
+| Fair | 6 | 6 | 2,000,000 bytes/s |
+| Good | 8 | 3 | 8,000,000 bytes/s |
+| Lossless | Omitted (`Quality: -1`) | 3 | 32,000,000 bytes/s |
+
+QEMU resets JPEG quality to disabled when processing a new `SetEncodings`
+without a quality pseudo-encoding. Sending quality 9 instead would still allow
+lossy JPEG, so the native lossless tier deliberately omits it.
+
+Automated checks cover tier transitions, hysteresis, idle refresh, configuration
+validation, encoding and repaint messages, audio-advertisement preservation,
+and controller shutdown on EOF. Live responsiveness and final-frame clarity
+still need verification before describing this as enabled in the desktop UI.
+Implementation status and tuning work are tracked in the
+[desktop adaptive-quality plan](https://github.com/kube-workspaces/tracking/blob/main/desktop-adaptive-quality-controller-plan.md).
 
 ### Web SSH — `GET /v1/workspaces/{name}/ssh`
 
