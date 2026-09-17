@@ -12,6 +12,7 @@
   items:
     - proxy
     - vm
+    - tier1
     - api
 - title: Project Operations
   items:
