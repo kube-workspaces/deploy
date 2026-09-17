@@ -36,6 +36,12 @@ spec:
             {{- end }}
             - name: PATH_PREFIX
               value: {{ .Values.proxy.pathPrefix | default "/proxy" | quote }}
+            # Interactive guest-agent sockets (Selkies /api/websockets) claim the
+            # shared cross-tier display ownership lease through the API before
+            # upgrade. This is an operator-set origin, never derived from
+            # request data, so guest metadata cannot redirect credentials.
+            - name: DISPLAY_API_URL
+              value: "http://{{ include "kube-workspaces.fullname" . }}-api"
           livenessProbe:
             httpGet:
               path: /healthz

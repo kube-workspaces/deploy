@@ -47,6 +47,11 @@ spec:
               value: "https://workspaces.example.com,http://localhost:3000"
             - name: PATH_PREFIX
               value: "/proxy"
+            # Interactive guest-agent sockets (Selkies /api/websockets) claim
+            # the shared cross-tier display ownership lease through the API
+            # before upgrade. Operator-set origin, never derived from requests.
+            - name: DISPLAY_API_URL
+              value: "http://kube-workspaces-api.kube-workspaces-system.svc.cluster.local"
           resources:
             limits:
               cpu: 500m
