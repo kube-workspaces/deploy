@@ -310,11 +310,7 @@ lossy JPEG, so the native lossless tier deliberately omits it.
 
 Automated checks cover tier transitions, hysteresis, idle refresh, configuration
 validation, encoding and repaint messages, audio-advertisement preservation,
-and controller shutdown on EOF. Live human visual acceptance and threshold
-calibration remain the only open items, tracked in the
-[real-display validation plan](../../future/real-display-validation-plan.md)
-with implementation history in the
-[desktop adaptive-quality plan](https://github.com/kube-workspaces/tracking/blob/main/_completed/desktop-adaptive-quality-controller-plan.md).
+and controller shutdown on EOF.
 
 ### Web SSH — `GET /v1/workspaces/{name}/ssh`
 
