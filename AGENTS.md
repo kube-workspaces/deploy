@@ -35,6 +35,7 @@ make install-crd             # install CRDs to current cluster (server-side appl
 make install-images          # apply Image CRs from images.yaml
 make sync-images             # vendor images.yaml + helm files/ from image-catalog@IMAGE_CATALOG_VERSION
 make check-images            # verify vendored images match IMAGE_CATALOG_VERSION
+make show-ci-status          # scan kube-workspaces repos for recent CI failures (pre-release check)
 make deploy-kustomize        # deploy via Kustomize (base)
 make deploy-crds             # deploy CRDs via Kustomize
 make helm-install            # Helm install

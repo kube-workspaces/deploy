@@ -20,6 +20,31 @@ frontend   ─┘
 
 ## Procedure
 
+### 0. Pre-flight: CI must be green
+
+Before heading into the component releases, check that nothing on the org's
+default branches is failing — a release cut over red CI bakes the failure in,
+and a re-run cannot be attached to the tag:
+
+```sh
+make show-ci-status
+```
+
+The script inspects the most recent workflow runs on each repo's default branch
+and flags any repo whose newest commit has a failing run (`failed` / `yes`).
+Failures already fixed on the tip are reported in the `NOTES` column as `older`
+refs rather than action items, so the table answers the release question — does
+anything need attention now — and not "were there ever red builds".
+
+```sh
+# Restrict to specific repos, or widen the window:
+scripts/org-project-recent-actions-status.sh --repo controller --repo api
+scripts/org-project-recent-actions-status.sh --runs 25
+```
+
+Address the failing repos before proceeding. The script exits non-zero when any
+repo needs action.
+
 ### 1. Component repositories
 
 For each of `controller`, `api`, `proxy`, `frontend`:

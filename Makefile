@@ -6,7 +6,7 @@
 	port-forward-frontend port-forward-api \
 	port-forward-proxy helm-install helm-upgrade helm-template lint-helm \
 	sync-helm-crds check-helm-crds sync-images check-images \
-	generate-godoc show-latest-releases \
+	generate-godoc show-latest-releases show-ci-status \
 	test-tools test-lint test-smoke test-e2e test-all test-dump \
 	kind-up kind-down \
 	test-deploy-kustomize test-deploy-helm test-deploy-helm-oci \
@@ -171,6 +171,9 @@ generate-godoc: ## Regenerate Go docs for the API godoc page
 
 show-latest-releases: ## List the latest release (if any) for every kube-workspaces repo
 	@scripts/latest-releases.sh
+
+show-ci-status: ## Show recent GitHub Actions status across kube-workspaces repos (pre-release CI check)
+	@scripts/org-project-recent-actions-status.sh
 
 # ---------------------------------------------------------------------------
 # Cluster operations
