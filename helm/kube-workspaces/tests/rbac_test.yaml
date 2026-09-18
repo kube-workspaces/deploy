@@ -58,7 +58,7 @@ tests:
           path: subjects[0].name
           value: RELEASE-NAME-kube-workspaces
 
-  - it: does not grant cluster-wide Secret write access
+  - it: grants cluster-wide Secret write access for cloud-init user-data
     documentSelector:
       path: kind
       value: ClusterRole
@@ -66,10 +66,10 @@ tests:
       - equal:
           path: rules[9].resources[0]
           value: secrets
-      - notContains:
+      - contains:
           path: rules[9].verbs
           content: create
-      - notContains:
+      - contains:
           path: rules[9].verbs
           content: delete
 
