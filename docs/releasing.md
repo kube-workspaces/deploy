@@ -32,6 +32,11 @@ desktop-client ──> standalone binaries (not in the chart); released only whe
 
 ## Procedure
 
+The steps below can be carried out interactively with opencode via the
+`create-new-release` skill in this repo. It walks each stage with the ordering,
+dry-run and artifact gates enforced; treat this document as the source of
+truth and keep the two in step.
+
 ### 0. Pre-flight: CI must be green
 
 Before heading into the component releases, check that nothing on the org's
