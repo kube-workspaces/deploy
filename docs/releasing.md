@@ -3,8 +3,8 @@
 kube-workspaces is five repositories released together. The Helm chart's
 `appVersion` pins all four component images to a single number, so they share a
 version: one platform version is materially easier to support than four drifting
-ones. The desktop client is released alongside them, on its own version line (see
-"Order matters").
+ones. The desktop client is released alongside them when it has changes, on its
+own version line (see "Order matters").
 
 ## Order matters
 
@@ -12,13 +12,14 @@ Release the **four components first**, then `deploy`. The chart's `appVersion`
 names images that must already exist, and the release workflow refuses to proceed
 otherwise.
 
-The desktop client is released **first**, before the components. It is
-standalone: it is not a Docker image, is not pinned by the chart, and versions
-itself (its `vX.Y.Z` line is unrelated to the platform's), so it has no ordering
-dependency on the rest. It goes early so the newest client is on the downloads
-page by the time a platform release lands — the client consumes platform
-features via the proxy, and we do not want a window where the published client
-cannot talk to a just-released platform.
+The desktop client is released early (before the components), **but only when it
+has new commits since its last release**. It is standalone: it is not a Docker
+image, is not pinned by the chart, and keeps its **own `vX.Y.Z` semver lineage**
+— always bumped on top of its own history, never matched to the platform
+version. It has no ordering dependency on the rest, and goes early so the newest
+client is on the downloads page by the time a platform release lands — the
+client consumes platform features via the proxy, and we do not want a window
+where the published client cannot talk to a just-released platform.
 
 ```
 controller ─┐
@@ -26,7 +27,7 @@ api        ─┤
 proxy      ─┼─> deploy (chart + appVersion)
 frontend   ─┘
 
-desktop-client ──> standalone binaries (not in the chart)
+desktop-client ──> standalone binaries (not in the chart); released only when it has changes
 ```
 
 ## Procedure
@@ -60,8 +61,23 @@ blocks the tag nor gets re-run — it ships broken binaries.
 
 ### 1. Desktop client
 
-`desktop-client` does **not** use the component `release.yaml` workflow and is
-released on its own version line, independent of the platform version:
+`desktop-client` does **not** use the component `release.yaml` workflow. Decide
+first whether a release is warranted — it is released only when there are new
+commits on `main` since its last release tag:
+
+```sh
+# commits on main since the last release; skip this step entirely when it is 0
+gh api repos/kube-workspaces/desktop-client/compare/<last-tag>...main \
+  --jq '.ahead_by'
+```
+
+If `ahead_by` is `0`, **do not tag and do not create a release** — the existing
+download on the releases page stays current and the rest of the procedure
+continues unaffected.
+
+If there are changes, tag it on its **own version line** — `vX.Y.Z` bumped over
+its own history (e.g. `v0.2.0` → `v0.2.1`), never copied from the platform
+version:
 
 ```sh
 # in kube-workspaces/desktop-client
