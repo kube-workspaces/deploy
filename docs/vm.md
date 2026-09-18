@@ -262,10 +262,13 @@ tunes the visual experience based on real-time network conditions:
 
 #### Native desktop client — adaptive RFB quality
 
-**Status (2026-09-16):** the native client's RFB controller core is implemented
-and tested locally. It is opt-in through `rfb.Config.Quality`; normal viewer
-sessions do not enable it yet. Viewer enablement, session request-cadence
-integration, and live performance tuning remain pending.
+The native client's RFB controller is implemented
+and enabled by default in shell/CLI graphical sessions (matching the web
+client), with per-generation configuration, shared adaptive request cadence,
+manual override flags, and the one-second lossless idle refresh. Tier
+transitions, hysteresis, pressure/recovery, refresh-feedback, cancellation,
+pacing, and controller-shutdown tests pass, as do build/vet/full tests/race/
+lint and the six-target cross-builds.
 
 The native client uses the same API `/vnc` WebSocket bridge to QEMU. Its
 controller lives in `desktop-client/internal/rfb/adaptive.go`, with connection
@@ -288,8 +291,8 @@ When enabled, the controller:
   The repaint itself is suppressed from motion feedback so it does not cause
   repeated idle refreshes.
 - Exposes a recommended request interval through `Conn.QualityInterval()`:
-  16 ms while active and 80 ms while idle. The session loop still needs to
-  consume this recommendation.
+  16 ms while active and 80 ms while idle, and the session loop now consumes
+  this recommendation as its request cadence.
 
 The initial tier table is **provisional**, awaiting a live video/scrolling probe
 sweep. These are pressure thresholds, not measured network capacity:
@@ -307,10 +310,11 @@ lossy JPEG, so the native lossless tier deliberately omits it.
 
 Automated checks cover tier transitions, hysteresis, idle refresh, configuration
 validation, encoding and repaint messages, audio-advertisement preservation,
-and controller shutdown on EOF. Live responsiveness and final-frame clarity
-still need verification before describing this as enabled in the desktop UI.
-Implementation status and tuning work are tracked in the
-[desktop adaptive-quality plan](https://github.com/kube-workspaces/tracking/blob/main/desktop-adaptive-quality-controller-plan.md).
+and controller shutdown on EOF. Live human visual acceptance and threshold
+calibration remain the only open items, tracked in the
+[real-display validation plan](../../future/real-display-validation-plan.md)
+with implementation history in the
+[desktop adaptive-quality plan](https://github.com/kube-workspaces/tracking/blob/main/_completed/desktop-adaptive-quality-controller-plan.md).
 
 ### Web SSH — `GET /v1/workspaces/{name}/ssh`
 
