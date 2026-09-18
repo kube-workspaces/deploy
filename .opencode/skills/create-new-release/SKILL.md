@@ -52,9 +52,20 @@ Run:
 make show-ci-status
 ```
 
-- A repo with `STATUS=failed` and `ACTION=yes` — stop. Ask the user, and do not
-  proceed until the failure is fixed. A release cut over red CI bakes the
-  failure in.
+- A repo with `STATUS=failed` and `ACTION=yes` — **investigate, then stop and
+  ask**. Do not proceed past the gate until the user resolves it:
+  1. Identify the failing workflow and run (`gh run list -R <org>/<repo>`
+     newest first) and pull the failure reason from its log
+     (`gh run view <run-id> --log-failed`).
+  2. If the failure looks transient — e.g. the workflow in question is red on a
+     tip commit while the rest of that commit's workflows are green — offer a
+     re-run (`gh run rerun <run-id>`) and let the user approve it before
+     diagnosing further.
+  3. Otherwise present the diagnosis and the shape of a proposed fix to the
+     user. You may help implement the fix with approval, but do not fix across
+     repos and "move on" unprompted, and do not land changes to another repo
+     without its own PR convention being followed.
+  A release cut over red CI bakes the failure in.
 - `ACTION=wait` (in progress) — poll `gh run list -R <org>/<repo>` until it
   resolves before continuing.
 - Treat `desktop-client` `Build` as the critical check: its release is tag
