@@ -16,8 +16,12 @@
 # PR and would otherwise produce an empty "What's Changed" section.
 #
 # Usage: scripts/release-notes.sh [--repo NAME] [--from TAG] [--to REF]
-#                                 [--version VERSION]
+#                                 [--version VERSION] [--skip-upgrade]
 # Output: markdown on stdout.
+#
+# --skip-upgrade omits the "Upgrading" section. The desktop client is a
+# standalone binary, not a chart-deployed component, so its workflow composes
+# the download/install text itself and reuses only the preamble and commit list.
 
 set -uo pipefail
 
@@ -27,6 +31,7 @@ TO="HEAD"
 # The version being released. Defaults to TO, which is right when TO is a tag but
 # renders "HEAD" in the upgrade snippet when generating notes before tagging.
 VERSION_IN=""
+SKIP_UPGRADE=false
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -34,6 +39,7 @@ while [ $# -gt 0 ]; do
     --from) FROM="$2"; shift 2 ;;
     --to)   TO="$2"; shift 2 ;;
     --version) VERSION_IN="$2"; shift 2 ;;
+    --skip-upgrade) SKIP_UPGRADE=true; shift ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -103,7 +109,20 @@ EOF
 fi
 
 if [ "$n_functional" -eq 0 ] && [ "$n_unclassified" -eq 0 ]; then
-  cat <<EOF
+  if [ "$REPO_NAME" = "desktop-client" ]; then
+    cat <<EOF
+> [!NOTE]
+> **No functional changes in this release.**
+>
+> The ${n_total} commit(s) since \`${FROM}\` are CI, tooling and documentation
+> only. The desktop client is rebuilt for its own version line, but its
+> behaviour is unchanged.
+>
+> Upgrading is safe and changes no behaviour.
+
+EOF
+  else
+    cat <<EOF
 > [!NOTE]
 > **No functional changes in this release.**
 >
@@ -115,6 +134,7 @@ if [ "$n_functional" -eq 0 ] && [ "$n_unclassified" -eq 0 ]; then
 > Upgrading is safe and changes no behaviour.
 
 EOF
+  fi
 else
   echo "## Summary"
   echo
@@ -145,9 +165,12 @@ fi
 
 VERSION="${VERSION_IN:-${TO#refs/tags/}}"
 VERSION="${VERSION#refs/tags/}"
-case "$REPO_NAME" in
-  deploy)
-    cat <<EOF
+if [ "$SKIP_UPGRADE" = true ]; then
+  :
+else
+  case "$REPO_NAME" in
+    deploy)
+      cat <<EOF
 ## Upgrading
 
 \`\`\`sh
@@ -164,9 +187,18 @@ kubectl apply --server-side -k https://github.com/kube-workspaces/deploy/kustomi
 \`\`\`
 
 EOF
-    ;;
-  *)
-    cat <<EOF
+      ;;
+    desktop-client)
+      cat <<EOF
+## Upgrading
+
+Download the new archives from the
+[${VERSION} release](https://github.com/kube-workspaces/desktop-client/releases/tag/${VERSION}).
+
+EOF
+      ;;
+    *)
+      cat <<EOF
 ## Upgrading
 
 This component is deployed as part of the platform:
@@ -178,8 +210,9 @@ helm upgrade kube-workspaces \\
 \`\`\`
 
 EOF
-    ;;
-esac
+      ;;
+  esac
+fi
 
 # ---------------------------------------------------------------------------
 # Categorised commit list
