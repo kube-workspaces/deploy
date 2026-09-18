@@ -3,7 +3,8 @@
 kube-workspaces is five repositories released together. The Helm chart's
 `appVersion` pins all four component images to a single number, so they share a
 version: one platform version is materially easier to support than four drifting
-ones.
+ones. The desktop client is released alongside them, on its own version line (see
+"Order matters").
 
 ## Order matters
 
@@ -11,11 +12,21 @@ Release the **four components first**, then `deploy`. The chart's `appVersion`
 names images that must already exist, and the release workflow refuses to proceed
 otherwise.
 
+The desktop client is released **first**, before the components. It is
+standalone: it is not a Docker image, is not pinned by the chart, and versions
+itself (its `vX.Y.Z` line is unrelated to the platform's), so it has no ordering
+dependency on the rest. It goes early so the newest client is on the downloads
+page by the time a platform release lands — the client consumes platform
+features via the proxy, and we do not want a window where the published client
+cannot talk to a just-released platform.
+
 ```
 controller ─┐
 api        ─┤
 proxy      ─┼─> deploy (chart + appVersion)
 frontend   ─┘
+
+desktop-client ──> standalone binaries (not in the chart)
 ```
 
 ## Procedure
@@ -43,9 +54,31 @@ scripts/org-project-recent-actions-status.sh --runs 25
 ```
 
 Address the failing repos before proceeding. The script exits non-zero when any
-repo needs action.
+repo needs action. This matters for the desktop client in particular (step 1):
+its release is tag-driven, so a red `Build` run at the tag's commit neither
+blocks the tag nor gets re-run — it ships broken binaries.
 
-### 1. Component repositories
+### 1. Desktop client
+
+`desktop-client` does **not** use the component `release.yaml` workflow and is
+released on its own version line, independent of the platform version:
+
+```sh
+# in kube-workspaces/desktop-client
+git tag -a vX.Y.Z -m "vX.Y.Z"
+git push origin vX.Y.Z
+```
+
+Pushing the tag triggers `build.yml`, which cross-builds the per-platform
+archives, composes the release notes (download links, install steps, an unsigned
+warning) and publishes the GitHub Release — binaries plus `SHA256SUMS`. There is
+no dry-run preview; review the published release on the releases page and fix
+anything wrong in a follow-up patch release on the same line.
+
+The client must be green first. `make show-ci-status` flags it `failed` if the
+newest commit's runs (notably `Build`) are not passing.
+
+### 2. Component repositories
 
 For each of `controller`, `api`, `proxy`, `frontend`:
 
@@ -60,7 +93,7 @@ Review the generated notes in the run summary, then re-run with
 
 Wait for those builds to finish before moving on.
 
-### 2. Bump the chart
+### 3. Bump the chart
 
 In `deploy`, set both fields in `helm/kube-workspaces/Chart.yaml`:
 
@@ -92,7 +125,7 @@ make test-upgrade   # installs the published chart, upgrades to local, rolls bac
 Merging to `main` publishes the chart to GHCR. The publish workflow refuses to
 overwrite an existing version.
 
-### 3. Release `deploy`
+### 4. Release `deploy`
 
 ```sh
 gh workflow run release.yaml --repo kube-workspaces/deploy \
@@ -107,10 +140,12 @@ The workflow checks, before doing anything irreversible, that:
 
 Re-run with `dry_run=false` to tag and publish.
 
-### 4. Update the website
+### 5. Update the website
 
 Bump the version badge in
-[kube-workspaces.github.io](https://github.com/kube-workspaces/kube-workspaces.github.io).
+[kube-workspaces.github.io](https://github.com/kube-workspaces/kube-workspaces.github.io)
+and, if the desktop client moved (step 1), point its download link at the new
+release.
 
 ## Release notes
 
@@ -121,8 +156,8 @@ whole body:
    what the reader needs to know.
 2. **Upgrade instructions** tailored to the repo.
 3. **A categorised "What's Changed" list**, grouped per the headings in
-   `.github/release.yml` — identical in all five repos, and enforced by
-   `scripts/check-release-config.sh`.
+   `.github/release.yml` — identical across every kube-workspaces repo that
+   publishes releases, and enforced by `scripts/check-release-config.sh`.
 
 The commit list is built from commit subjects rather than left to GitHub's
 `--generate-notes`, which groups commits **by pull request** and keys categories

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Verify .github/release.yml is identical across the five kube-workspaces
+# Verify .github/release.yml is identical across the kube-workspaces
 # repositories.
 #
 # The release-notes categories only produce a consistent reading experience if
@@ -27,7 +27,7 @@ ref_sum=$(md5sum < "$REFERENCE" | cut -d' ' -f1)
 checked=0
 drifted=""
 
-for r in controller api proxy frontend; do
+for r in controller api proxy frontend desktop-client; do
   f="${SIBLINGS}/${r}/.github/release.yml"
   if [ ! -f "$f" ]; then
     continue
