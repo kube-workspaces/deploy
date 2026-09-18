@@ -5,14 +5,21 @@ title: Tier 1 transport pilot
 # Tier 1 transport pilot and rollback
 
 Tier 1 uses the guest's Selkies H.264/Opus WebSocket through the workspace
-proxy. The desktop client's normal connection still uses Tier 0 (VNC).
-Native decoding and SDL playback are available through the **diagnostic**
-`selkies-probe --decode` / `--present` commands in desktop-client source.
-Automatic GUI selection and cross-service ownership are not enabled yet.
+proxy. The desktop client automatically selects it for a workspace advertising
+`remoteDesktop.protocol: selkies`, with sticky Tier 0 (VNC) fallback when the
+agent/decoder is unavailable. Native diagnostics remain available through
+`selkies-probe --decode` / `--present`.
+
+The API/proxy enforce cross-replica ownership with Kubernetes Leases. Current
+desktop source also supports two reconnect attempts within ten seconds after
+a live drop, preserving the window/last frame, clearing queued audio/input,
+and recreating decoders. Startup has a five-second dial-to-decoded-frame
+budget. HTTP 401/403/409 and agent refusal do not fall back around authorization
+or ownership. Real deployment/native-platform acceptance remains scheduled work.
 
 ## Native runtime prerequisites
 
-The diagnostic is built with `CGO_ENABLED=0`. At runtime it loads FFmpeg
+The graphical client and diagnostic are built with `CGO_ENABLED=0`. At runtime they load FFmpeg
 **libavcodec 59 + libavutil 57** (FFmpeg 5.1 ABI) and libopus. Other FFmpeg
 major versions are rejected; renaming a newer library does not make it ABI
 compatible. Decoder library filenames are:
@@ -33,14 +40,26 @@ Only YUV420P software H.264 is supported in this increment, up to 4096×4096;
 limited/full-range BT.601 and BT.709 are converted to RGBA. Audio output is
 48 kHz stereo signed 16-bit PCM. Presentation retains the latest decoded frame
 and at most 200 ms of queued PCM. This bounds queues but does not establish
-timestamp-based A/V synchronization or physical-display latency.
+timestamp-based A/V synchronization or physical-display latency. The pinned
+WebSocket audio/video headers have no shared presentation timestamps: playback
+uses ordered arrival and the output sample clock, with latest-frame video and
+bounded PCM rather than a fabricated timestamp synchronizer. On a reconnect,
+queued PCM and the output device queue are reset before new-generation playback.
+
+Interactive capture requests 30 fps normally and at most 5 fps after one
+second without decoded-image changes or user input. `_arg_fps` is the pinned
+agent's supported rate-control verb; motion/input restores active cadence on
+the next 100 ms control tick. This reduces static CBR capture work without
+using RFB's lossless-refresh algorithm on H.264. Physical quality/bandwidth
+benefits must still be measured during acceptance.
 
 ## Run a diagnostic pilot
 
 Use a dedicated, unoccupied VM with the pinned Selkies 2.0.0rc0 agent. The
 diagnostic changes capture settings and resolution. Its direct/proxy socket
-does **not** establish cross-tier ownership. Keep browser and native VNC
-viewers disconnected during this experiment.
+uses the proxy's ownership claim when routed through the platform. A direct
+agent connection bypasses that ownership boundary; use direct diagnostics only
+on an isolated pilot guest.
 
 From the desktop-client repository, with the session credential already in
 `KW_SESSION`:
@@ -70,18 +89,18 @@ therefore does not constitute decoder runtime validation.
 
 ## Production enablement gates
 
-Before enabling automatic selection, require all of the following evidence:
+Before production rollout, require all of the following evidence:
 
-1. A shared cross-replica display owner, with a proxy→API claim made before
-   every interactive socket is upgraded. The API's process-local registry is
-   insufficient for multiple replicas. `/tier1/claim` currently returns 501
-   rather than acknowledging an ownership claim that it cannot enforce.
+1. Deploy the implemented shared cross-replica display owner, with a proxy→API
+   claim before every interactive socket upgrade (`DISPLAY_API_URL` must be
+   configured). `/tier1/claim`, renewal/release, status and takeover use Leases;
+   the process-local registry is only the same-replica fast path.
 2. Revocation fences old input before a successor is admitted, including API
    restart, network partition, delayed control messages, stale claims and
    simultaneous VNC/Tier 1 connects. A local callback cannot cross a service
    boundary; closing a control socket alone is not a distributed fencing proof.
 3. Guest NetworkPolicy or scoped guest authentication prevents direct pod/Service
-   access from bypassing proxy authorization.
+   access from bypassing proxy authorization (pilot example below).
 4. GUI input, clipboard, resize, bounded reconnect and Tier 0 fallback pass
    together. Access denial and ownership conflict retain their error/consent
    flow instead of falling back around the denial.
@@ -91,6 +110,24 @@ Before enabling automatic selection, require all of the following evidence:
    static-text/full-motion quality have accepted results.
 
 ## Deployment order and persistent disks
+
+### Pilot agent isolation
+
+[`tier1-agent-networkpolicy.yaml`](./tier1-agent-networkpolicy.yaml) is a
+per-workspace example for the default agent port 8080. Set its workspace
+namespace/name and the trusted proxy namespace before applying. Its selectors
+match the controller's `workspace-name` launcher-pod label and both deployment
+paths' proxy component label. Namespace and pod selectors are ANDed so a
+tenant cannot bypass isolation merely by labelling its own pod as a proxy.
+
+The policy permits agent access only from that proxy and retains TCP/22 for
+SSH. Other inbound services and any CNI-specific KubeVirt migration rules need
+explicit site rules; this example is deliberately not installed globally.
+NetworkPolicies are additive, so another broad ingress allow can defeat it.
+Verify proxy access succeeds and an unrelated tenant pod's direct pod-IP and
+Service-port access fails. Keep the pod port (8080), not Service port 80, in
+the policy. A CNI that does not enforce NetworkPolicy cannot establish this
+boundary. Host/root administrators remain outside this tenant isolation model.
 
 Land the API/proxy ownership implementation and isolation configuration first,
 then the native selector, then coordinate any image capability advert and
@@ -117,12 +154,12 @@ signing/notarization work when distribution is implemented.
 
 ## Rollback
 
-For today's diagnostic, close its window/process and reconnect using the normal
-VNC client. A native-library initialization failure closes the probe socket;
-the normal GUI remains on VNC. Do not uninstall guest display/audio components
+For a diagnostic, close its window/process and reconnect using VNC. A
+native-library initialization failure closes the socket and the graphical
+client falls back to VNC. Do not uninstall guest display/audio components
 or discard its persistent disk to recover the console.
 
-For future automatic selection, withdraw the image advert for subsequent
+To roll back automatic selection, withdraw the image advert for subsequent
 connections, explicitly revoke active Tier 1 owners, and reconnect through the
 normal VNC consent flow. Verify capability caches have expired. Removing an
 advert does not close an existing socket. Revert primary-port changes only

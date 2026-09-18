@@ -1,0 +1,31 @@
+# Pilot example: replace namespace and workspace-name before applying.
+# Requires a NetworkPolicy-enforcing CNI. Rules are additive: remove any
+# existing allow-all rule that exposes this workspace's agent port.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: desktop-0-tier1-agent
+  namespace: example
+spec:
+  podSelector:
+    matchLabels:
+      workspace-name: desktop-0
+  policyTypes:
+    - Ingress
+  ingress:
+    # Both selectors belong to the same peer (AND), not separate peers (OR).
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-workspaces-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: proxy
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Retain password/key-authenticated SSH recovery. Restrict its sources
+    # further according to the site's existing SSH access policy.
+    - ports:
+        - protocol: TCP
+          port: 22
