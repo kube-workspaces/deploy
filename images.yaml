@@ -240,6 +240,11 @@ spec:
     - curl
     - ca-certificates
     - dbus-x11
+    # The containerdisk ships the Debian "cloud" kernel, which intentionally
+    # omits virtio_gpu — no /dev/dri, no graphical logind seat, no Xorg. The
+    # generic kernel is installed here and made the only one (removed below),
+    # then the guest reboots into it (power_state).
+    - linux-image-amd64
     write_files:
     # Autologin the default user straight into an XFCE session.
     - path: /etc/lightdm/lightdm.conf.d/50-autologin.conf
@@ -373,8 +378,18 @@ spec:
     - printf 'ca42bc605fcfd0e396886a88a3d2844ef976e0cf43ff8d97e90432c3a340c0b9  /tmp/selkies.deb' | sha256sum --check
     - apt-get install -y --no-install-recommends /tmp/selkies.deb
     - rm /tmp/selkies.deb
+    # The desktop task pulls plymouth mid-install, which races the generic
+    # kernel's initramfs regeneration (postinst fails, dpkg left unconfigured).
+    # Finish pending configuration before pruning the cloud kernel.
+    - dpkg --configure -a
+    # Drop the cloud kernel so the generic one is the only GRUB entry; its
+    # removal triggers update-grub, and power_state then reboots.
+    - DEBIAN_FRONTEND=noninteractive apt-get -y purge 'linux-image-*-cloud-amd64' 'linux-headers-*-cloud-amd64' 'linux-image-cloud-amd64' || true
     - systemctl daemon-reload
     - systemctl enable --now kw-display-resize.service selkies.service
+    power_state:
+      mode: reboot
+      delay: now
   persistentRootDisk: true
   persistentRootDiskSize: 20Gi
   memoryLimit: 4Gi
@@ -702,6 +717,38 @@ spec:
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
 metadata:
+  name: kasm
+  annotations:
+    catalog.kubeworkspaces.io/example: "true"
+spec:
+  defaultEnv:
+  - name: KASM_PORT
+    value: '3000'
+  defaultPath: /
+  defaultPort: 3000
+  description: Full Kasm Workspaces platform with Docker-in-Docker. Requires privileged
+    mode. Access the setup wizard first, then the main interface.
+  category: Desktop
+  tags:
+  - vnc
+  - linux
+  displayName: Kasm Workspaces
+  homepageURL: https://kasmweb.com
+  icon: https://cdn.simpleicons.org/linuxserver/DA3B8A
+  image: linuxserver/kasm:1.19.0
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/kasm
+  privileged: true
+  defaultSharedMemory: true
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    scheme: https
+    tlsSkipVerify: true
+  sourceURL: https://github.com/linuxserver/docker-kasm
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
   name: kasmweb-chrome
   annotations:
     catalog.kubeworkspaces.io/example: "true"
@@ -766,38 +813,6 @@ spec:
   sourceURL: https://github.com/kasmtech
   defaultUser: kasm_user
   defaultHomedir: /home/kasm_user
----
-apiVersion: kubeworkspaces.io/v1alpha1
-kind: Image
-metadata:
-  name: kasm
-  annotations:
-    catalog.kubeworkspaces.io/example: "true"
-spec:
-  defaultEnv:
-  - name: KASM_PORT
-    value: '3000'
-  defaultPath: /
-  defaultPort: 3000
-  description: Full Kasm Workspaces platform with Docker-in-Docker. Requires privileged
-    mode. Access the setup wizard first, then the main interface.
-  category: Desktop
-  tags:
-  - vnc
-  - linux
-  displayName: Kasm Workspaces
-  homepageURL: https://kasmweb.com
-  icon: https://cdn.simpleicons.org/linuxserver/DA3B8A
-  image: linuxserver/kasm:1.19.0
-  imageHomepageURL: https://hub.docker.com/r/linuxserver/kasm
-  privileged: true
-  defaultSharedMemory: true
-  proxyConfig:
-    needsNoopSW: true
-    rewriteHostAbsolutePaths: true
-    scheme: https
-    tlsSkipVerify: true
-  sourceURL: https://github.com/linuxserver/docker-kasm
 ---
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image

@@ -211,7 +211,14 @@ spec:
   - desktop
   - gui
   - xfce
-  defaultPort: 22
+  defaultPort: 8080
+  additionalPorts:
+  - name: ssh
+    port: 22
+  remoteDesktop:
+    protocol: selkies
+    port: 8080
+    path: /
   homepageURL: https://www.debian.org
   image: quay.io/containerdisks/debian:13
   imageHomepageURL: https://quay.io/repository/containerdisks/debian
@@ -230,6 +237,14 @@ spec:
     packages:
     - task-xfce-desktop
     - qemu-guest-agent
+    - curl
+    - ca-certificates
+    - dbus-x11
+    # The containerdisk ships the Debian "cloud" kernel, which intentionally
+    # omits virtio_gpu — no /dev/dri, no graphical logind seat, no Xorg. The
+    # generic kernel is installed here and made the only one (removed below),
+    # then the guest reboots into it (power_state).
+    - linux-image-amd64
     write_files:
     # Autologin the default user straight into an XFCE session.
     - path: /etc/lightdm/lightdm.conf.d/50-autologin.conf
@@ -323,10 +338,58 @@ spec:
 
         [Install]
         WantedBy=multi-user.target
+    - path: /etc/systemd/system/selkies.service
+      permissions: "0644"
+      content: |
+        [Unit]
+        Description=Selkies Remote Desktop Agent
+        After=display-manager.service network-online.target
+        Wants=network-online.target
+
+        [Service]
+        Type=simple
+        User=debian
+        Group=debian
+        WorkingDirectory=/home/debian
+        # SELKIES_BASIC_AUTH_PASSWORD is not set: proxy handles auth.
+        # SELKIES_ENABLE_BASIC_AUTH=false disables the built-in login.
+        # SELKIES_ADDR=0.0.0.0 is safe because it is only reachable via
+        # the cluster network / masquerade.
+        Environment=HOME=/home/debian
+        Environment=XDG_RUNTIME_DIR=/run/user/1000
+        Environment=DISPLAY=:0
+        Environment=SELKIES_ADDR=0.0.0.0
+        Environment=SELKIES_PORT=8080
+        Environment=SELKIES_MODE=websockets
+        Environment=SELKIES_ENCODER=h264enc
+        Environment=SELKIES_USE_CPU=true
+        Environment=SELKIES_ENABLE_BASIC_AUTH=false
+        Environment=SELKIES_GAMEPAD_ENABLED=false
+        Environment=SELKIES_ENABLE_RESIZE=false
+        ExecStart=/usr/bin/selkies
+        Restart=always
+        RestartSec=5
+
+        [Install]
+        WantedBy=multi-user.target
     runcmd:
     - systemctl set-default graphical.target
+    - curl --fail --location --retry 3 -o /tmp/selkies.deb https://github.com/selkies-project/selkies/releases/download/2.0.0rc0/selkies-2.0.0rc0-trixie-amd64.deb
+    - printf 'ca42bc605fcfd0e396886a88a3d2844ef976e0cf43ff8d97e90432c3a340c0b9  /tmp/selkies.deb' | sha256sum --check
+    - apt-get install -y --no-install-recommends /tmp/selkies.deb
+    - rm /tmp/selkies.deb
+    # The desktop task pulls plymouth mid-install, which races the generic
+    # kernel's initramfs regeneration (postinst fails, dpkg left unconfigured).
+    # Finish pending configuration before pruning the cloud kernel.
+    - dpkg --configure -a
+    # Drop the cloud kernel so the generic one is the only GRUB entry; its
+    # removal triggers update-grub, and power_state then reboots.
+    - DEBIAN_FRONTEND=noninteractive apt-get -y purge 'linux-image-*-cloud-amd64' 'linux-headers-*-cloud-amd64' 'linux-image-cloud-amd64' || true
     - systemctl daemon-reload
-    - systemctl enable --now kw-display-resize.service
+    - systemctl enable --now kw-display-resize.service selkies.service
+    power_state:
+      mode: reboot
+      delay: now
   persistentRootDisk: true
   persistentRootDiskSize: 20Gi
   memoryLimit: 4Gi
