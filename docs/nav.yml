@@ -13,6 +13,7 @@
     - proxy
     - vm
     - tier1
+    - shared-display
     - api
 - title: Project Operations
   items:
