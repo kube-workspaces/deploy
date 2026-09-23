@@ -75,13 +75,17 @@ paths:
                                       proxy_config:
                                         custom_request_headers:
                                             x-tenant: workspaces
-                                        inject_base_tag: true
+                                        inject_base_tag: false
                                         needs_noop_sw: true
-                                        preserve_path_prefix: false
+                                        preserve_path_prefix: true
                                         rewrite_host_absolute_paths: true
                                         tls_insecure: false
                                         websocket_paths:
                                             - /websockify
+                                      remote_desktop:
+                                        path: /
+                                        port: 8080
+                                        protocol: selkies
                                       source_url: https://github.com/coder/code-server
                                       tags:
                                         - development
@@ -124,13 +128,123 @@ paths:
                                       proxy_config:
                                         custom_request_headers:
                                             x-tenant: workspaces
-                                        inject_base_tag: true
+                                        inject_base_tag: false
                                         needs_noop_sw: true
-                                        preserve_path_prefix: false
+                                        preserve_path_prefix: true
                                         rewrite_host_absolute_paths: true
                                         tls_insecure: false
                                         websocket_paths:
                                             - /websockify
+                                      remote_desktop:
+                                        path: /
+                                        port: 8080
+                                        protocol: selkies
+                                      source_url: https://github.com/coder/code-server
+                                      tags:
+                                        - development
+                                        - vscode
+                                      workspace_types:
+                                        - container
+                                    - category: IDE
+                                      cr_name: code-server
+                                      default_args:
+                                        - --bind-addr
+                                        - 0.0.0.0:8080
+                                      default_cloud_init: false
+                                      default_credentials:
+                                        password: changeme
+                                        username: coder
+                                      default_env:
+                                        - name: PASSWORD
+                                          value: changeme
+                                      default_homedir: /home/coder
+                                      default_password: changeme
+                                      default_path: /
+                                      default_port: 8080
+                                      default_shared_memory: false
+                                      default_shell: /bin/bash
+                                      default_uid: 1000
+                                      default_user: coder
+                                      default_user_data: ""
+                                      description: Code editor in the browser
+                                      homepage_url: https://github.com/coder/code-server
+                                      icon: code
+                                      image: codercom/code-server:latest
+                                      image_homepage_url: https://hub.docker.com/r/codercom/code-server
+                                      links:
+                                        - title: GitHub
+                                          url: https://github.com/coder/code-server
+                                        - title: Docker Hub
+                                          url: https://hub.docker.com/r/codercom/code-server
+                                      name: Code Server (VS Code)
+                                      privileged: false
+                                      proxy_config:
+                                        custom_request_headers:
+                                            x-tenant: workspaces
+                                        inject_base_tag: false
+                                        needs_noop_sw: true
+                                        preserve_path_prefix: true
+                                        rewrite_host_absolute_paths: true
+                                        tls_insecure: false
+                                        websocket_paths:
+                                            - /websockify
+                                      remote_desktop:
+                                        path: /
+                                        port: 8080
+                                        protocol: selkies
+                                      source_url: https://github.com/coder/code-server
+                                      tags:
+                                        - development
+                                        - vscode
+                                      workspace_types:
+                                        - container
+                                    - category: IDE
+                                      cr_name: code-server
+                                      default_args:
+                                        - --bind-addr
+                                        - 0.0.0.0:8080
+                                      default_cloud_init: false
+                                      default_credentials:
+                                        password: changeme
+                                        username: coder
+                                      default_env:
+                                        - name: PASSWORD
+                                          value: changeme
+                                      default_homedir: /home/coder
+                                      default_password: changeme
+                                      default_path: /
+                                      default_port: 8080
+                                      default_shared_memory: false
+                                      default_shell: /bin/bash
+                                      default_uid: 1000
+                                      default_user: coder
+                                      default_user_data: ""
+                                      description: Code editor in the browser
+                                      homepage_url: https://github.com/coder/code-server
+                                      icon: code
+                                      image: codercom/code-server:latest
+                                      image_homepage_url: https://hub.docker.com/r/codercom/code-server
+                                      links:
+                                        - title: GitHub
+                                          url: https://github.com/coder/code-server
+                                        - title: Docker Hub
+                                          url: https://hub.docker.com/r/codercom/code-server
+                                      name: Code Server (VS Code)
+                                      privileged: false
+                                      proxy_config:
+                                        custom_request_headers:
+                                            x-tenant: workspaces
+                                        inject_base_tag: false
+                                        needs_noop_sw: true
+                                        preserve_path_prefix: true
+                                        rewrite_host_absolute_paths: true
+                                        tls_insecure: false
+                                        websocket_paths:
+                                            - /websockify
+                                      remote_desktop:
+                                        path: /
+                                        port: 8080
+                                        protocol: selkies
                                       source_url: https://github.com/coder/code-server
                                       tags:
                                         - development
@@ -174,13 +288,17 @@ paths:
                                   proxy_config:
                                     custom_request_headers:
                                         x-tenant: workspaces
-                                    inject_base_tag: true
+                                    inject_base_tag: false
                                     needs_noop_sw: true
-                                    preserve_path_prefix: false
+                                    preserve_path_prefix: true
                                     rewrite_host_absolute_paths: true
                                     tls_insecure: false
                                     websocket_paths:
                                         - /websockify
+                                  remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
                                   source_url: https://github.com/coder/code-server
                                   tags:
                                     - development
@@ -223,13 +341,17 @@ paths:
                                   proxy_config:
                                     custom_request_headers:
                                         x-tenant: workspaces
-                                    inject_base_tag: true
+                                    inject_base_tag: false
                                     needs_noop_sw: true
-                                    preserve_path_prefix: false
+                                    preserve_path_prefix: true
                                     rewrite_host_absolute_paths: true
                                     tls_insecure: false
                                     websocket_paths:
                                         - /websockify
+                                  remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
                                   source_url: https://github.com/coder/code-server
                                   tags:
                                     - development
@@ -272,13 +394,17 @@ paths:
                                   proxy_config:
                                     custom_request_headers:
                                         x-tenant: workspaces
-                                    inject_base_tag: true
+                                    inject_base_tag: false
                                     needs_noop_sw: true
-                                    preserve_path_prefix: false
+                                    preserve_path_prefix: true
                                     rewrite_host_absolute_paths: true
                                     tls_insecure: false
                                     websocket_paths:
                                         - /websockify
+                                  remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
                                   source_url: https://github.com/coder/code-server
                                   tags:
                                     - development
@@ -333,13 +459,17 @@ paths:
                             proxy_config:
                                 custom_request_headers:
                                     x-tenant: workspaces
-                                inject_base_tag: true
-                                needs_noop_sw: true
-                                preserve_path_prefix: true
-                                rewrite_host_absolute_paths: false
+                                inject_base_tag: false
+                                needs_noop_sw: false
+                                preserve_path_prefix: false
+                                rewrite_host_absolute_paths: true
                                 tls_insecure: false
                                 websocket_paths:
                                     - /websockify
+                            remote_desktop:
+                                path: /
+                                port: 8080
+                                protocol: selkies
                             source_url: https://github.com/coder/code-server
                             tags:
                                 - development
@@ -392,11 +522,15 @@ paths:
                                         x-tenant: workspaces
                                     inject_base_tag: false
                                     needs_noop_sw: false
-                                    preserve_path_prefix: false
+                                    preserve_path_prefix: true
                                     rewrite_host_absolute_paths: true
                                     tls_insecure: false
                                     websocket_paths:
                                         - /websockify
+                                remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
                                 source_url: https://github.com/coder/code-server
                                 tags:
                                     - development
@@ -442,7 +576,13 @@ paths:
                                     - created_at: "2025-01-02T15:04:05Z"
                                       name: workspaces
                                       phase: Active
+                                    - created_at: "2025-01-02T15:04:05Z"
+                                      name: workspaces
+                                      phase: Active
                             example:
+                                - created_at: "2025-01-02T15:04:05Z"
+                                  name: workspaces
+                                  phase: Active
                                 - created_at: "2025-01-02T15:04:05Z"
                                   name: workspaces
                                   phase: Active
@@ -476,12 +616,6 @@ paths:
                                 items:
                                     $ref: '#/components/schemas/Sshkey'
                                 example:
-                                    - created_at: "2025-01-02T15:04:05Z"
-                                      fingerprint: SHA256:aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789
-                                      key_name: Laptop 2025
-                                      name: laptop-2025
-                                      namespace: chris-at-fordham-id-au
-                                      public_key: ssh-rsa AAAAB3Nza... user@example.com
                                     - created_at: "2025-01-02T15:04:05Z"
                                       fingerprint: SHA256:aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789
                                       key_name: Laptop 2025
@@ -696,7 +830,27 @@ paths:
                                       phase: Bound
                                       size: 10Gi
                                       storage_class: standard
+                                    - access_mode: ReadWriteOnce
+                                      created_at: "2025-01-02T15:04:05Z"
+                                      labels:
+                                        managed-by: kube-workspaces
+                                        workspace: my-workspace
+                                      name: my-workspace-data
+                                      namespace: workspaces
+                                      phase: Bound
+                                      size: 10Gi
+                                      storage_class: standard
                             example:
+                                - access_mode: ReadWriteOnce
+                                  created_at: "2025-01-02T15:04:05Z"
+                                  labels:
+                                    managed-by: kube-workspaces
+                                    workspace: my-workspace
+                                  name: my-workspace-data
+                                  namespace: workspaces
+                                  phase: Bound
+                                  size: 10Gi
+                                  storage_class: standard
                                 - access_mode: ReadWriteOnce
                                   created_at: "2025-01-02T15:04:05Z"
                                   labels:
@@ -908,6 +1062,10 @@ paths:
                                       namespace: workspaces
                                       port: 8080
                                       ready_replicas: 1
+                                      remote_desktop:
+                                        path: /
+                                        port: 8080
+                                        protocol: selkies
                                       stopped: false
                                       type: container
                                       volume_mounts:
@@ -934,6 +1092,10 @@ paths:
                                       namespace: workspaces
                                       port: 8080
                                       ready_replicas: 1
+                                      remote_desktop:
+                                        path: /
+                                        port: 8080
+                                        protocol: selkies
                                       stopped: false
                                       type: container
                                       volume_mounts:
@@ -960,6 +1122,40 @@ paths:
                                       namespace: workspaces
                                       port: 8080
                                       ready_replicas: 1
+                                      remote_desktop:
+                                        path: /
+                                        port: 8080
+                                        protocol: selkies
+                                      stopped: false
+                                      type: container
+                                      volume_mounts:
+                                        - mount_path: /home/coder
+                                          name: my-workspace-data
+                                    - conditions:
+                                        - last_transition_time: "2025-01-02T15:04:05Z"
+                                          message: StatefulSet my-workspace is available
+                                          reason: MinimumReplicasAvailable
+                                          status: "True"
+                                          type: Ready
+                                      container_state:
+                                        message: Container started successfully
+                                        reason: Started
+                                        started_at: "2025-01-02T15:04:05Z"
+                                        state: running
+                                      cpu_limit: "1"
+                                      cpu_request: 500m
+                                      created_at: "2025-01-02T15:04:05Z"
+                                      image: codercom/code-server:latest
+                                      memory_limit: 2Gi
+                                      memory_request: 512Mi
+                                      name: my-workspace
+                                      namespace: workspaces
+                                      port: 8080
+                                      ready_replicas: 1
+                                      remote_desktop:
+                                        path: /
+                                        port: 8080
+                                        protocol: selkies
                                       stopped: false
                                       type: container
                                       volume_mounts:
@@ -987,6 +1183,10 @@ paths:
                                   namespace: workspaces
                                   port: 8080
                                   ready_replicas: 1
+                                  remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
                                   stopped: false
                                   type: container
                                   volume_mounts:
@@ -1013,6 +1213,10 @@ paths:
                                   namespace: workspaces
                                   port: 8080
                                   ready_replicas: 1
+                                  remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
                                   stopped: false
                                   type: container
                                   volume_mounts:
@@ -1039,6 +1243,40 @@ paths:
                                   namespace: workspaces
                                   port: 8080
                                   ready_replicas: 1
+                                  remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
+                                  stopped: false
+                                  type: container
+                                  volume_mounts:
+                                    - mount_path: /home/coder
+                                      name: my-workspace-data
+                                - conditions:
+                                    - last_transition_time: "2025-01-02T15:04:05Z"
+                                      message: StatefulSet my-workspace is available
+                                      reason: MinimumReplicasAvailable
+                                      status: "True"
+                                      type: Ready
+                                  container_state:
+                                    message: Container started successfully
+                                    reason: Started
+                                    started_at: "2025-01-02T15:04:05Z"
+                                    state: running
+                                  cpu_limit: "1"
+                                  cpu_request: 500m
+                                  created_at: "2025-01-02T15:04:05Z"
+                                  image: codercom/code-server:latest
+                                  memory_limit: 2Gi
+                                  memory_request: 512Mi
+                                  name: my-workspace
+                                  namespace: workspaces
+                                  port: 8080
+                                  ready_replicas: 1
+                                  remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
                                   stopped: false
                                   type: container
                                   volume_mounts:
@@ -1114,6 +1352,10 @@ paths:
                                 namespace: workspaces
                                 port: 8080
                                 ready_replicas: 1
+                                remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
                                 stopped: false
                                 type: container
                                 volume_mounts:
@@ -1228,6 +1470,10 @@ paths:
                                 namespace: workspaces
                                 port: 8080
                                 ready_replicas: 1
+                                remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
                                 stopped: false
                                 type: container
                                 volume_mounts:
@@ -1311,6 +1557,10 @@ paths:
                                 namespace: workspaces
                                 port: 8080
                                 ready_replicas: 1
+                                remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
                                 stopped: false
                                 type: container
                                 volume_mounts:
@@ -1340,6 +1590,608 @@ paths:
                                 type: string
                                 example: workspace "my-workspace-clone" already exists
                             example: workspace "my-workspace-clone" already exists
+    /v1/workspaces/{name}/display:
+        get:
+            tags:
+                - display
+            summary: capability display
+            description: Advertise whether a workspace participates in shared display sessions and with which limits
+            operationId: display#capability
+            parameters:
+                - name: namespace
+                  in: query
+                  description: Workspace namespace
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                  example: workspaces
+                - name: name
+                  in: path
+                  description: Workspace name
+                  required: true
+                  schema:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                  example: my-workspace
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DisplayCapability'
+                            example:
+                                controller_present: true
+                                enabled: false
+                                handshake_timeout_ms: 10000
+                                max_height: 2160
+                                max_participants: 8
+                                max_width: 4096
+                                participant_ttl_ms: 900000
+                                participants: 2
+                                protocol: 1
+                                transports:
+                                    - rfb
+                                    - tier1
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: authentication required
+                            example: authentication required
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: no access to workspace namespace
+                            example: no access to workspace namespace
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: workspace "my-workspace" not found
+                            example: workspace "my-workspace" not found
+    /v1/workspaces/{name}/display/control/acquire:
+        post:
+            tags:
+                - display
+            summary: acquire display
+            description: Acquire control of a workspace's shared display session, demoting the current controller to observer when force is set
+            operationId: display#acquire
+            parameters:
+                - name: namespace
+                  in: query
+                  description: Workspace namespace
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                  example: workspaces
+                - name: name
+                  in: path
+                  description: Workspace name
+                  required: true
+                  schema:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                  example: my-workspace
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DisplayControlPayload2'
+                        example:
+                            force: true
+                            participant_id: 97f8c4b7a2
+                            to: 3a2d5f8c7f
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DisplayControl'
+                            example:
+                                controller:
+                                    connected: false
+                                    id: 97f8c4b7a2
+                                    joined_at: "2026-09-19T15:04:05Z"
+                                    role: observer
+                                released: false
+                                was_held: true
+                "400":
+                    description: 'invalid: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: participant "97f8c4b7a2" is already the controller
+                            example: participant "97f8c4b7a2" is already the controller
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: authentication required
+                            example: authentication required
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: no access to workspace namespace
+                            example: no access to workspace namespace
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: display session for workspace "my-workspace" has no participant "97f8c4b7a2"
+                            example: display session for workspace "my-workspace" has no participant "97f8c4b7a2"
+                "409":
+                    description: 'conflict: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: display for workspace "my-workspace" is controlled by another participant
+                            example: display for workspace "my-workspace" is controlled by another participant
+    /v1/workspaces/{name}/display/control/release:
+        post:
+            tags:
+                - display
+            summary: release display
+            description: Release control of a workspace's shared display session, leaving observers attached
+            operationId: display#release
+            parameters:
+                - name: namespace
+                  in: query
+                  description: Workspace namespace
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                  example: workspaces
+                - name: name
+                  in: path
+                  description: Workspace name
+                  required: true
+                  schema:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                  example: my-workspace
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DisplayControlPayload3'
+                        example:
+                            force: true
+                            participant_id: 97f8c4b7a2
+                            to: 3a2d5f8c7f
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DisplayControl'
+                            example:
+                                controller:
+                                    connected: false
+                                    id: 97f8c4b7a2
+                                    joined_at: "2026-09-19T15:04:05Z"
+                                    role: observer
+                                released: false
+                                was_held: true
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: authentication required
+                            example: authentication required
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: no access to workspace namespace
+                            example: no access to workspace namespace
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: display session for workspace "my-workspace" has no participant "97f8c4b7a2"
+                            example: display session for workspace "my-workspace" has no participant "97f8c4b7a2"
+                "409":
+                    description: 'conflict: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: participant "97f8c4b7a2" is not the current controller
+                            example: participant "97f8c4b7a2" is not the current controller
+    /v1/workspaces/{name}/display/control/transfer:
+        post:
+            tags:
+                - display
+            summary: transfer display
+            description: Transfer control from the current controller to a named observer, keeping all observers attached
+            operationId: display#transfer
+            parameters:
+                - name: namespace
+                  in: query
+                  description: Workspace namespace
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                  example: workspaces
+                - name: name
+                  in: path
+                  description: Workspace name
+                  required: true
+                  schema:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                  example: my-workspace
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DisplayControlPayload4'
+                        example:
+                            force: true
+                            participant_id: 97f8c4b7a2
+                            to: 3a2d5f8c7f
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DisplayControl'
+                            example:
+                                controller:
+                                    connected: false
+                                    id: 97f8c4b7a2
+                                    joined_at: "2026-09-19T15:04:05Z"
+                                    role: observer
+                                released: false
+                                was_held: true
+                "400":
+                    description: 'invalid: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: transfer target must be an observer participant
+                            example: transfer target must be an observer participant
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: authentication required
+                            example: authentication required
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: no access to workspace namespace
+                            example: no access to workspace namespace
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: display session for workspace "my-workspace" has no participant "3a2d5f8c7f"
+                            example: display session for workspace "my-workspace" has no participant "3a2d5f8c7f"
+                "409":
+                    description: 'conflict: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: participant "97f8c4b7a2" is not the current controller
+                            example: participant "97f8c4b7a2" is not the current controller
+    /v1/workspaces/{name}/display/join:
+        post:
+            tags:
+                - display
+            summary: join display
+            description: Join a workspace's shared display session as an observer or, when free, as the controller
+            operationId: display#join
+            parameters:
+                - name: namespace
+                  in: query
+                  description: Workspace namespace
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                  example: workspaces
+                - name: name
+                  in: path
+                  description: Workspace name
+                  required: true
+                  schema:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                  example: my-workspace
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/JoinDisplayPayload2'
+                        example:
+                            role: observer
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DisplayJoin'
+                            example:
+                                capability:
+                                    controller_present: true
+                                    enabled: false
+                                    handshake_timeout_ms: 10000
+                                    max_height: 2160
+                                    max_participants: 8
+                                    max_width: 4096
+                                    participant_ttl_ms: 900000
+                                    participants: 2
+                                    protocol: 1
+                                    transports:
+                                        - rfb
+                                        - tier1
+                                participant:
+                                    connected: false
+                                    id: 97f8c4b7a2
+                                    joined_at: "2026-09-19T15:04:05Z"
+                                    role: observer
+                "400":
+                    description: 'invalid: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: 'cannot join as controller: display is occupied'
+                            example: 'cannot join as controller: display is occupied'
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: authentication required
+                            example: authentication required
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: no access to workspace namespace
+                            example: no access to workspace namespace
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: workspace "my-workspace" not found
+                            example: workspace "my-workspace" not found
+                "409":
+                    description: 'conflict: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: display for workspace "my-workspace" is controlled by another participant
+                            example: display for workspace "my-workspace" is controlled by another participant
+                "429":
+                    description: 'capacity: Too Many Requests response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: display session for workspace "my-workspace" is full (max 8 participants)
+                            example: display session for workspace "my-workspace" is full (max 8 participants)
+    /v1/workspaces/{name}/display/sessions/{participant_id}:
+        delete:
+            tags:
+                - display
+            summary: leave display
+            description: Leave a workspace's shared display session, releasing control when the departing participant held it
+            operationId: display#leave
+            parameters:
+                - name: namespace
+                  in: query
+                  description: Workspace namespace
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                  example: workspaces
+                - name: name
+                  in: path
+                  description: Workspace name
+                  required: true
+                  schema:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                  example: my-workspace
+                - name: participant_id
+                  in: path
+                  description: Participant identifier to remove
+                  required: true
+                  schema:
+                    type: string
+                    description: Participant identifier to remove
+                    example: 97f8c4b7a2
+                  example: 97f8c4b7a2
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/LeaveResponseBody'
+                            example:
+                                ok: true
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: authentication required
+                            example: authentication required
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: no access to workspace namespace
+                            example: no access to workspace namespace
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: display session for workspace "my-workspace" has no participant "97f8c4b7a2"
+                            example: display session for workspace "my-workspace" has no participant "97f8c4b7a2"
+    /v1/workspaces/{name}/display/status:
+        get:
+            tags:
+                - display
+            summary: status display
+            description: Report live membership and control state of a workspace's shared display session
+            operationId: display#status
+            parameters:
+                - name: namespace
+                  in: query
+                  description: Workspace namespace
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                  example: workspaces
+                - name: name
+                  in: path
+                  description: Workspace name
+                  required: true
+                  schema:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                  example: my-workspace
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DisplayStatus'
+                            example:
+                                controller:
+                                    connected: false
+                                    id: 97f8c4b7a2
+                                    joined_at: "2026-09-19T15:04:05Z"
+                                    role: observer
+                                enabled: false
+                                epoch: 8f2ac64d91
+                                observers:
+                                    - connected: false
+                                      id: 97f8c4b7a2
+                                      joined_at: "2026-09-19T15:04:05Z"
+                                      role: observer
+                                    - connected: false
+                                      id: 97f8c4b7a2
+                                      joined_at: "2026-09-19T15:04:05Z"
+                                      role: observer
+                                    - connected: false
+                                      id: 97f8c4b7a2
+                                      joined_at: "2026-09-19T15:04:05Z"
+                                      role: observer
+                                    - connected: false
+                                      id: 97f8c4b7a2
+                                      joined_at: "2026-09-19T15:04:05Z"
+                                      role: observer
+                                participants: 3
+                                protocol: 1
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: authentication required
+                            example: authentication required
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: no access to workspace namespace
+                            example: no access to workspace namespace
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: workspace "my-workspace" not found
+                            example: workspace "my-workspace" not found
     /v1/workspaces/{name}/reset:
         post:
             tags:
@@ -1396,6 +2248,10 @@ paths:
                                 namespace: workspaces
                                 port: 8080
                                 ready_replicas: 1
+                                remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
                                 stopped: false
                                 type: container
                                 volume_mounts:
@@ -1473,6 +2329,10 @@ paths:
                                 namespace: workspaces
                                 port: 8080
                                 ready_replicas: 1
+                                remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
                                 stopped: false
                                 type: container
                                 volume_mounts:
@@ -1542,6 +2402,10 @@ paths:
                                 namespace: workspaces
                                 port: 8080
                                 ready_replicas: 1
+                                remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
                                 stopped: false
                                 type: container
                                 volume_mounts:
@@ -1653,7 +2517,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Voluptatum iusto culpa at consequatur.
+                        example: Enim quo eveniet.
                     description: Default command-line args
                     example:
                         - --bind-addr
@@ -1751,6 +2615,8 @@ components:
                     example: false
                 proxy_config:
                     $ref: '#/components/schemas/ImageProxyConfig'
+                remote_desktop:
+                    $ref: '#/components/schemas/ImageRemoteDesktop'
                 source_url:
                     type: string
                     description: Source code repository URL
@@ -1759,7 +2625,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Dignissimos ab.
+                        example: Fugiat molestiae.
                     description: Tags for filtering/searching images
                     example:
                         - development
@@ -1768,7 +2634,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Qui quasi ad cum omnis aut.
+                        example: Asperiores voluptas ipsam omnis aut atque blanditiis.
                     description: Workspace types this image supports (container, vm, scratch). Empty means container-only
                     example:
                         - container
@@ -1809,13 +2675,17 @@ components:
                 proxy_config:
                     custom_request_headers:
                         x-tenant: workspaces
-                    inject_base_tag: true
+                    inject_base_tag: false
                     needs_noop_sw: true
-                    preserve_path_prefix: false
+                    preserve_path_prefix: true
                     rewrite_host_absolute_paths: true
                     tls_insecure: false
                     websocket_paths:
                         - /websockify
+                remote_desktop:
+                    path: /
+                    port: 8080
+                    protocol: selkies
                 source_url: https://github.com/coder/code-server
                 tags:
                     - development
@@ -1938,7 +2808,7 @@ components:
                         nvidia.com/gpu: "true"
                     additionalProperties:
                         type: string
-                        example: Quia rerum dolores perspiciatis qui.
+                        example: Aut sed ut a neque fugiat veritatis.
                 shared_memory:
                     type: boolean
                     description: Mount /dev/shm as an emptyDir with medium=Memory (required for Chrome, ML frameworks)
@@ -2004,6 +2874,303 @@ components:
             required:
                 - name
                 - container
+        DisplayCapability:
+            type: object
+            properties:
+                controller_present:
+                    type: boolean
+                    description: Whether a controller is currently attached
+                    example: true
+                enabled:
+                    type: boolean
+                    description: Whether shared display sessions are available for this workspace
+                    example: false
+                handshake_timeout_ms:
+                    type: integer
+                    description: Display stream handshake timeout in milliseconds
+                    example: 10000
+                    format: int64
+                max_height:
+                    type: integer
+                    description: Maximum advertised guest framebuffer height
+                    example: 2160
+                    format: int64
+                max_participants:
+                    type: integer
+                    description: Maximum simultaneous participants (controller + observers)
+                    example: 8
+                    format: int64
+                max_width:
+                    type: integer
+                    description: Maximum advertised guest framebuffer width
+                    example: 4096
+                    format: int64
+                participant_ttl_ms:
+                    type: integer
+                    description: Idle membership lifetime in milliseconds
+                    example: 900000
+                    format: int64
+                participants:
+                    type: integer
+                    description: Current participant count
+                    example: 2
+                    format: int64
+                protocol:
+                    type: integer
+                    description: Display protocol/API revision
+                    example: 1
+                    format: int64
+                transports:
+                    type: array
+                    items:
+                        type: string
+                        example: Voluptas sit nostrum dignissimos amet.
+                    description: Supported display transports
+                    example:
+                        - rfb
+                        - tier1
+            description: Capability advertisement for a workspace's shared display session. Absence of this resource, or enabled=false, means the workspace uses the legacy exclusive display mode
+            example:
+                controller_present: true
+                enabled: false
+                handshake_timeout_ms: 10000
+                max_height: 2160
+                max_participants: 8
+                max_width: 4096
+                participant_ttl_ms: 900000
+                participants: 2
+                protocol: 1
+                transports:
+                    - rfb
+                    - tier1
+            required:
+                - enabled
+                - protocol
+        DisplayControl:
+            type: object
+            properties:
+                controller:
+                    $ref: '#/components/schemas/Participant'
+                released:
+                    type: boolean
+                    description: True when release cleared the controller
+                    example: false
+                was_held:
+                    type: boolean
+                    description: Whether a controller was present before the transition
+                    example: true
+            description: Result of a control transition
+            example:
+                controller:
+                    connected: false
+                    id: 97f8c4b7a2
+                    joined_at: "2026-09-19T15:04:05Z"
+                    role: observer
+                released: false
+                was_held: true
+            required:
+                - was_held
+                - released
+        DisplayControlPayload:
+            type: object
+            properties:
+                force:
+                    type: boolean
+                    description: Explicit human consent to take or transfer control, demoting the current controller to observer. There is no silent takeover without this
+                    default: false
+                    example: true
+                name:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                namespace:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                participant_id:
+                    type: string
+                    description: Participant performing the transition. Release requires the current controller; acquire may be any participant; transfer requires the current controller
+                    example: 97f8c4b7a2
+                to:
+                    type: string
+                    description: Target observer participant identifier for a transfer
+                    example: 3a2d5f8c7f
+            description: Payload for a control transition (acquire, release or transfer)
+            example:
+                force: true
+                name: my-workspace
+                namespace: workspaces
+                participant_id: 97f8c4b7a2
+                to: 3a2d5f8c7f
+            required:
+                - name
+                - participant_id
+        DisplayControlPayload2:
+            type: object
+            properties:
+                force:
+                    type: boolean
+                    description: Explicit human consent to take or transfer control, demoting the current controller to observer. There is no silent takeover without this
+                    default: false
+                    example: true
+                participant_id:
+                    type: string
+                    description: Participant performing the transition. Release requires the current controller; acquire may be any participant; transfer requires the current controller
+                    example: 97f8c4b7a2
+                to:
+                    type: string
+                    description: Target observer participant identifier for a transfer
+                    example: 3a2d5f8c7f
+            example:
+                force: true
+                participant_id: 97f8c4b7a2
+                to: 3a2d5f8c7f
+            required:
+                - participant_id
+        DisplayControlPayload3:
+            type: object
+            properties:
+                force:
+                    type: boolean
+                    description: Explicit human consent to take or transfer control, demoting the current controller to observer. There is no silent takeover without this
+                    default: false
+                    example: true
+                participant_id:
+                    type: string
+                    description: Participant performing the transition. Release requires the current controller; acquire may be any participant; transfer requires the current controller
+                    example: 97f8c4b7a2
+                to:
+                    type: string
+                    description: Target observer participant identifier for a transfer
+                    example: 3a2d5f8c7f
+            example:
+                force: true
+                participant_id: 97f8c4b7a2
+                to: 3a2d5f8c7f
+            required:
+                - participant_id
+        DisplayControlPayload4:
+            type: object
+            properties:
+                force:
+                    type: boolean
+                    description: Explicit human consent to take or transfer control, demoting the current controller to observer. There is no silent takeover without this
+                    default: false
+                    example: true
+                participant_id:
+                    type: string
+                    description: Participant performing the transition. Release requires the current controller; acquire may be any participant; transfer requires the current controller
+                    example: 97f8c4b7a2
+                to:
+                    type: string
+                    description: Target observer participant identifier for a transfer
+                    example: 3a2d5f8c7f
+            example:
+                force: true
+                participant_id: 97f8c4b7a2
+                to: 3a2d5f8c7f
+            required:
+                - participant_id
+        DisplayJoin:
+            type: object
+            properties:
+                capability:
+                    $ref: '#/components/schemas/DisplayCapability'
+                participant:
+                    $ref: '#/components/schemas/Participant'
+            description: Result of joining a shared display session
+            example:
+                capability:
+                    controller_present: true
+                    enabled: false
+                    handshake_timeout_ms: 10000
+                    max_height: 2160
+                    max_participants: 8
+                    max_width: 4096
+                    participant_ttl_ms: 900000
+                    participants: 2
+                    protocol: 1
+                    transports:
+                        - rfb
+                        - tier1
+                participant:
+                    connected: false
+                    id: 97f8c4b7a2
+                    joined_at: "2026-09-19T15:04:05Z"
+                    role: observer
+            required:
+                - participant
+        DisplayStatus:
+            type: object
+            properties:
+                controller:
+                    $ref: '#/components/schemas/Participant'
+                enabled:
+                    type: boolean
+                    description: Whether shared display sessions are available for this workspace
+                    example: false
+                epoch:
+                    type: string
+                    description: Capture/broker generation. Changes when a new capture owner is elected
+                    example: 8f2ac64d91
+                observers:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Participant'
+                    description: Current observers
+                    example:
+                        - connected: false
+                          id: 97f8c4b7a2
+                          joined_at: "2026-09-19T15:04:05Z"
+                          role: observer
+                        - connected: false
+                          id: 97f8c4b7a2
+                          joined_at: "2026-09-19T15:04:05Z"
+                          role: observer
+                participants:
+                    type: integer
+                    description: Total participant count (controller + observers)
+                    example: 3
+                    format: int64
+                protocol:
+                    type: integer
+                    description: Display protocol/API revision
+                    example: 1
+                    format: int64
+            description: Live membership and control state of a workspace's shared display session
+            example:
+                controller:
+                    connected: false
+                    id: 97f8c4b7a2
+                    joined_at: "2026-09-19T15:04:05Z"
+                    role: observer
+                enabled: false
+                epoch: 8f2ac64d91
+                observers:
+                    - connected: false
+                      id: 97f8c4b7a2
+                      joined_at: "2026-09-19T15:04:05Z"
+                      role: observer
+                    - connected: false
+                      id: 97f8c4b7a2
+                      joined_at: "2026-09-19T15:04:05Z"
+                      role: observer
+                    - connected: false
+                      id: 97f8c4b7a2
+                      joined_at: "2026-09-19T15:04:05Z"
+                      role: observer
+                    - connected: false
+                      id: 97f8c4b7a2
+                      joined_at: "2026-09-19T15:04:05Z"
+                      role: observer
+                participants: 3
+                protocol: 1
+            required:
+                - enabled
+                - protocol
+                - epoch
+                - participants
         EnvVar:
             type: object
             properties:
@@ -2037,7 +3204,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Ipsam omnis aut atque blanditiis vel ipsum.
+                        example: Necessitatibus nulla inventore impedit beatae expedita.
                     description: Default command-line args injected at workspace creation
                     example:
                         - --bind-addr
@@ -2134,6 +3301,8 @@ components:
                     example: false
                 proxy_config:
                     $ref: '#/components/schemas/ImageProxyConfig'
+                remote_desktop:
+                    $ref: '#/components/schemas/ImageRemoteDesktop'
                 source_url:
                     type: string
                     description: Source code repository URL
@@ -2142,7 +3311,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Eveniet officia asperiores.
+                        example: Ea minima reiciendis sed asperiores debitis.
                     description: Tags for filtering/searching images
                     example:
                         - development
@@ -2151,7 +3320,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Quia labore voluptatem aliquam qui quia architecto.
+                        example: Nostrum deserunt rem exercitationem consequuntur est.
                     description: Workspace types this image supports (container, vm, scratch). Empty means container-only
                     example:
                         - container
@@ -2193,13 +3362,17 @@ components:
                 proxy_config:
                     custom_request_headers:
                         x-tenant: workspaces
-                    inject_base_tag: true
+                    inject_base_tag: false
                     needs_noop_sw: true
-                    preserve_path_prefix: false
+                    preserve_path_prefix: true
                     rewrite_host_absolute_paths: true
                     tls_insecure: false
                     websocket_paths:
                         - /websockify
+                remote_desktop:
+                    path: /
+                    port: 8080
+                    protocol: selkies
                 source_url: https://github.com/coder/code-server
                 tags:
                     - development
@@ -2272,17 +3445,17 @@ components:
                         x-tenant: workspaces
                     additionalProperties:
                         type: string
-                        example: Voluptas minima illum aut sed.
+                        example: Iusto culpa at consequatur est qui.
                 inject_base_tag:
                     type: boolean
                     description: Inject a <base> tag into HTML responses to fix relative path resolution
                     default: false
-                    example: false
+                    example: true
                 needs_noop_sw:
                     type: boolean
                     description: Serve a no-op ServiceWorker at /sw.js to prevent SW registration errors
                     default: false
-                    example: false
+                    example: true
                 preserve_path_prefix:
                     type: boolean
                     description: Forward the full proxy path (including /proxy/{ns}/{name}) to the pod instead of stripping it. Required for apps configured with a base URL matching the proxy prefix.
@@ -2302,7 +3475,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Iste saepe quo ut.
+                        example: Dignissimos ab.
                     description: Paths that use WebSocket (informational, all paths support WS transparently)
                     example:
                         - /websockify
@@ -2312,11 +3485,113 @@ components:
                     x-tenant: workspaces
                 inject_base_tag: true
                 needs_noop_sw: false
-                preserve_path_prefix: true
+                preserve_path_prefix: false
                 rewrite_host_absolute_paths: true
                 tls_insecure: false
                 websocket_paths:
                     - /websockify
+        ImageRemoteDesktop:
+            type: object
+            properties:
+                path:
+                    type: string
+                    description: Path relative to the agent's base URL
+                    default: /
+                    example: /
+                port:
+                    type: integer
+                    description: Guest port the agent listens on
+                    example: 8080
+                    format: int64
+                protocol:
+                    type: string
+                    description: Protocol name (e.g. "selkies")
+                    example: selkies
+                    enum:
+                        - selkies
+            description: In-guest remote desktop agent configuration
+            example:
+                path: /
+                port: 8080
+                protocol: selkies
+            required:
+                - protocol
+                - port
+        JoinDisplayPayload:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                namespace:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                role:
+                    type: string
+                    description: Initial role. Defaults to observer
+                    default: observer
+                    example: controller
+                    enum:
+                        - observer
+                        - controller
+            description: Payload for joining a workspace's shared display session
+            example:
+                name: my-workspace
+                namespace: workspaces
+                role: observer
+            required:
+                - name
+        JoinDisplayPayload2:
+            type: object
+            properties:
+                role:
+                    type: string
+                    description: Initial role. Defaults to observer
+                    default: observer
+                    example: controller
+                    enum:
+                        - observer
+                        - controller
+            example:
+                role: controller
+        LeaveDisplayPayload:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                namespace:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                participant_id:
+                    type: string
+                    description: Participant identifier to remove
+                    example: 97f8c4b7a2
+            description: Payload for leaving a workspace's shared display session
+            example:
+                name: my-workspace
+                namespace: workspaces
+                participant_id: 97f8c4b7a2
+            required:
+                - name
+                - participant_id
+        LeaveResponseBody:
+            type: object
+            properties:
+                ok:
+                    type: boolean
+                    description: Whether the participant was removed
+                    example: true
+            example:
+                ok: true
+            required:
+                - ok
         Namespace:
             type: object
             properties:
@@ -2340,6 +3615,39 @@ components:
             required:
                 - name
                 - phase
+        Participant:
+            type: object
+            properties:
+                connected:
+                    type: boolean
+                    description: Whether the participant is attached to a display stream
+                    example: false
+                id:
+                    type: string
+                    description: Opaque server-side participant identifier. A capability, not a credential; never sent to the guest or logged
+                    example: 97f8c4b7a2
+                joined_at:
+                    type: string
+                    description: RFC 3339 timestamp when the participant joined
+                    example: "2026-09-19T15:04:05Z"
+                role:
+                    type: string
+                    description: 'Current role: observer (view-only) or controller. Server-enforced; a client-side viewOnly flag is not an authorization boundary'
+                    example: observer
+                    enum:
+                        - observer
+                        - controller
+            description: A participant in a shared display session
+            example:
+                connected: false
+                id: 97f8c4b7a2
+                joined_at: "2026-09-19T15:04:05Z"
+                role: observer
+            required:
+                - id
+                - role
+                - connected
+                - joined_at
         Sshkey:
             type: object
             properties:
@@ -2434,7 +3742,7 @@ components:
                         workspace: my-workspace
                     additionalProperties:
                         type: string
-                        example: Libero qui dicta fugiat molestiae rerum enim.
+                        example: Quia labore voluptatem aliquam qui quia architecto.
                 name:
                     type: string
                     description: PVC name
@@ -2548,6 +3856,8 @@ components:
                     description: Number of ready replicas
                     example: 1
                     format: int64
+                remote_desktop:
+                    $ref: '#/components/schemas/ImageRemoteDesktop'
                 stopped:
                     type: boolean
                     description: Whether the workspace is stopped
@@ -2592,6 +3902,10 @@ components:
                 namespace: workspaces
                 port: 8080
                 ready_replicas: 1
+                remote_desktop:
+                    path: /
+                    port: 8080
+                    protocol: selkies
                 stopped: false
                 type: container
                 volume_mounts:
@@ -2707,3 +4021,5 @@ tags:
       description: Namespace management
     - name: health
       description: Health check service
+    - name: display
+      description: 'Shared display session membership and control: one controller plus view-only observers per VM desktop'
