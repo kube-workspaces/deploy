@@ -16,10 +16,17 @@ sequence, or move a gate.**
 ## Invariants
 
 - Order is fixed: **desktop-client → controller/api/proxy/frontend → deploy**.
-  The four components share one platform `vX.Y.Z`; the desktop client is on its
-  **own semver lineage** — bumped over its own history, never matched to the
-  platform version — and is only released **when it has new commits** since its
-  last tag. Nothing pins the client image (it is not a Docker image).
+  Three version lines ride separately and are **deliberately not** matched:
+  1. **Component version** — controller/api/proxy/frontend share one `vX.Y.Z`
+     (e.g. `v0.6.0`), the number the chart's `appVersion` pins. Judge semver
+     against the platform here.
+  2. **Deploy version** — the chart's own `version` line and, with it, the
+     deploy release tag and website badge (e.g. `v0.6.22`). Ask next patch
+     above the latest **deploy** release.
+  3. **Desktop client** — its **own semver lineage**, bumped over its own
+     history, never matched to either line above, and only released **when it
+     has new commits** since its last tag. Nothing pins the client image (it is
+     not a Docker image).
 - The deploy chart's `appVersion` names component images that must already be
   published before deploy is released — that is why components precede deploy.
 - Every workflow_dispatch release has a dry-run gate: run with `dry_run=true`,
@@ -33,15 +40,21 @@ sequence, or move a gate.**
 The CI pre-flight (Step 0) runs **first**; do not confirm any version before it
 passes. Each decision is asked where it falls in the procedure:
 
-1. **After Step 0 passes:** the platform version `vX.Y.Z` (suggest next patch
-   above the latest tag if the user has none in mind — read it via `gh api
-   repos/kube-workspaces/deploy/releases --jq '.[0].tag_name'` or `git
-   describe --tags --abbrev=0`), and whether this is a full component release
-   (chart `version` == `appVersion`) or a chart-only fix (`appVersion` lags,
-   see "Bump the chart").
+1. **After Step 0 passes:** the deploy version `vX.Y.Z` (suggest next patch
+   above the latest **deploy** release if the user has none in mind — read it
+   via `gh api repos/kube-workspaces/deploy/releases --jq '.[0].tag_name'` or
+   `git describe --tags --abbrev=0` — and separately the component version:
+   `gh api repos/kube-workspaces/controller/releases --jq '.[0].tag_name'`)
+   plus whether this is a **full component release** (bump all four components
+   to a new shared version, then set chart `appVersion` to it) or a
+   **chart-only fix** (chart `version` moves, `appVersion` stays — see "Bump
+   the chart"). These are independent: a full component release still advances
+   the chart on its own line (see Step 3), so `version` and `appVersion` need
+   not be equal.
 2. **In Step 1:** the desktop-client version — only if it has new commits.
    Own line, suggested as next patch above its latest tag from `gh api
-   repos/kube-workspaces/desktop-client/releases`; never the platform version.
+   repos/kube-workspaces/desktop-client/releases`; never the component or
+   deploy version.
 3. **Before each `dry_run=false` (Steps 2, 4):** show the classification
    summary, not just a "yes".
 4. **In Step 3:** how to land the chart bump + website bump: direct push to
@@ -74,9 +87,9 @@ make show-ci-status
 - Treat `desktop-client` `Build` as the critical check: its release is tag
   driven, so a red Build at the tagged commit is never re-run against the tag.
 
-Only once everything is green do you confirm the platform `vX.Y.Z` and the
-full-component vs chart-only decision (see "Decision points" above) and move to
-Step 1.
+Only once everything is green do you confirm the deploy `vX.Y.Z` and the
+component version (`v0.6.0` in the example above) plus the full-component vs
+chart-only decision (see "Decision points" above) and move to Step 1.
 
 ## Step 1 — Desktop client (kube-workspaces/desktop-client)
 
@@ -96,8 +109,9 @@ commits since its last release tag.**
    made; the existing download stays current. Continue to step 2 without asking
    for a version.
 3. If there are changes, confirm the version with the user — on its **own
-   semver lineage**, next patch above `${last_tag}` (e.g. `v0.2.0` → `v0.2.1`).
-   Never align it with the platform version.
+   semver lineage**, next patch above `${last_tag}` (e.g. `v0.3.0` → `v0.4.0`).
+   Never align it with the component or deploy version.
+   Note this is a **minor**, not a patch, when the change adds features.
 4. Work in the sibling checkout (`../desktop-client`) or clone. Fetch latest:
    `git fetch origin main && git checkout -B main origin/main`. Record the
    exact commit (`git rev-parse HEAD`).
@@ -127,9 +141,10 @@ commits since its last release tag.**
    after publish. Anything wrong becomes a follow-up patch release on the same
    line.
 
-## Step 2 — Component repositories (shared platform version)
+## Step 2 — Component repositories (shared component version)
 
-For each of `controller`, `api`, `proxy`, `frontend`, in order:
+For each of `controller`, `api`, `proxy`, `frontend`, in order, using the
+component version confirmed in the decision points (e.g. `v0.6.0`):
 
 1. Dry run:
    ```sh
@@ -158,13 +173,16 @@ can't surface it.
 
 ## Step 3 — Bump the chart (this repo)
 
+The chart has its own version line, tracked independently of the components.
 1. Open `helm/kube-workspaces/Chart.yaml` and confirm the two diverging fields
    with the user:
    ```yaml
-   version: 0.6.19      # the chart's own version — must equal the deploy tag (bare)
-   appVersion: "0.6.19" # the component version it pins — must already be released
+   version: 0.6.22      # the chart's own version — must equal the deploy tag (bare)
+   appVersion: "0.6.0"  # the component version it pins — must already be released
    ```
-   - Full release: both equal the platform version.
+   - Full component release: `version` moves up the chart's own line AND
+     `appVersion` moves to the newly released component version. The two may
+     still differ numerically (the chart line is independent).
    - Chart-only fix: `version` moves, `appVersion` stays at the last released
      component version (may legitimately be behind; must NOT be ahead).
 2. Run `make test-lint` and `make test-upgrade` (the latter installs the
@@ -191,7 +209,8 @@ can't surface it.
 ## Step 5 — Update the website (kube-workspaces.github.io)
 
 1. In the `kube-workspaces.github.io` sibling checkout (or a clone), bump the
-   version badge to the platform `vX.Y.Z`.
+   version badge to the deploy `vX.Y.Z` (the chart/deploy version, not the
+   component version).
 2. If the desktop client was released in step 1, point the desktop client
    download link at the new release tag.
 3. Land per that repo's conventions (PR or push) and confirm the site rebuild
@@ -205,7 +224,7 @@ Confirm all of:
   `appVersion` (bare).
 - `desktop-client` release page has the archives + `SHA256SUMS` (only if step 1
   was run — skipped when it had no new commits).
-- Chart published at the platform version.
+- Chart published at the deploy version.
 - `deploy` tag + release exist at `vX.Y.Z`.
 - Website badge and desktop-client link updated.
 

@@ -1,10 +1,14 @@
 # Releasing
 
-kube-workspaces is five repositories released together. The Helm chart's
-`appVersion` pins all four component images to a single number, so they share a
-version: one platform version is materially easier to support than four drifting
-ones. The desktop client is released alongside them when it has changes, on its
-own version line (see "Order matters").
+kube-workspaces is five repositories released together. The four components
+share one **component version** (e.g. `v0.6.0`), which the Helm chart's
+`appVersion` pins: one component version is materially easier to support than
+four drifting ones. The chart itself has its **own version line** (e.g.
+`0.6.22`) that names the deploy tag and the website badge — the chart is
+released more often than the components (chart-only fixes), so the deploy
+version routinely outruns the component version. The desktop client is an
+additional independent line, released alongside them only when it has changes
+(see "Order matters").
 
 ## Order matters
 
@@ -15,10 +19,10 @@ otherwise.
 The desktop client is released early (before the components), **but only when it
 has new commits since its last release**. It is standalone: it is not a Docker
 image, is not pinned by the chart, and keeps its **own `vX.Y.Z` semver lineage**
-— always bumped on top of its own history, never matched to the platform
-version. It has no ordering dependency on the rest, and goes early so the newest
-client is on the downloads page by the time a platform release lands — the
-client consumes platform features via the proxy, and we do not want a window
+— always bumped on top of its own history, never matched to the component or
+deploy version. It has no ordering dependency on the rest, and goes early so the
+newest client is on the downloads page by the time a platform release lands —
+the client consumes platform features via the proxy, and we do not want a window
 where the published client cannot talk to a just-released platform.
 
 ```
@@ -118,17 +122,19 @@ Wait for those builds to finish before moving on.
 
 ### 3. Bump the chart
 
-In `deploy`, set both fields in `helm/kube-workspaces/Chart.yaml`:
+In `deploy`, advance both fields in `helm/kube-workspaces/Chart.yaml` on their
+own lines:
 
 ```yaml
-version: 0.3.0      # the chart's own version — must equal the deploy tag
-appVersion: "0.3.0" # the component version it pins — must already be released
+version: 0.6.22      # the chart's own version — must equal the deploy tag (bare)
+appVersion: "0.6.0"  # the component version it pins — must already be released
 ```
 
-The two are **not** required to match. `version` is the chart's own release line
-and must equal the tag; `appVersion` names the component release the chart pins.
-A chart-only fix — an ingress path, a template guard — bumps `version` without
-there being any new component build, so `appVersion` legitimately lags:
+The two are **not** required to match, and usually will not. `version` is the
+chart's own release line and must equal the tag; `appVersion` names the
+component release the chart pins. A chart-only fix — an ingress path, a template
+guard — bumps `version` without there being any new component build, so
+`appVersion` legitimately lags:
 
 ```yaml
 version: 0.2.2      # chart-only fix
@@ -137,6 +143,11 @@ appVersion: "0.2.1" # still pinning the 0.2.1 components
 
 The release workflow enforces exactly that: `version` must equal the tag,
 `appVersion` must not be *ahead* of it, and images must exist at `appVersion`.
+
+There is no "full release sets `version` == `appVersion`" step. A full component
+release releases components, then bumps `appVersion` to that new component
+version while `version` advances on the chart's own independent line — the two
+numbers do not need to converge.
 
 Then verify and merge:
 
@@ -167,6 +178,7 @@ Re-run with `dry_run=false` to tag and publish.
 
 Bump the version badge in
 [kube-workspaces.github.io](https://github.com/kube-workspaces/kube-workspaces.github.io)
+to the **deploy** version (the release tag just cut in step 4 — e.g. `v0.6.22`)
 and, if the desktop client moved (step 1), point its download link at the new
 release.
 
@@ -226,7 +238,8 @@ Unlabelled PRs land in *Other changes* rather than vanishing. `duplicate`,
 
 ## Versioning
 
-Semantic versioning, judged against the **platform**, not individual components:
+Semantic versioning, judged against the **platform's component version**, not
+individual components:
 
 - **Patch** — fixes only, no new capability
 - **Minor** — new capability, or a deprecation with a working fallback
@@ -234,6 +247,11 @@ Semantic versioning, judged against the **platform**, not individual components:
 
 A field deprecated with a documented, tested fallback is a *minor*. Removing it
 later is a *major*.
+
+The chart/deploy version line is not held to the same semver surface — it
+advances patch-by-patch (e.g. `0.6.21` → `0.6.22`) for each deploy release,
+whether or not a component release rode along. Semantic versioning above applies
+to the component version.
 
 ## Preview notes locally
 
