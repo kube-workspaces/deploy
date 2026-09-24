@@ -28,21 +28,24 @@ sequence, or move a gate.**
 - Between steps, gate on published artifacts (Docker images / GitHub Release /
   published chart). Never start the next step on hearsay.
 
-## Decision points to ask the user
+## Decision points — asked in step order, after the CI gate
 
-1. The platform version `vX.Y.Z` (suggest next patch above the latest tag if
-   they have none in mind — read it via `gh api
+The CI pre-flight (Step 0) runs **first**; do not confirm any version before it
+passes. Each decision is asked where it falls in the procedure:
+
+1. **After Step 0 passes:** the platform version `vX.Y.Z` (suggest next patch
+   above the latest tag if the user has none in mind — read it via `gh api
    repos/kube-workspaces/deploy/releases --jq '.[0].tag_name'` or `git
-   describe --tags --abbrev=0`).
-2. Whether this is a full component release (chart `version` == `appVersion`)
-   or a chart-only fix (`appVersion` lags, see "Bump the chart").
-3. The desktop-client version — **only asked if it has new commits** (step 1).
+   describe --tags --abbrev=0`), and whether this is a full component release
+   (chart `version` == `appVersion`) or a chart-only fix (`appVersion` lags,
+   see "Bump the chart").
+2. **In Step 1:** the desktop-client version — only if it has new commits.
    Own line, suggested as next patch above its latest tag from `gh api
    repos/kube-workspaces/desktop-client/releases`; never the platform version.
-4. Before each `dry_run=false`. Show the classification summary, not just a
-   "yes".
-5. How to land the chart bump + website bump: direct push to `main` (this repo
-   has admin pushes that bypass PR rules) or an actual PR.
+3. **Before each `dry_run=false` (Steps 2, 4):** show the classification
+   summary, not just a "yes".
+4. **In Step 3:** how to land the chart bump + website bump: direct push to
+   `main` (this repo has admin pushes that bypass PR rules) or an actual PR.
 
 ## Step 0 — Pre-flight: CI must be green
 
@@ -71,6 +74,10 @@ make show-ci-status
 - Treat `desktop-client` `Build` as the critical check: its release is tag
   driven, so a red Build at the tagged commit is never re-run against the tag.
 
+Only once everything is green do you confirm the platform `vX.Y.Z` and the
+full-component vs chart-only decision (see "Decision points" above) and move to
+Step 1.
+
 ## Step 1 — Desktop client (kube-workspaces/desktop-client)
 
 This repo has no `release.yaml` workflow. Releasing = tagging `main`. **Decide
@@ -97,18 +104,28 @@ commits since its last release tag.**
 5. Verify the runs for that commit are green (`gh run list -R
    kube-workspaces/desktop-client --branch main --commit <sha>`); especially
    `Build`. If red, stop.
-6. Tag and push:
+6. **Scope preview before tagging.** The client has no dry-run, so this is the
+   last reversible checkpoint. Show the user what is about to ship — the commit
+   list for the release:
+   ```sh
+   gh api "repos/kube-workspaces/desktop-client/compare/${last_tag}...<sha>" \
+     --jq '.commits[].commit.message'
+   ```
+   Get explicit go-ahead before anything is tagged.
+7. Tag and push:
    ```sh
    git tag -a vX.Y.Z -m "vX.Y.Z"
    git push origin vX.Y.Z
    ```
-7. Watch the `Build` workflow until it publishes, then verify the GitHub
+8. Watch the `Build` workflow until it publishes, then verify the GitHub
    Release exists with the per-platform archives and `SHA256SUMS`:
    ```sh
    gh api repos/kube-workspaces/desktop-client/releases --jq '.[0] | [.tag_name, .created_at] | @tsv'
    ```
-8. There is no dry-run preview; ask the user to review the published release.
-   Anything wrong becomes a follow-up patch release on the same line.
+9. Ask the user to review the published release (notes and assets). The preview
+   in step 6 is scope only, not the composed notes; the real ones only exist
+   after publish. Anything wrong becomes a follow-up patch release on the same
+   line.
 
 ## Step 2 — Component repositories (shared platform version)
 

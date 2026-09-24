@@ -93,8 +93,10 @@ git push origin vX.Y.Z
 Pushing the tag triggers `build.yml`, which cross-builds the per-platform
 archives, composes the release notes (download links, install steps, an unsigned
 warning) and publishes the GitHub Release — binaries plus `SHA256SUMS`. There is
-no dry-run preview; review the published release on the releases page and fix
-anything wrong in a follow-up patch release on the same line.
+no dry-run preview; the `create-new-release` skill shows a preview of the
+commits that will ship before you tag, but the composed notes only exist after
+publish — review them on the releases page and fix anything wrong in a follow-up
+patch release on the same line.
 
 The client must be green first. `make show-ci-status` flags it `failed` if the
 newest commit's runs (notably `Build`) are not passing.
