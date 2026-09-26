@@ -38,6 +38,100 @@ Two runtime requirements apply to every archive, and neither is bundled:
   (`libwebkit2gtk-4.1`, Ubuntu 23.10+ / Debian 12+). macOS and Windows use
   engines the OS already provides (WebKit, WebView2).
 
+## Installing on Windows
+
+The release offers Windows zips (amd64 + arm64) and an **unsigned** MSI for
+install hygiene (Start Menu shortcut, Add/Remove Programs entry, clean
+upgrade/uninstall). The MSI is a test distribution: it warns exactly like the
+zip until Authenticode signing is funded — see the
+[code-signing plan](https://github.com/kube-workspaces/tracking/blob/main/future/code-signing-and-notarisation.md)
+in the tracking repo.
+
+Recommended manual location (no installer):
+
+`%LocalAppData%\Programs\Kube Workspaces`
+(`C:\Users\<you>\AppData\Local\Programs\Kube Workspaces`)
+
+```powershell
+Expand-Archive kube-workspaces-<version>-windows-amd64.zip -DestinationPath "$env:TEMP\kw-install" -Force
+New-Item -ItemType Directory -Force "$env:LocalAppData\Programs\Kube Workspaces" | Out-Null
+Copy-Item "$env:TEMP\kw-install\kube-workspaces-windows-amd64\*" "$env:LocalAppData\Programs\Kube Workspaces" -Force
+Get-ChildItem "$env:LocalAppData\Programs\Kube Workspaces\*.exe" | Unblock-File
+& "$env:LocalAppData\Programs\Kube Workspaces\kube-workspaces.exe"
+```
+
+Why this path:
+
+- `LocalAppData` (not `RoamingAppData`): binaries are machine-local and must
+  not roam with the profile; per-user installs stay writable without UAC, so
+  the built-in updater works unelevated.
+- Not `Downloads/`: downloaded files carry the Mark-of-the-Web, and the
+  folder gets cleaned out by accident. Unblock once after extracting (see
+  below) and run from the install dir instead.
+- Not `System32` (or any system dir): it is reserved for the OS, needs
+  elevation, and breaks the updater.
+- `C:\Program Files\Kube Workspaces` is reserved for the future per-machine
+  signed installer. A manual copy there works but needs elevation for every
+  update (`update: install directory needs elevated permissions`).
+
+Keep the folder together:
+
+- `kube-workspaces.exe` and `kube-workspaces-web.exe` (plus any future
+  `avcodec-59.dll`, `avutil-57.dll`, `opus.dll`) must sit **beside each other
+  in one folder** — the shell finds its web child by sibling path, and codec
+  DLLs load from the app directory only (working directory and `PATH` are
+  deliberately excluded from DLL search). Never split the `.exe`s apart, and
+  keep the DLL architecture matched to the `.exe` (x64 DLLs for amd64,
+  ARM64 DLLs for arm64). Missing or arch-mismatched Tier 1 libraries fall back
+  to Tier 0 RFB instead of failing.
+
+First run (unsigned builds):
+
+```powershell
+Get-ChildItem "$env:LocalAppData\Programs\Kube Workspaces\*.exe" | Unblock-File
+```
+
+SmartScreen still warns with `Unknown publisher` → `More info` →
+`Run anyway`. This is expected until signing lands; the MSI warns the same
+way, at install time rather than launch time.
+
+Container workspaces need the **WebView2 Runtime** (preinstalled on Windows
+11; otherwise install the Evergreen bootstrapper from Microsoft). The
+windows/arm64 archive is shell-only (no webview toolchain on CI): VM sessions
+work fully there, container web UIs fall back to the system browser.
+
+Moving the install dir is safe: tokens live in Windows Credential Manager and
+profiles in `%AppData%\kube-workspaces\` — both location-independent. Close
+all client instances before `kube-workspaces update` so locked files can swap;
+from a per-user dir the update applies unelevated, from Program Files it
+reports that elevation is needed (re-run elevated or reinstall per-user).
+
+Optional conveniences (not created automatically by the zip):
+
+```powershell
+# Start Menu shortcut
+$shell = New-Object -ComObject WScript.Shell
+$link = $shell.CreateShortcut("$env:AppData\Microsoft\Windows\Start Menu\Programs\Kube Workspaces.lnk")
+$link.TargetPath = "$env:LocalAppData\Programs\Kube Workspaces\kube-workspaces.exe"
+$link.Save()
+```
+
+The zip and the manual steps above do not register an Add/Remove Programs
+entry; the MSI does. Per-machine MSI installs are an explicit
+flag (the MSI is per-user by default even for administrators):
+`msiexec /i kube-workspaces-<version>-windows-<arch>.msi ALLUSERS=1 INSTALLDIR="C:\Program Files\Kube Workspaces"`
+(elevated).
+
+CI builds are also downloadable from the desktop-client **Build** workflow:
+`msi-windows-amd64` and `msi-windows-arm64`. The `SHA256SUMS` artifact covers
+both installers and all six platform archives. The ARM64 installer is built
+and inspected in CI; native ARM64 installation acceptance remains pending.
+
+The in-app updater replaces binaries from zip releases, so Add/Remove Programs
+still reports the last MSI-installed version. MSI repair can restore that
+package's binaries. Install a newer MSI when Windows Installer version tracking
+is required; uninstall before changing installation scope or architecture.
+
 ## Quickstart
 
 Running the binary with no arguments opens the graphical shell:
