@@ -117,20 +117,23 @@ $link.Save()
 ```
 
 The zip and the manual steps above do not register an Add/Remove Programs
-entry; the MSI does. Per-machine MSI installs are an explicit
-flag (the MSI is per-user by default even for administrators):
-`msiexec /i kube-workspaces-<version>-windows-<arch>.msi ALLUSERS=1 INSTALLDIR="C:\Program Files\Kube Workspaces"`
-(elevated).
+entry; the MSI does. The MSI setup wizard offers **Just me** (default,
+per-user, no elevation) or **All users on this computer** (Program Files,
+administrator permission requested as needed), and the completion page offers
+to open the app. Silent per-machine installation uses
+`msiexec /i kube-workspaces-<version>-windows-<arch>.msi /qn ALLUSERS=1`
+from an elevated terminal.
 
 CI builds are also downloadable from the desktop-client **Build** workflow:
 `msi-windows-amd64` and `msi-windows-arm64`. The `SHA256SUMS` artifact covers
 both installers and all six platform archives. The ARM64 installer is built
 and inspected in CI; native ARM64 installation acceptance remains pending.
 
-The in-app updater replaces binaries from zip releases, so Add/Remove Programs
-still reports the last MSI-installed version. MSI repair can restore that
-package's binaries. Install a newer MSI when Windows Installer version tracking
-is required; uninstall before changing installation scope or architecture.
+The in-app updater detects how the client was installed. MSI installations
+update through the installer: the new `.msi` installs unattended after the
+client quits, keeping the same scope and directory, and Add/Remove Programs
+shows the new version. Manual zip installations keep the in-place binary
+swap; uninstall before changing installation scope or architecture.
 
 ## Quickstart
 
