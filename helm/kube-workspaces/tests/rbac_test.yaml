@@ -14,6 +14,19 @@ set:
   auth.enabled: true
   auth.localAuth.enabled: true
 tests:
+  - it: grants data disk CRUD for externally installed CDI as well as chart-managed CDI
+    set:
+      kubevirt.enabled: false
+    documentSelector:
+      path: kind
+      value: ClusterRole
+    asserts:
+      - contains:
+          path: rules
+          content:
+            apiGroups: ["cdi.kubevirt.io"]
+            resources: ["datavolumes"]
+            verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - it: creates a namespaced Role granting write access to Secrets in the release namespace
     documentSelector:
       path: kind
