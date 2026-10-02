@@ -10,8 +10,8 @@ console**, a **noVNC graphical display**, and a **web SSH session** — while th
 browser traffic still lands on the same frontend and API you already know.
 
 A VM workspace is nothing more than a `Workspace` CR with `spec.type: vm`. The
-rest of the platform treats it like any other workspace: name, namespace, RBAC,
-start/stop, volumes and the API surface are unchanged.
+rest of the platform shares its name, namespace, RBAC and start/stop model.
+VM disks and guest access have their own mappings, described below.
 
 ---
 
@@ -20,10 +20,10 @@ start/stop, volumes and the API surface are unchanged.
 When a user creates a VM workspace, the controller translates the
 container-shaped `spec.template` into a KubeVirt `VirtualMachine` (the main
 container image becomes the guest's root disk) and KubeVirt runs it as a
-`virt-launcher` pod with QEMU. Users reach the guest — not through the HTTP
-proxy (that is for container apps on port 80) — but through the API's
-WebSocket bridges, which dial KubeVirt's aggregated subresources on the API
-server.
+`virt-launcher` pod with QEMU. Users reach the guest through the API's console
+bridges or, for an in-guest web app on a declared port, through the HTTP proxy
+and workspace Service. The serial/VNC bridges dial KubeVirt's aggregated
+subresources on the API server; the SSH bridge dials the launcher endpoint.
 
 ```
 workspace {{name}} in namespace {{ns}}
@@ -33,10 +33,11 @@ workspace {{name}} in namespace {{ns}}
   └── Service {{name}}:80                            ← still created; targets the launcher pod
 ```
 
-The container-based proxy path is untouched: `vm` workspaces simply don't serve
-an HTTP app on port 80 yet (that is a later phase; the Service remains for
-networking identity and the SSH bridge). GUI and shell access are handled by
-the API bridges described below.
+The first declared guest port maps to Service port 80, and KubeVirt's masquerade
+interface forwards it into the guest. This Service path was verified under KVM
+with an in-guest Selkies HTTP server. The guest must run an app on that target
+port: a Service targeting SSH port 22 is not an HTTP endpoint. The VM Connect
+button opens the noVNC display; console access is described below.
 
 ---
 
@@ -67,8 +68,9 @@ Every workspace declares how it should be run via `spec.type` (default
 `spec.template.spec` stays **container-shaped** for all types — the VM path
 reuses the existing PodSpec schema (image, resources, ports, tolerations,
 nodeSelector), so validation and the API payloads are unchanged. The API rejects
-`volume_mounts` and `shared_memory` for `vm` workspaces today; `gpu_request` is
-allowed and flows into the VM (see [GPU passthrough](#gpu-passthrough)).
+`shared_memory` for `vm` workspaces. `volume_mounts` reference reusable CDI
+data disks and guest mount paths for VMs (see below); `gpu_request` is allowed
+and flows into the VM (see [GPU passthrough](#gpu-passthrough)).
 
 ---
 
@@ -95,6 +97,39 @@ The main container image becomes the guest's root disk:
   `spec.persistentRootDiskSize` (default `10Gi`). Depends on CDI
   (`kubevirt.cdi.enabled` in the chart).
 
+### Reusable guest data disks
+
+Create a volume with API payload `type: vm-disk` (or choose **VM Data Disk** in
+Volumes → New). CDI creates a blank, filesystem-mode DataVolume/PVC with
+ReadWriteOnce access. It appears in Volumes while pending and once bound; CDI
+must be installed. Existing container PVCs cannot be converted to guest disks.
+
+Attach it when creating a VM through the workspace's `volume_mounts`, for example:
+
+```json
+"volume_mounts": [{"name": "project-data", "mount_path": "/data"}]
+```
+
+The workspace's Image must support cloud-init with `#cloud-config` user-data.
+The controller adds a virtio disk with a stable serial and a per-boot command
+using `/dev/disk/by-id/virtio-…`, rather than unstable `/dev/vdb` ordering. It
+formats a signature-free blank disk as ext4 on first use, then mounts existing
+ext4 data unchanged on subsequent boots. Partitioned/other filesystem disks are
+not reformatted. A newly formatted mount is assigned to the Image's default
+user when that account already exists; existing data ownership is preserved.
+Mount paths must be unique, clean absolute data paths; system paths such as
+`/`, `/etc`, `/dev` and `/usr` are rejected.
+
+Data disks are **independent of the workspace**: stop/start, Reboot, Reset and
+workspace deletion retain them. Delete them explicitly through Volumes when
+no longer needed. Reset still reprovisions only the VM-owned root disk.
+One writable workspace can claim a data disk at a time, including while stopped.
+To reattach it to another workspace, delete the old workspace and wait for its
+VMI to disappear. The controller serializes claims with resource-version
+updates; the API refuses deletion while a workspace/VMI uses the disk.
+Disk hotplug, resize and changing attachment lists through PUT are not supported
+in this version; recreate the workspace to change its disk attachments.
+
 ### Networking
 
 A single **masquerade** interface is attached to the pod network, forwarding
@@ -105,6 +140,16 @@ network, so all ports share one interface. The interface carries a
 workspace name, locally-administered unicast `02:` prefix) so the guest's NIC
 address survives VMI recreation — otherwise KubeVirt rolls a fresh random MAC on
 every start and strands DHCP bindings and MAC-matched network configs.
+
+The `debian-xfce` catalog defaults also replace the base cloud image's netplan
+configuration with a MAC-independent `en*` match using DHCP and
+`systemd-networkd`. A per-boot command applies it before package installation,
+disables cloud-init network regeneration, and writes an editable static
+`/etc/resolv.conf` with public resolvers `1.1.1.1` and `9.9.9.9`. Operators
+requiring cluster-internal DNS or restricting public DNS egress should customize
+these addresses in the Image's `defaultUserData`.
+Catalog-default changes require catalog release/vendoring and do not retrofit
+an already-provisioned persistent guest automatically.
 
 ### Resources
 
@@ -153,24 +198,51 @@ controller attaches a `cloudInitNoCloud` datasource with the user-data
   `#cloud-config` that sets the account password (`chpasswd list:`, multi-line
   form — a YAML list is silently ignored by cloud-init).
 
-Because a containerDisk root is ephemeral, cloud-init runs again on every start;
-for DataVolume roots the user-data re-asserts on each boot (see `runcmd`
-below).
+Because a containerDisk root is ephemeral, cloud-init runs again on every start.
+For DataVolume roots, first-boot modules such as `ssh_authorized_keys` and
+`runcmd` are PER_INSTANCE: a restart does not re-run them.
 
 ### SSH key seeding
 
-The workspace owner's `SshKey` CR public keys (namespace-scoped, created in the
-user's personal namespace via the API) are merged into the generated user-data:
+The controller watches `SshKey` create/update/delete events and reconciles all
+VM workspaces in the same personal namespace, including stopped VMs.
 
-- `ssh_authorized_keys` seeds the keys on first boot (cloud-init's
-  PER_INSTANCE module — only the first boot).
-- a `runcmd` (PER_ALWAYS) entry idempotently appends the same keys to
-  `~<user>/.ssh/authorized_keys` on **every** boot, base64-safe, so reboots
-  never drop the keys again.
+For Images declaring `defaultUser` and opting in with the metadata annotation
+`kubeworkspaces.io/ssh-key-propagation: qemuGuestAgent`, it maintains a
+Workspace-owned `{name}-sshkeys`
+Secret and attaches it through KubeVirt's `accessCredentials.sshPublicKey`
+with `qemuGuestAgent` propagation to that user. The Secret is attached even when
+the key list is empty, so the first addition and last deletion both propagate
+without recreating the VM. Keys are not baked into these guests' cloud-init
+data; this avoids restoring revoked keys on reboot.
 
-Keys are read by the controller at VM-create time via the uncached `APIReader`
-(the controller does not watch `SshKey` CRs; new keys apply on the next
-workspace patch or controller restart).
+**The platform owns that guest user's entire `authorized_keys` file.** Manual
+guest entries are replaced; save every desired public key as a `SshKey` CR.
+Deleting a CR revokes the key when KubeVirt synchronizes the Secret. Delivery is
+eventual (Secret-volume refresh plus KubeVirt's agent polling), not synchronous
+with the API response, and does not terminate already-open SSH sessions.
+
+The guest must install and run `qemu-guest-agent` and permit its SSH-key commands.
+The Debian VM and XFCE catalog defaults install and start the agent and opt in
+with this annotation. Cloud-init capability alone does not opt an Image in;
+existing custom images keep their first-boot behavior. Images without an agent cannot synchronize
+keys through this mechanism. Inspect the VMI's `AgentConnected` and
+`AccessCredentialsSynchronized` conditions when diagnosing failed delivery:
+
+```sh
+kubectl -n "$NAMESPACE" get vmi "$WORKSPACE" -o jsonpath='{.status.conditions}'
+```
+
+**Existing VMs need one stop/start or platform Reboot** after the controller
+adds the credential reference: KubeVirt cannot attach a new credential Secret
+to a running VMI. No restart is forced. Once attached, additions, rotations and
+deletions apply live. Persistent disks are preserved by Reboot; Reset reprovisions
+the guest and is not needed for migration. Save existing manual keys in the
+Profile's SSH-key list before migrating.
+
+For other Images, the controller retains `ssh_authorized_keys` first-boot
+cloud-init seeding. Neither that module nor `runcmd` guarantees re-seeding on
+reboot, and deletion does not revoke keys already written to those guests.
 
 ### Lifecycle & status
 
@@ -312,6 +384,62 @@ Automated checks cover tier transitions, hysteresis, idle refresh, configuration
 validation, encoding and repaint messages, audio-advertisement preservation,
 and controller shutdown on EOF.
 
+### Native VNC and serial access with `virtctl`
+
+Operators with Kubernetes access can connect directly through KubeVirt using
+[`virtctl`](https://kubevirt.io/user-guide/user_workloads/virtctl_client_tool/).
+Use a `virtctl` version matching the installed KubeVirt release and a kubeconfig
+for the target cluster. These commands use Kubernetes credentials, rather than
+the kube-workspaces browser session or native-client login.
+
+Set the workspace's namespace and name (the VM/VMI has the same name):
+
+```sh
+NAMESPACE=your-personal-namespace
+WORKSPACE=your-vm-workspace
+kubectl -n "$NAMESPACE" get vmi "$WORKSPACE"
+kubectl auth can-i get virtualmachineinstances/vnc --api-group=subresources.kubevirt.io -n "$NAMESPACE"
+```
+
+With `remote-viewer` installed locally (commonly the `virt-viewer` package),
+launch a graphical viewer:
+
+```sh
+virtctl -n "$NAMESPACE" vnc "$WORKSPACE"
+```
+
+To use a different VNC viewer, keep a local proxy running:
+
+```sh
+virtctl -n "$NAMESPACE" vnc --proxy-only "$WORKSPACE"
+```
+
+Connect the viewer to `127.0.0.1` at the port printed by `virtctl`, for example
+`remote-viewer vnc://127.0.0.1:5900` if the printed port is 5900. Leave the
+proxy process running until you close the viewer, then stop it with Ctrl-C.
+No guest VNC server, Service exposure, or public VNC port is needed: traffic
+is tunneled through the Kubernetes API to QEMU.
+
+For a serial console (a guest getty is required):
+
+```sh
+kubectl auth can-i get virtualmachineinstances/console --api-group=subresources.kubevirt.io -n "$NAMESPACE"
+virtctl -n "$NAMESPACE" console "$WORKSPACE"
+```
+
+Use Ctrl-] to leave the serial console. Kubernetes RBAC must grant `get` on
+`virtualmachineinstances/vnc` or `virtualmachineinstances/console` in API group
+`subresources.kubevirt.io`, scoped to the target namespace; a platform editor
+role alone does not supply kubeconfig credentials. A stopped VM must be started
+before either console is available.
+
+Direct `virtctl` access bypasses the platform's display leases, shared-display
+membership, and takeover prompts. Close browser/native display sessions first
+and coordinate with other users: another direct VNC or serial connection can
+fail or displace the active connection. For shared viewing and consent-based
+control transfer, use the platform clients. To diagnose tunnel failures, add
+`-v 4` to the `virtctl` command and check the VMI's status and your RBAC.
+
 ### Web SSH — `GET /v1/workspaces/{name}/ssh`
 
 A browser-native SSH into the guest:
@@ -321,14 +449,14 @@ A browser-native SSH into the guest:
    memory only, for the lifetime of the bridge — never persisted server-side.
 2. The bridge dials the **Service Endpoints** address — the `virt-launcher` pod
    IP `:22`, where KubeVirt's masquerade DNAT forwards to the guest sshd — with
-   `x/crypto/ssh`. (The Service ClusterIP does not DNAT correctly for VMs, so
-   the pod-IP endpoints path is used; it works cross-node.)
+   `x/crypto/ssh`. The bridge retains this direct-endpoint path; Service→guest
+   HTTP routing has also been verified under KVM.
 3. Guest sshd host keys are self-generated and rotate per image rebuild, so no
    host-key verification is possible — instead the session rides the
    authenticated WebSocket over TLS to the API (auth at the API, not at the
    guest's sshd).
 
-The guest must be running sshd and have one of the owner's seeded keys for
+The guest must be running sshd and have one of the owner's propagated keys for
 `defaultUser` (see [SSH key seeding](#ssh-key-seeding)).
 
 ### Sessions, take-over and control endpoints

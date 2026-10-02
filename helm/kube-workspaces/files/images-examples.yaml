@@ -100,6 +100,7 @@ metadata:
   name: debian-vm
   annotations:
     catalog.kubeworkspaces.io/example: "true"
+    kubeworkspaces.io/ssh-key-propagation: qemuGuestAgent
 spec:
   displayName: Debian VM
   description: Debian Linux virtual machine (KubeVirt containerDisk). Boots a full
@@ -117,6 +118,18 @@ spec:
   defaultUser: root
   defaultPassword: debian
   defaultCloudInit: true
+  defaultUserData: |
+    #cloud-config
+    ssh_pwauth: true
+    chpasswd:
+      expire: false
+      list: |
+        root:debian
+    package_update: true
+    packages:
+    - qemu-guest-agent
+    runcmd:
+    - systemctl enable --now qemu-guest-agent.service
   workspaceTypes:
   - vm
 ---
@@ -126,6 +139,7 @@ metadata:
   name: debian-xfce
   annotations:
     catalog.kubeworkspaces.io/example: "true"
+    kubeworkspaces.io/ssh-key-propagation: qemuGuestAgent
 spec:
   displayName: Debian Desktop XFCE
   description: Debian Linux virtual machine with a lightweight XFCE desktop,
@@ -164,6 +178,37 @@ spec:
       expire: false
       list: |
         debian:debian
+    # bootcmd runs before package installation and on every boot. Replace the
+    # cloud image's MAC-bound netplan configuration before installing XFCE;
+    # networkd owns the NIC even after NetworkManager is pulled in by the task.
+    bootcmd:
+    - |
+      set -eu
+      mkdir -p /etc/netplan /etc/cloud/cloud.cfg.d
+      printf 'network: {config: disabled}\n' > /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+      cat > /etc/netplan/50-cloud-init.yaml <<'EOF'
+      network:
+        version: 2
+        renderer: networkd
+        ethernets:
+          workspace:
+            match:
+              name: "en*"
+            dhcp4: true
+            dhcp6: false
+            dhcp4-overrides:
+              use-dns: false
+            nameservers:
+              addresses: [1.1.1.1, 9.9.9.9]
+      EOF
+      chmod 600 /etc/netplan/50-cloud-init.yaml
+      netplan apply
+      # Public DNS avoids hard-coding a cluster-specific Service IP.
+      # Use a regular file rather than the cloud image's resolved stub symlink;
+      # keep it editable so operators can supply site-specific resolvers.
+      rm -f /etc/resolv.conf
+      printf 'nameserver 1.1.1.1\nnameserver 9.9.9.9\n' > /etc/resolv.conf
+      chmod 644 /etc/resolv.conf
     package_update: true
     packages:
     - task-xfce-desktop
@@ -317,6 +362,7 @@ spec:
     # removal triggers update-grub, and power_state then reboots.
     - DEBIAN_FRONTEND=noninteractive apt-get -y purge 'linux-image-*-cloud-amd64' 'linux-headers-*-cloud-amd64' 'linux-image-cloud-amd64' || true
     - systemctl daemon-reload
+    - systemctl enable --now qemu-guest-agent.service
     - systemctl enable --now kw-display-resize.service selkies.service
     power_state:
       mode: reboot
