@@ -17,3 +17,4 @@
 
 # Test tooling installed by scripts/install-tools.sh
 .bin/
+__pycache__/

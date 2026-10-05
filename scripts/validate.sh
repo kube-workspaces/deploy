@@ -11,9 +11,14 @@
 SCRIPT_NAME="validate"
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
 
-require_tools kustomize helm kubectl awk grep
+require_tools kustomize helm kubectl awk grep python3
 
 cd "$REPO_ROOT"
+
+group "Windows proof tooling"
+check "Windows proof hardware/storage regression tests" \
+  python3 -m unittest discover -s scripts -p 'test_windows_vm_proof.py'
+endgroup
 
 # Kubernetes version to validate manifests against. Keep in step with the
 # kind node image used by the cluster tests.

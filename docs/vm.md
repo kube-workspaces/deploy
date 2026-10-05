@@ -13,6 +13,10 @@ A VM workspace is nothing more than a `Workspace` CR with `spec.type: vm`. The
 rest of the platform shares its name, namespace, RBAC and start/stop model.
 VM disks and guest access have their own mappings, described below.
 
+Windows 11 guest support is being validated separately. Operators can use the
+[Windows proof tooling and prerequisites](windows-vm.md) for isolated direct
+KubeVirt VMs; an enabled Windows workspace catalog/profile is not yet shipped.
+
 ---
 
 ## Overview
