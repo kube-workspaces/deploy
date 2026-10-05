@@ -88,6 +88,11 @@ rules:
   - apiGroups: ["cdi.kubevirt.io"]
     resources: ["datavolumes"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Admin CRD browser: read instances across the KubeVirt and CDI CRD groups,
+  # including resources supplied by externally installed operators.
+  - apiGroups: ["kubevirt.io", "cdi.kubevirt.io", "snapshot.kubevirt.io", "instancetype.kubevirt.io", "pool.kubevirt.io", "migrations.kubevirt.io", "export.kubevirt.io", "clone.kubevirt.io", "backup.kubevirt.io", "template.kubevirt.io", "forklift.cdi.kubevirt.io"]
+    resources: ["*"]
+    verbs: ["get", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
