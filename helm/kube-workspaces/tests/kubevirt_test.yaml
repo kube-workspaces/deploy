@@ -13,6 +13,24 @@ suite: kubevirt
 templates:
   - kubevirt.yaml
 tests:
+  - it: leaves backend-state storage on the default class
+    set:
+      kubevirt.enabled: true
+    asserts:
+      - isNull:
+          path: spec.configuration.vmStateStorageClass
+        documentIndex: 10
+
+  - it: renders an explicit backend-state storage class
+    set:
+      kubevirt.enabled: true
+      kubevirt.vmStateStorageClass: nfs-csi
+    asserts:
+      - equal:
+          path: spec.configuration.vmStateStorageClass
+          value: nfs-csi
+        documentIndex: 10
+
   - it: renders nothing by default
     asserts:
       - hasDocuments:

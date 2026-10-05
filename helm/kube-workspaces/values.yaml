@@ -245,6 +245,11 @@ kubevirt:
   # useEmulation runs guests in software emulation (no /dev/kvm required).
   # Slow but works everywhere — enable for kind/CI/nodes without KVM.
   useEmulation: false
+  # Optional override for persistent TPM/EFI backend-state PVCs. Empty uses
+  # the default class. With an explicit class and an empty CDI StorageProfile,
+  # KubeVirt requests RWX; RWO-only providers need an explicit Filesystem/RWO
+  # claimPropertySet. See docs/windows-vm.md before setting this.
+  vmStateStorageClass: ""
   # cdi installs the Containerized Data Importer (files/cdi-operator.yaml)
   # plus the CDI CR. Required for Image images with persistentRootDisk: true
   # (DataVolume-backed VM root disks). Ignored unless kubevirt.enabled.

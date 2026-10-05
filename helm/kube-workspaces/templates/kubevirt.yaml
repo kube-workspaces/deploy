@@ -28,6 +28,9 @@ metadata:
 spec:
   certificateRotateStrategy: {}
   configuration:
+    {{- if .Values.kubevirt.vmStateStorageClass }}
+    vmStateStorageClass: {{ .Values.kubevirt.vmStateStorageClass | quote }}
+    {{- end }}
     developerConfiguration:
       # useEmulation runs guests without /dev/kvm (slow, fine for kind/CI).
       useEmulation: {{ .Values.kubevirt.useEmulation }}
