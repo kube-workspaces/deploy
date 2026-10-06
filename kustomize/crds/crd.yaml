@@ -8089,9 +8089,76 @@ spec:
                 - vm
                 - scratch
                 type: string
+              vmProfile:
+                description: VMProfile is the stable resolved guest/source identity
+                  for VM workspaces.
+                properties:
+                  cpuCores:
+                    default: 4
+                    description: CPUCores is the resolved guest CPU count (minimum
+                      2 for Windows 11).
+                    format: int32
+                    minimum: 2
+                    type: integer
+                  generation:
+                    description: |-
+                      Generation identifies root, firmware/TPM identity and bootstrap credentials.
+                      The controller creates it once and replaces it only during an explicit Reset.
+                    type: string
+                  guestMemory:
+                    default: 8Gi
+                    description: GuestMemory is resolved guest RAM, independent of
+                      launcher overhead.
+                    type: string
+                  id:
+                    description: ID selects a versioned controller-supported profile,
+                      not arbitrary QEMU configuration.
+                    enum:
+                    - windows11-amd64-v1
+                    type: string
+                    x-kubernetes-validations:
+                    - message: VM guest profile ID is immutable
+                      rule: self == oldSelf
+                  image:
+                    description: Image is the exact OCI digest used for this provisioning
+                      generation.
+                    pattern: ^.+@sha256:[a-f0-9]{64}$
+                    type: string
+                    x-kubernetes-validations:
+                    - message: Resolved VM source is immutable
+                      rule: self == oldSelf
+                  importCertConfigMapName:
+                    description: |-
+                      ImportCertConfigMapName names same-namespace private registry CA PEM files.
+                      Empty uses the CDI importer's normal trust roots.
+                    type: string
+                  importSecretName:
+                    description: |-
+                      ImportSecretName names same-namespace CDI pod-import credentials with
+                      accessKeyId (registry username) and secretKey (password/token).
+                    type: string
+                  rootDiskSize:
+                    default: 80Gi
+                    description: RootDiskSize is the resolved persistent root capacity
+                      (including image virtual size).
+                    type: string
+                  storageClassName:
+                    description: StorageClassName selects the root StorageClass; empty
+                      uses the cluster default.
+                    type: string
+                required:
+                - id
+                - image
+                type: object
             required:
             - template
             type: object
+            x-kubernetes-validations:
+            - message: VM guest profiles require type vm
+              rule: '!has(self.vmProfile) || self.type == ''vm'''
+            - message: The main image must match the resolved VM source
+              rule: '!has(self.vmProfile) || (size(self.template.spec.containers)
+                == 1 && self.template.spec.containers[0].image == self.vmProfile.image)'
           status:
             description: WorkspaceStatus defines the observed state of Workspace.
             properties:
@@ -9898,6 +9965,15 @@ spec:
                     description: 'NeedsNoopSW: serve a no-op ServiceWorker at /sw.js
                       to prevent SW registration errors.'
                     type: boolean
+                  port:
+                    description: |-
+                      Port: the workspace Service port the proxy targets instead of the default
+                      80. The workspace Service maps the first container port to Service port 80
+                      and exposes additional container ports on their own port numbers; images
+                      whose primary proxied traffic should ride a different Service port can set
+                      this to point the proxy there. 0 (unset) keeps the proxy on port 80.
+                    format: int32
+                    type: integer
                   preservePathPrefix:
                     description: |-
                       PreservePathPrefix: forward the full proxy path (including /proxy/{ns}/{name}) to the
@@ -9991,6 +10067,14 @@ spec:
                 - bochs
                 - cirrus
                 - ramfb
+                type: string
+              vmProfile:
+                description: |-
+                  VMProfile selects a named controller-supported guest contract. Empty keeps
+                  the existing Linux/legacy VM behaviour. Windows roots must be private,
+                  generalised, persistent and pinned by OCI digest.
+                enum:
+                - windows11-amd64-v1
                 type: string
               workspaceTypes:
                 description: |-

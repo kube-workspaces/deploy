@@ -70,14 +70,18 @@ paths:
                                           url: https://github.com/coder/code-server
                                         - title: Docker Hub
                                           url: https://hub.docker.com/r/codercom/code-server
+                                      memory_limit: Illum quia cum corrupti voluptatem inventore dicta.
+                                      memory_request: Perferendis eius.
                                       name: Code Server (VS Code)
+                                      persistent_root_disk: false
+                                      persistent_root_disk_size: Dolore libero repudiandae facere provident quos laborum.
                                       privileged: false
                                       proxy_config:
                                         custom_request_headers:
                                             x-tenant: workspaces
-                                        inject_base_tag: true
-                                        needs_noop_sw: false
-                                        preserve_path_prefix: false
+                                        inject_base_tag: false
+                                        needs_noop_sw: true
+                                        preserve_path_prefix: true
                                         rewrite_host_absolute_paths: false
                                         tls_insecure: false
                                         websocket_paths:
@@ -90,6 +94,7 @@ paths:
                                       tags:
                                         - development
                                         - vscode
+                                      vm_profile: Repudiandae molestiae voluptatem nemo dolor id nemo.
                                       workspace_types:
                                         - container
                                     - category: IDE
@@ -123,14 +128,18 @@ paths:
                                           url: https://github.com/coder/code-server
                                         - title: Docker Hub
                                           url: https://hub.docker.com/r/codercom/code-server
+                                      memory_limit: Illum quia cum corrupti voluptatem inventore dicta.
+                                      memory_request: Perferendis eius.
                                       name: Code Server (VS Code)
+                                      persistent_root_disk: false
+                                      persistent_root_disk_size: Dolore libero repudiandae facere provident quos laborum.
                                       privileged: false
                                       proxy_config:
                                         custom_request_headers:
                                             x-tenant: workspaces
-                                        inject_base_tag: true
-                                        needs_noop_sw: false
-                                        preserve_path_prefix: false
+                                        inject_base_tag: false
+                                        needs_noop_sw: true
+                                        preserve_path_prefix: true
                                         rewrite_host_absolute_paths: false
                                         tls_insecure: false
                                         websocket_paths:
@@ -143,6 +152,7 @@ paths:
                                       tags:
                                         - development
                                         - vscode
+                                      vm_profile: Repudiandae molestiae voluptatem nemo dolor id nemo.
                                       workspace_types:
                                         - container
                                     - category: IDE
@@ -176,14 +186,18 @@ paths:
                                           url: https://github.com/coder/code-server
                                         - title: Docker Hub
                                           url: https://hub.docker.com/r/codercom/code-server
+                                      memory_limit: Illum quia cum corrupti voluptatem inventore dicta.
+                                      memory_request: Perferendis eius.
                                       name: Code Server (VS Code)
+                                      persistent_root_disk: false
+                                      persistent_root_disk_size: Dolore libero repudiandae facere provident quos laborum.
                                       privileged: false
                                       proxy_config:
                                         custom_request_headers:
                                             x-tenant: workspaces
-                                        inject_base_tag: true
-                                        needs_noop_sw: false
-                                        preserve_path_prefix: false
+                                        inject_base_tag: false
+                                        needs_noop_sw: true
+                                        preserve_path_prefix: true
                                         rewrite_host_absolute_paths: false
                                         tls_insecure: false
                                         websocket_paths:
@@ -196,6 +210,7 @@ paths:
                                       tags:
                                         - development
                                         - vscode
+                                      vm_profile: Repudiandae molestiae voluptatem nemo dolor id nemo.
                                       workspace_types:
                                         - container
                             example:
@@ -230,14 +245,18 @@ paths:
                                       url: https://github.com/coder/code-server
                                     - title: Docker Hub
                                       url: https://hub.docker.com/r/codercom/code-server
+                                  memory_limit: Illum quia cum corrupti voluptatem inventore dicta.
+                                  memory_request: Perferendis eius.
                                   name: Code Server (VS Code)
+                                  persistent_root_disk: false
+                                  persistent_root_disk_size: Dolore libero repudiandae facere provident quos laborum.
                                   privileged: false
                                   proxy_config:
                                     custom_request_headers:
                                         x-tenant: workspaces
-                                    inject_base_tag: true
-                                    needs_noop_sw: false
-                                    preserve_path_prefix: false
+                                    inject_base_tag: false
+                                    needs_noop_sw: true
+                                    preserve_path_prefix: true
                                     rewrite_host_absolute_paths: false
                                     tls_insecure: false
                                     websocket_paths:
@@ -250,6 +269,7 @@ paths:
                                   tags:
                                     - development
                                     - vscode
+                                  vm_profile: Repudiandae molestiae voluptatem nemo dolor id nemo.
                                   workspace_types:
                                     - container
                                 - category: IDE
@@ -283,14 +303,18 @@ paths:
                                       url: https://github.com/coder/code-server
                                     - title: Docker Hub
                                       url: https://hub.docker.com/r/codercom/code-server
+                                  memory_limit: Illum quia cum corrupti voluptatem inventore dicta.
+                                  memory_request: Perferendis eius.
                                   name: Code Server (VS Code)
+                                  persistent_root_disk: false
+                                  persistent_root_disk_size: Dolore libero repudiandae facere provident quos laborum.
                                   privileged: false
                                   proxy_config:
                                     custom_request_headers:
                                         x-tenant: workspaces
-                                    inject_base_tag: true
-                                    needs_noop_sw: false
-                                    preserve_path_prefix: false
+                                    inject_base_tag: false
+                                    needs_noop_sw: true
+                                    preserve_path_prefix: true
                                     rewrite_host_absolute_paths: false
                                     tls_insecure: false
                                     websocket_paths:
@@ -303,6 +327,7 @@ paths:
                                   tags:
                                     - development
                                     - vscode
+                                  vm_profile: Repudiandae molestiae voluptatem nemo dolor id nemo.
                                   workspace_types:
                                     - container
                                 - category: IDE
@@ -336,14 +361,18 @@ paths:
                                       url: https://github.com/coder/code-server
                                     - title: Docker Hub
                                       url: https://hub.docker.com/r/codercom/code-server
+                                  memory_limit: Illum quia cum corrupti voluptatem inventore dicta.
+                                  memory_request: Perferendis eius.
                                   name: Code Server (VS Code)
+                                  persistent_root_disk: false
+                                  persistent_root_disk_size: Dolore libero repudiandae facere provident quos laborum.
                                   privileged: false
                                   proxy_config:
                                     custom_request_headers:
                                         x-tenant: workspaces
-                                    inject_base_tag: true
-                                    needs_noop_sw: false
-                                    preserve_path_prefix: false
+                                    inject_base_tag: false
+                                    needs_noop_sw: true
+                                    preserve_path_prefix: true
                                     rewrite_host_absolute_paths: false
                                     tls_insecure: false
                                     websocket_paths:
@@ -356,6 +385,7 @@ paths:
                                   tags:
                                     - development
                                     - vscode
+                                  vm_profile: Repudiandae molestiae voluptatem nemo dolor id nemo.
                                   workspace_types:
                                     - container
         post:
@@ -401,15 +431,19 @@ paths:
                                   url: https://github.com/coder/code-server
                                 - title: Docker Hub
                                   url: https://hub.docker.com/r/codercom/code-server
+                            memory_limit: Ab et eligendi aliquid.
+                            memory_request: Reiciendis maiores tempora qui dolorum.
                             name: Code Server (VS Code)
+                            persistent_root_disk: true
+                            persistent_root_disk_size: Nemo sint illo adipisci voluptas.
                             privileged: false
                             proxy_config:
                                 custom_request_headers:
                                     x-tenant: workspaces
                                 inject_base_tag: false
                                 needs_noop_sw: false
-                                preserve_path_prefix: false
-                                rewrite_host_absolute_paths: false
+                                preserve_path_prefix: true
+                                rewrite_host_absolute_paths: true
                                 tls_insecure: true
                                 websocket_paths:
                                     - /websockify
@@ -421,6 +455,7 @@ paths:
                             tags:
                                 - development
                                 - vscode
+                            vm_profile: windows11-amd64-v1
                             workspace_types:
                                 - container
             responses:
@@ -462,15 +497,19 @@ paths:
                                       url: https://github.com/coder/code-server
                                     - title: Docker Hub
                                       url: https://hub.docker.com/r/codercom/code-server
+                                memory_limit: Rerum rerum consequatur placeat delectus.
+                                memory_request: Ut quis maiores odio quibusdam soluta.
                                 name: Code Server (VS Code)
+                                persistent_root_disk: true
+                                persistent_root_disk_size: Aliquid porro cupiditate commodi qui eius quo.
                                 privileged: false
                                 proxy_config:
                                     custom_request_headers:
                                         x-tenant: workspaces
-                                    inject_base_tag: true
+                                    inject_base_tag: false
                                     needs_noop_sw: true
                                     preserve_path_prefix: false
-                                    rewrite_host_absolute_paths: false
+                                    rewrite_host_absolute_paths: true
                                     tls_insecure: true
                                     websocket_paths:
                                         - /websockify
@@ -482,6 +521,7 @@ paths:
                                 tags:
                                     - development
                                     - vscode
+                                vm_profile: Velit fugit culpa.
                                 workspace_types:
                                     - container
                 "400":
@@ -523,13 +563,10 @@ paths:
                                     - created_at: "2025-01-02T15:04:05Z"
                                       name: workspaces
                                       phase: Active
+                                    - created_at: "2025-01-02T15:04:05Z"
+                                      name: workspaces
+                                      phase: Active
                             example:
-                                - created_at: "2025-01-02T15:04:05Z"
-                                  name: workspaces
-                                  phase: Active
-                                - created_at: "2025-01-02T15:04:05Z"
-                                  name: workspaces
-                                  phase: Active
                                 - created_at: "2025-01-02T15:04:05Z"
                                   name: workspaces
                                   phase: Active
@@ -793,6 +830,28 @@ paths:
                                       size: 10Gi
                                       storage_class: standard
                                       type: vm-disk
+                                    - access_mode: ReadWriteOnce
+                                      created_at: "2025-01-02T15:04:05Z"
+                                      labels:
+                                        managed-by: kube-workspaces
+                                        workspace: my-workspace
+                                      name: my-workspace-data
+                                      namespace: workspaces
+                                      phase: Bound
+                                      size: 10Gi
+                                      storage_class: standard
+                                      type: vm-disk
+                                    - access_mode: ReadWriteOnce
+                                      created_at: "2025-01-02T15:04:05Z"
+                                      labels:
+                                        managed-by: kube-workspaces
+                                        workspace: my-workspace
+                                      name: my-workspace-data
+                                      namespace: workspaces
+                                      phase: Bound
+                                      size: 10Gi
+                                      storage_class: standard
+                                      type: vm-disk
                             example:
                                 - access_mode: ReadWriteOnce
                                   created_at: "2025-01-02T15:04:05Z"
@@ -834,7 +893,7 @@ paths:
                             namespace: workspaces
                             size: 10Gi
                             storage_class: standard
-                            type: vm-disk
+                            type: pvc
             responses:
                 "201":
                     description: Created response.
@@ -952,7 +1011,7 @@ paths:
                                 phase: Bound
                                 size: 10Gi
                                 storage_class: standard
-                                type: pvc
+                                type: vm-disk
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
@@ -1009,6 +1068,7 @@ paths:
                                       name: my-workspace
                                       namespace: workspaces
                                       port: 8080
+                                      provisioned: false
                                       ready_replicas: 1
                                       remote_desktop:
                                         path: /
@@ -1016,6 +1076,7 @@ paths:
                                         protocol: selkies
                                       stopped: false
                                       type: container
+                                      vm_profile: Animi molestias omnis veniam qui dicta.
                                       volume_mounts:
                                         - mount_path: /home/coder
                                           name: my-workspace-data
@@ -1039,6 +1100,7 @@ paths:
                                       name: my-workspace
                                       namespace: workspaces
                                       port: 8080
+                                      provisioned: false
                                       ready_replicas: 1
                                       remote_desktop:
                                         path: /
@@ -1046,6 +1108,7 @@ paths:
                                         protocol: selkies
                                       stopped: false
                                       type: container
+                                      vm_profile: Animi molestias omnis veniam qui dicta.
                                       volume_mounts:
                                         - mount_path: /home/coder
                                           name: my-workspace-data
@@ -1069,6 +1132,7 @@ paths:
                                       name: my-workspace
                                       namespace: workspaces
                                       port: 8080
+                                      provisioned: false
                                       ready_replicas: 1
                                       remote_desktop:
                                         path: /
@@ -1076,6 +1140,7 @@ paths:
                                         protocol: selkies
                                       stopped: false
                                       type: container
+                                      vm_profile: Animi molestias omnis veniam qui dicta.
                                       volume_mounts:
                                         - mount_path: /home/coder
                                           name: my-workspace-data
@@ -1099,6 +1164,7 @@ paths:
                                       name: my-workspace
                                       namespace: workspaces
                                       port: 8080
+                                      provisioned: false
                                       ready_replicas: 1
                                       remote_desktop:
                                         path: /
@@ -1106,6 +1172,7 @@ paths:
                                         protocol: selkies
                                       stopped: false
                                       type: container
+                                      vm_profile: Animi molestias omnis veniam qui dicta.
                                       volume_mounts:
                                         - mount_path: /home/coder
                                           name: my-workspace-data
@@ -1130,6 +1197,7 @@ paths:
                                   name: my-workspace
                                   namespace: workspaces
                                   port: 8080
+                                  provisioned: false
                                   ready_replicas: 1
                                   remote_desktop:
                                     path: /
@@ -1137,6 +1205,7 @@ paths:
                                     protocol: selkies
                                   stopped: false
                                   type: container
+                                  vm_profile: Animi molestias omnis veniam qui dicta.
                                   volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -1160,6 +1229,7 @@ paths:
                                   name: my-workspace
                                   namespace: workspaces
                                   port: 8080
+                                  provisioned: false
                                   ready_replicas: 1
                                   remote_desktop:
                                     path: /
@@ -1167,6 +1237,7 @@ paths:
                                     protocol: selkies
                                   stopped: false
                                   type: container
+                                  vm_profile: Animi molestias omnis veniam qui dicta.
                                   volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -1190,6 +1261,7 @@ paths:
                                   name: my-workspace
                                   namespace: workspaces
                                   port: 8080
+                                  provisioned: false
                                   ready_replicas: 1
                                   remote_desktop:
                                     path: /
@@ -1197,6 +1269,39 @@ paths:
                                     protocol: selkies
                                   stopped: false
                                   type: container
+                                  vm_profile: Animi molestias omnis veniam qui dicta.
+                                  volume_mounts:
+                                    - mount_path: /home/coder
+                                      name: my-workspace-data
+                                - conditions:
+                                    - last_transition_time: "2025-01-02T15:04:05Z"
+                                      message: StatefulSet my-workspace is available
+                                      reason: MinimumReplicasAvailable
+                                      status: "True"
+                                      type: Ready
+                                  container_state:
+                                    message: Container started successfully
+                                    reason: Started
+                                    started_at: "2025-01-02T15:04:05Z"
+                                    state: running
+                                  cpu_limit: "1"
+                                  cpu_request: 500m
+                                  created_at: "2025-01-02T15:04:05Z"
+                                  image: codercom/code-server:latest
+                                  memory_limit: 2Gi
+                                  memory_request: 512Mi
+                                  name: my-workspace
+                                  namespace: workspaces
+                                  port: 8080
+                                  provisioned: false
+                                  ready_replicas: 1
+                                  remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
+                                  stopped: false
+                                  type: container
+                                  vm_profile: Animi molestias omnis veniam qui dicta.
                                   volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -1238,6 +1343,11 @@ paths:
                                   operator: Equal
                                   value: "true"
                             type: container
+                            vm_options:
+                                import_cert_config_map_name: Hic labore tenetur culpa at quae.
+                                import_secret_name: Consequatur ducimus voluptatem amet labore enim praesentium.
+                                root_disk_size: Natus magnam.
+                                storage_class_name: Nobis ipsum qui reiciendis non sit repudiandae.
                             volume_mounts:
                                 - mount_path: /home/coder
                                   name: my-workspace-data
@@ -1269,6 +1379,7 @@ paths:
                                 name: my-workspace
                                 namespace: workspaces
                                 port: 8080
+                                provisioned: true
                                 ready_replicas: 1
                                 remote_desktop:
                                     path: /
@@ -1276,6 +1387,7 @@ paths:
                                     protocol: selkies
                                 stopped: false
                                 type: container
+                                vm_profile: A enim repellendus et.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -1387,6 +1499,7 @@ paths:
                                 name: my-workspace
                                 namespace: workspaces
                                 port: 8080
+                                provisioned: false
                                 ready_replicas: 1
                                 remote_desktop:
                                     path: /
@@ -1394,6 +1507,7 @@ paths:
                                     protocol: selkies
                                 stopped: false
                                 type: container
+                                vm_profile: Porro quibusdam ratione maiores.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -1474,6 +1588,7 @@ paths:
                                 name: my-workspace
                                 namespace: workspaces
                                 port: 8080
+                                provisioned: true
                                 ready_replicas: 1
                                 remote_desktop:
                                     path: /
@@ -1481,6 +1596,7 @@ paths:
                                     protocol: selkies
                                 stopped: false
                                 type: container
+                                vm_profile: Ut quasi commodi ratione veniam.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -1508,6 +1624,69 @@ paths:
                                 type: string
                                 example: workspace "my-workspace-clone" already exists
                             example: workspace "my-workspace-clone" already exists
+    /v1/workspaces/{name}/credentials:
+        get:
+            tags:
+                - workspaces
+            summary: credentials workspaces
+            description: Retrieve this Windows workspace's unique initial credentials; namespace editors/admins only
+            operationId: workspaces#credentials
+            parameters:
+                - name: namespace
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    default: workspaces
+                    example: Dolores non.
+                  example: Adipisci minus est itaque ut doloremque.
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    example: Quo enim repellendus repellat odio odit.
+                  example: Quia voluptas rerum consequatur.
+            responses:
+                "200":
+                    description: OK response.
+                    headers:
+                        Cache-Control:
+                            schema:
+                                type: string
+                                example: Praesentium enim consequatur excepturi ab.
+                            example: Quidem dicta neque quia in.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/WorkspaceInitialCredentials2'
+                            example:
+                                password: Qui quasi ad cum omnis aut.
+                                username: Ab aut voluptatum iusto culpa at consequatur.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Vitae ut eum sapiente perferendis.
+                            example: Laboriosam quod eum minima quo ratione.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Odio occaecati deleniti ut qui quidem.
+                            example: Quia in dolores suscipit non aut ut.
+                "503":
+                    description: 'unavailable: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Itaque qui repudiandae sunt voluptatem ullam praesentium.
+                            example: Delectus voluptatem non.
     /v1/workspaces/{name}/display:
         get:
             tags:
@@ -2161,6 +2340,7 @@ paths:
                                 name: my-workspace
                                 namespace: workspaces
                                 port: 8080
+                                provisioned: true
                                 ready_replicas: 1
                                 remote_desktop:
                                     path: /
@@ -2168,6 +2348,7 @@ paths:
                                     protocol: selkies
                                 stopped: false
                                 type: container
+                                vm_profile: Odit modi repudiandae.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -2242,6 +2423,7 @@ paths:
                                 name: my-workspace
                                 namespace: workspaces
                                 port: 8080
+                                provisioned: false
                                 ready_replicas: 1
                                 remote_desktop:
                                     path: /
@@ -2249,6 +2431,7 @@ paths:
                                     protocol: selkies
                                 stopped: false
                                 type: container
+                                vm_profile: Tenetur consectetur consequatur odio sequi.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -2315,6 +2498,7 @@ paths:
                                 name: my-workspace
                                 namespace: workspaces
                                 port: 8080
+                                provisioned: true
                                 ready_replicas: 1
                                 remote_desktop:
                                     path: /
@@ -2322,6 +2506,7 @@ paths:
                                     protocol: selkies
                                 stopped: false
                                 type: container
+                                vm_profile: Ut minus dolorum voluptatem facilis.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -2431,7 +2616,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Asperiores voluptas ipsam omnis aut atque blanditiis.
+                        example: Illo quia commodi voluptates vel perferendis.
                     description: Default command-line args
                     example:
                         - --bind-addr
@@ -2518,10 +2703,26 @@ components:
                           url: https://github.com/coder/code-server
                         - title: Docker Hub
                           url: https://hub.docker.com/r/codercom/code-server
+                memory_limit:
+                    type: string
+                    description: Guest memory default
+                    example: Officia minima aliquid magnam et.
+                memory_request:
+                    type: string
+                    description: Guest memory request default
+                    example: In rerum consequatur ut.
                 name:
                     type: string
                     description: Display name
                     example: Code Server (VS Code)
+                persistent_root_disk:
+                    type: boolean
+                    description: Import a per-workspace persistent root disk
+                    example: true
+                persistent_root_disk_size:
+                    type: string
+                    description: Persistent root capacity
+                    example: Sapiente nemo dicta nostrum.
                 privileged:
                     type: boolean
                     description: Run container in privileged mode
@@ -2539,16 +2740,22 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Enim quo eveniet.
+                        example: Quidem sit omnis voluptatum ut quam.
                     description: Tags for filtering/searching images
                     example:
                         - development
                         - vscode
+                vm_profile:
+                    type: string
+                    description: Controller-supported VM guest profile
+                    example: windows11-amd64-v1
+                    enum:
+                        - windows11-amd64-v1
                 workspace_types:
                     type: array
                     items:
                         type: string
-                        example: Ipsum dolor quia labore voluptatem aliquam.
+                        example: Tenetur velit voluptas iusto.
                     description: Workspace types this image supports (container, vm, scratch). Empty means container-only
                     example:
                         - container
@@ -2584,14 +2791,18 @@ components:
                       url: https://github.com/coder/code-server
                     - title: Docker Hub
                       url: https://hub.docker.com/r/codercom/code-server
+                memory_limit: Dolorem eius esse consequatur non et impedit.
+                memory_request: Quo et.
                 name: Code Server (VS Code)
+                persistent_root_disk: true
+                persistent_root_disk_size: Itaque vel assumenda beatae vitae quidem voluptatem.
                 privileged: false
                 proxy_config:
                     custom_request_headers:
                         x-tenant: workspaces
-                    inject_base_tag: true
-                    needs_noop_sw: false
-                    preserve_path_prefix: false
+                    inject_base_tag: false
+                    needs_noop_sw: true
+                    preserve_path_prefix: true
                     rewrite_host_absolute_paths: false
                     tls_insecure: false
                     websocket_paths:
@@ -2604,6 +2815,7 @@ components:
                 tags:
                     - development
                     - vscode
+                vm_profile: windows11-amd64-v1
                 workspace_types:
                     - container
             required:
@@ -2731,7 +2943,7 @@ components:
                         nvidia.com/gpu: "true"
                     additionalProperties:
                         type: string
-                        example: Fugiat veritatis quo.
+                        example: Quas dolore sed suscipit in.
                 shared_memory:
                     type: boolean
                     description: Mount /dev/shm as an emptyDir with medium=Memory (required for Chrome, ML frameworks)
@@ -2756,6 +2968,8 @@ components:
                         - container
                         - vm
                         - scratch
+                vm_options:
+                    $ref: '#/components/schemas/VMOptions'
                 volume_mounts:
                     type: array
                     items:
@@ -2791,6 +3005,11 @@ components:
                       operator: Equal
                       value: "true"
                 type: container
+                vm_options:
+                    import_cert_config_map_name: Doloremque id tenetur modi at magnam fuga.
+                    import_secret_name: Aut quis hic repellat.
+                    root_disk_size: Alias dolore.
+                    storage_class_name: Et consequatur et aut.
                 volume_mounts:
                     - mount_path: /home/coder
                       name: my-workspace-data
@@ -2847,7 +3066,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Quo voluptas sit nostrum dignissimos amet hic.
+                        example: Sint sed ipsa est repudiandae ducimus recusandae.
                     description: Supported display transports
                     example:
                         - rfb
@@ -3091,10 +3310,6 @@ components:
                       id: 97f8c4b7a2
                       joined_at: "2026-09-19T15:04:05Z"
                       role: observer
-                    - connected: false
-                      id: 97f8c4b7a2
-                      joined_at: "2026-09-19T15:04:05Z"
-                      role: observer
                 participants: 3
                 protocol: 1
             required:
@@ -3135,7 +3350,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Quod nostrum deserunt.
+                        example: Vero quis.
                     description: Default command-line args injected at workspace creation
                     example:
                         - --bind-addr
@@ -3222,10 +3437,22 @@ components:
                           url: https://github.com/coder/code-server
                         - title: Docker Hub
                           url: https://hub.docker.com/r/codercom/code-server
+                memory_limit:
+                    type: string
+                    example: Hic voluptates harum atque in voluptas voluptatem.
+                memory_request:
+                    type: string
+                    example: Magni et distinctio doloremque placeat ut.
                 name:
                     type: string
                     description: Display name
                     example: Code Server (VS Code)
+                persistent_root_disk:
+                    type: boolean
+                    example: true
+                persistent_root_disk_size:
+                    type: string
+                    example: Sint porro eum facilis eveniet quo.
                 privileged:
                     type: boolean
                     description: Run container in privileged mode
@@ -3242,16 +3469,20 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Nulla inventore impedit beatae.
+                        example: Est in voluptates voluptatem nobis ut.
                     description: Tags for filtering/searching images
                     example:
                         - development
                         - vscode
+                vm_profile:
+                    type: string
+                    description: Controller-supported guest profile
+                    example: Est et dolorem voluptatem quia in.
                 workspace_types:
                     type: array
                     items:
                         type: string
-                        example: Exercitationem consequuntur.
+                        example: Magnam explicabo explicabo ea et minus sunt.
                     description: Workspace types this image supports (container, vm, scratch). Empty means container-only
                     example:
                         - container
@@ -3288,14 +3519,18 @@ components:
                       url: https://github.com/coder/code-server
                     - title: Docker Hub
                       url: https://hub.docker.com/r/codercom/code-server
+                memory_limit: At iure voluptatibus.
+                memory_request: Asperiores corrupti.
                 name: Code Server (VS Code)
+                persistent_root_disk: true
+                persistent_root_disk_size: Non omnis aut voluptatibus adipisci dolorum.
                 privileged: false
                 proxy_config:
                     custom_request_headers:
                         x-tenant: workspaces
-                    inject_base_tag: true
-                    needs_noop_sw: false
-                    preserve_path_prefix: false
+                    inject_base_tag: false
+                    needs_noop_sw: true
+                    preserve_path_prefix: true
                     rewrite_host_absolute_paths: false
                     tls_insecure: false
                     websocket_paths:
@@ -3308,6 +3543,7 @@ components:
                 tags:
                     - development
                     - vscode
+                vm_profile: Atque beatae beatae velit reprehenderit consequatur ut.
                 workspace_types:
                     - container
             required:
@@ -3376,22 +3612,22 @@ components:
                         x-tenant: workspaces
                     additionalProperties:
                         type: string
-                        example: Quasi ad cum.
+                        example: Autem amet.
                 inject_base_tag:
                     type: boolean
                     description: Inject a <base> tag into HTML responses to fix relative path resolution
                     default: false
-                    example: false
+                    example: true
                 needs_noop_sw:
                     type: boolean
                     description: Serve a no-op ServiceWorker at /sw.js to prevent SW registration errors
                     default: false
-                    example: true
+                    example: false
                 preserve_path_prefix:
                     type: boolean
                     description: Forward the full proxy path (including /proxy/{ns}/{name}) to the pod instead of stripping it. Required for apps configured with a base URL matching the proxy prefix.
                     default: false
-                    example: true
+                    example: false
                 rewrite_host_absolute_paths:
                     type: boolean
                     description: Rewrite requests with absolute paths that escape the proxy prefix using Referer header
@@ -3401,12 +3637,12 @@ components:
                     type: boolean
                     description: Connect to backend over HTTPS with skip-verify (for self-signed certs)
                     default: false
-                    example: true
+                    example: false
                 websocket_paths:
                     type: array
                     items:
                         type: string
-                        example: Voluptatum iusto culpa at consequatur.
+                        example: Dolor est adipisci aut.
                     description: Paths that use WebSocket (informational, all paths support WS transparently)
                     example:
                         - /websockify
@@ -3414,9 +3650,9 @@ components:
             example:
                 custom_request_headers:
                     x-tenant: workspaces
-                inject_base_tag: true
+                inject_base_tag: false
                 needs_noop_sw: false
-                preserve_path_prefix: false
+                preserve_path_prefix: true
                 rewrite_host_absolute_paths: false
                 tls_insecure: false
                 websocket_paths:
@@ -3464,7 +3700,7 @@ components:
                     type: string
                     description: Initial role. Defaults to observer
                     default: observer
-                    example: controller
+                    example: observer
                     enum:
                         - observer
                         - controller
@@ -3654,6 +3890,31 @@ components:
                 value: "true"
             required:
                 - key
+        VMOptions:
+            type: object
+            properties:
+                import_cert_config_map_name:
+                    type: string
+                    description: Same-namespace registry CA ConfigMap
+                    example: Cumque eius et.
+                import_secret_name:
+                    type: string
+                    description: Same-namespace CDI accessKeyId/secretKey Secret
+                    example: Quasi maiores provident ea.
+                root_disk_size:
+                    type: string
+                    description: Persistent Windows root capacity, at least 80Gi
+                    example: Sit vel debitis.
+                storage_class_name:
+                    type: string
+                    description: Persistent root StorageClass; empty uses cluster default
+                    example: Est et fugit et assumenda eligendi consequuntur.
+            description: Namespaced Windows root import settings; credentials remain in Kubernetes Secrets
+            example:
+                import_cert_config_map_name: Rerum asperiores sed delectus velit totam mollitia.
+                import_secret_name: Sit sunt accusamus totam excepturi odit.
+                root_disk_size: Temporibus quisquam reprehenderit maiores architecto.
+                storage_class_name: Tempore omnis.
         Volume:
             type: object
             properties:
@@ -3673,7 +3934,7 @@ components:
                         workspace: my-workspace
                     additionalProperties:
                         type: string
-                        example: Ea minima reiciendis sed asperiores debitis.
+                        example: Et voluptas quis eum esse quo voluptatem.
                 name:
                     type: string
                     description: PVC name
@@ -3698,7 +3959,7 @@ components:
                     type: string
                     description: 'Volume type: pvc or vm-disk'
                     default: pvc
-                    example: vm-disk
+                    example: pvc
                     enum:
                         - pvc
                         - vm-disk
@@ -3791,6 +4052,10 @@ components:
                     description: Container port
                     example: 8080
                     format: int64
+                provisioned:
+                    type: boolean
+                    description: Windows native setup and bootstrap removal have completed
+                    example: true
                 ready_replicas:
                     type: integer
                     description: Number of ready replicas
@@ -3811,6 +4076,10 @@ components:
                         - container
                         - vm
                         - scratch
+                vm_profile:
+                    type: string
+                    description: Resolved guest profile; windows11-amd64-v1 uses display-only native provisioning
+                    example: Sit ut at non est voluptas et.
                 volume_mounts:
                     type: array
                     items:
@@ -3841,6 +4110,7 @@ components:
                 name: my-workspace
                 namespace: workspaces
                 port: 8080
+                provisioned: true
                 ready_replicas: 1
                 remote_desktop:
                     path: /
@@ -3848,6 +4118,7 @@ components:
                     protocol: selkies
                 stopped: false
                 type: container
+                vm_profile: Suscipit sequi iusto excepturi itaque.
                 volume_mounts:
                     - mount_path: /home/coder
                       name: my-workspace-data
@@ -3948,6 +4219,42 @@ components:
             required:
                 - name
                 - image
+        WorkspaceInitialCredentials:
+            type: object
+            properties:
+                cache_control:
+                    type: string
+                    example: Similique aut alias velit.
+                password:
+                    type: string
+                    example: Vero alias deleniti deleniti quas nihil sed.
+                username:
+                    type: string
+                    example: Inventore libero iusto quos est.
+            description: Per-workspace initial Windows account, visible only to namespace editors/admins
+            example:
+                cache_control: Odio qui rerum molestias quo est est.
+                password: Recusandae autem voluptate odio.
+                username: Odio et perspiciatis at.
+            required:
+                - username
+                - password
+                - cache_control
+        WorkspaceInitialCredentials2:
+            type: object
+            properties:
+                password:
+                    type: string
+                    example: Et modi et autem dolorum.
+                username:
+                    type: string
+                    example: Sunt voluptas praesentium officiis.
+            example:
+                password: Quaerat sit.
+                username: Repellendus recusandae accusantium ea molestiae.
+            required:
+                - username
+                - password
 tags:
     - name: workspaces
       description: Workspace management service

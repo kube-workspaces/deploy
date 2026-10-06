@@ -12,7 +12,112 @@ scripts, and covers private root export, registry authentication and clone
 validation. Operators supply Windows media and retain prepared disks privately;
 the catalog distributes recipes, not Windows binaries.
 
-## Preflight
+## Create a Windows Image CR and Workspace
+
+The Windows controller/API/UI integration uses the versioned
+`windows11-amd64-v1` profile. Deploy the matching controller and API builds,
+generated Image/Workspace CRDs, and prerequisite RBAC together. When a GitOps
+application owns CRDs/RBAC through a pinned chart, update that chart through its
+normal release/revision workflow; do not override another field manager's schema.
+
+After preparing and privately publishing a generalised image using the
+[build guide](https://github.com/kube-workspaces/image-catalog/blob/main/windows11/BUILD-GUIDE.md),
+create an operator-owned Image (replace the example reference with its real digest):
+
+```yaml
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: windows11-pro-private
+spec:
+  displayName: Windows 11 Pro (private)
+  image: registry.example.com/private/windows11@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  workspaceTypes: [vm]
+  vmProfile: windows11-amd64-v1
+  persistentRootDisk: true
+  persistentRootDiskSize: 80Gi
+  memoryLimit: 4Gi
+  memoryRequest: 4Gi
+  defaultPort: 0
+```
+
+The digest references the prepared root, not an installer ISO. No shared
+password, Linux cloud-init or Selkies configuration belongs in this Image.
+`defaultPort: 0` advertises no guest web service; access uses hypervisor VNC.
+
+Create CDI credentials and, when needed, a registry CA ConfigMap in the
+Workspace's namespace. Certify an eligible worker with
+`kubeworkspaces.io/windows11-amd64-eligible: "true"` after checking the actual
+CPU/build and persistent-state prerequisites. A minimal Workspace is:
+
+```yaml
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Workspace
+metadata:
+  name: windows-desktop
+  namespace: workspaces
+spec:
+  type: vm
+  vmProfile:
+    id: windows11-amd64-v1
+    image: registry.example.com/private/windows11@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    cpuCores: 2
+    guestMemory: 4Gi
+    rootDiskSize: 80Gi
+    importSecretName: registry-import
+    importCertConfigMapName: registry-ca
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: eligible-worker
+        kubernetes.io/arch: amd64
+      containers:
+        - name: workspace
+          image: registry.example.com/private/windows11@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          resources:
+            requests: {cpu: "2", memory: 4Gi}
+            limits: {cpu: "2", memory: 4Gi}
+```
+
+Omit `importCertConfigMapName` for a registry using normal public trust roots;
+omit `importSecretName` only when the root can legitimately be imported without
+authentication. The controller generates a unique provisioning generation,
+firmware identity, hostname and initial account credentials. Keep `vmProfile`
+and the main image consistent. Normal restart preserves them; Reset creates a
+fresh root/state/credential generation. User data disks are not part of this
+Windows profile.
+
+In the UI select Virtual Machine, choose the Windows Image, set an eligible
+worker, and supply the same-namespace import Secret/CA references. The REST create
+payload uses those references under `vm_options`:
+
+```json
+{
+  "name": "windows-desktop",
+  "namespace": "workspaces",
+  "type": "vm",
+  "container": {
+    "name": "workspace",
+    "image": "registry.example.com/private/windows11@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "cpu_limit": "2",
+    "memory_limit": "4Gi"
+  },
+  "node_selector": {"kubernetes.io/hostname": "eligible-worker"},
+  "vm_options": {"import_secret_name": "registry-import", "import_cert_config_map_name": "registry-ca"}
+}
+```
+
+Windows readiness requires native setup/account completion, guest-agent
+connection and bootstrap removal. The controller gracefully restarts the guest
+once after setup to remove its answer CD, then retains only the unique initial
+credentials in a Workspace-owned Secret. Namespace editors/admins retrieve them
+through `GET /v1/workspaces/windows-desktop/credentials?namespace=workspaces`
+or the workspace's initial-account panel. The response is `Cache-Control:
+no-store`; the answer XML/password is not included in ordinary Image/Workspace
+responses or YAML views. Use the Display connection for login. Serial, SSH,
+Linux mounts and guest-streaming are unavailable for this profile.
+
+## Infrastructure preflight
 
 Target KubeVirt **1.9.x**, CDI **1.61.0**, Linux amd64 KVM workers and operator
 provided Windows 11 Pro/Enterprise media. Select and record the exact supported
