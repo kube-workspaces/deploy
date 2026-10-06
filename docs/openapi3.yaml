@@ -3984,6 +3984,16 @@ components:
         VolumeMount:
             type: object
             properties:
+                bus:
+                    type: string
+                    description: Disk bus type for VMs when type is 'cdrom' (e.g. 'sata', 'ide'). Ignored for 'disk' type.
+                    example: sata
+                    enum:
+                        - sata
+                        - ide
+                        - virtio
+                        - scsi
+                        - usb
                 mount_path:
                     type: string
                     description: Mount path in container
@@ -3992,10 +4002,25 @@ components:
                     type: string
                     description: Volume/PVC name
                     example: my-workspace-data
+                readonly:
+                    type: boolean
+                    description: Whether the disk is read-only (for CD-ROMs, typically true).
+                    default: true
+                    example: true
+                type:
+                    type: string
+                    description: 'Volume mount type for VMs: ''disk'' (virtio disk) or ''cdrom'' (optical disc). Empty/omitted defaults to ''disk'' for VM volume mounts.'
+                    example: disk
+                    enum:
+                        - disk
+                        - cdrom
             description: Container PVC mount, or reusable CDI VM data disk with an absolute guest mount path
             example:
+                bus: sata
                 mount_path: /home/coder
                 name: my-workspace-data
+                readonly: true
+                type: disk
             required:
                 - name
                 - mount_path

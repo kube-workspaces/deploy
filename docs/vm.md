@@ -134,6 +134,30 @@ updates; the API refuses deletion while a workspace/VMI uses the disk.
 Disk hotplug, resize and changing attachment lists through PUT are not supported
 in this version; recreate the workspace to change its disk attachments.
 
+
+
+#### CD-ROM (ISO) mounts
+
+For VM workspaces, you can also attach CD-ROM devices (like virtual optical drives) by setting the volume mount type to `cdrom`. This is useful for installing software from ISO images, loading drivers (including Windows/MS-DOS), or booting from installation media.
+
+CD-ROM mounts require a reusable CDI DataVolume (created as a `vm-disk` volume type via the API/Volumes UI) that contains ISO image content. The volume is attached as a read-only CD-ROM device.
+
+Example payload for a VM workspace:
+
+```json
+"volume_mounts": [
+  {"name": "install-iso", "mount_path": "/media/cdrom", "type": "cdrom", "bus": "sata", "readonly": true}
+]
+```
+
+Notes:
+- `type`: set to `"cdrom"` to attach as an optical disc (defaults to `"disk"` for block devices)
+- `bus`: CD-ROM bus type - `"sata"`, `"ide"`, `"virtio"`, `"scsi"`, or `"usb"` (defaults to `"sata"` when type is cdrom)
+- `readonly`: should be `true` for CD-ROMs (defaults to `true`)
+- CD-ROM devices are read-only; the controller sets `readonly: true` for cdrom type mounts
+- The `mount_path` is still specified but is less relevant for CD-ROMs in many OSes - guests typically access CD-ROMs as optical drives (e.g., `/dev/cdrom`, `D:` on Windows)
+
+CD-ROM-attached volumes follow the same lifecycle rules as data disks: they are independent of the workspace and persist across stops/restarts. One writable workspace can claim a volume at a time.
 ### Networking
 
 A single **masquerade** interface is attached to the pod network, forwarding
