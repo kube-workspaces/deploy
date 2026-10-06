@@ -119,8 +119,8 @@ def render(args):
         raise ValueError("clone requires --image and --sysprep-secret")
     if args.image and not re.fullmatch(r"[^\s]+@sha256:[a-f0-9]{64}", args.image):
         raise ValueError("--image must be an OCI reference pinned by sha256 digest")
-    if args.mode != "clone" and (args.image or args.import_secret):
-        raise ValueError("image and import Secret options are only valid in clone mode")
+    if args.mode != "clone" and (args.image or args.import_secret or args.import_cert_configmap):
+        raise ValueError("image, import Secret and CA options are only valid in clone mode")
     if args.mode == "firmware" and args.sysprep_secret:
         raise ValueError("Sysprep media is only valid in install/clone mode")
     if args.mode != "install" and (args.installer_pvc or args.drivers_pvc):
@@ -145,6 +145,8 @@ def render(args):
         registry = {"url": "docker://" + args.image, "pullMethod": "pod"}
         if args.import_secret:
             registry["secretRef"] = args.import_secret
+        if args.import_cert_configmap:
+            registry["certConfigMap"] = args.import_cert_configmap
         source = {"registry": registry}
     vm = {
         "apiVersion": "kubevirt.io/v1", "kind": "VirtualMachine",
@@ -214,6 +216,8 @@ def main():
     manifest.add_argument("--image")
     manifest.add_argument("--sysprep-secret", type=dns_name)
     manifest.add_argument("--import-secret", type=dns_name)
+    manifest.add_argument("--import-cert-configmap", type=dns_name,
+                          help="same-namespace ConfigMap containing private registry CA PEM files")
     manifest.add_argument("--cpus", type=int, choices=(2, 4), default=4,
                           help="install/clone vCPU count (firmware mode always uses 1)")
     manifest.add_argument("--memory-gi", type=int, choices=(4, 6, 8), default=8,

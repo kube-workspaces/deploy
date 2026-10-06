@@ -5,6 +5,13 @@ direct KubeVirt proof VMs; they do not enable a Windows Image in the product
 catalog. The cross-repository status is maintained in
 [tracking](https://github.com/kube-workspaces/tracking/blob/main/windows-vm-workspaces-plan.md).
 
+For an end-to-end process starting with Microsoft's official ISO, see
+[Build your own Windows 11 image](https://github.com/kube-workspaces/image-catalog/blob/main/windows11/BUILD-GUIDE.md).
+That guide retains the install/bootstrap/evidence and Docker-free packaging
+scripts, and covers private root export, registry authentication and clone
+validation. Operators supply Windows media and retain prepared disks privately;
+the catalog distributes recipes, not Windows binaries.
+
 ## Preflight
 
 Target KubeVirt **1.9.x**, CDI **1.61.0**, Linux amd64 KVM workers and operator
@@ -122,6 +129,10 @@ Follow the private image recipe in
 The catalog includes `windows11/render-bootstrap.py` for private install/clone
 answer-file generation (see its README). Install mode wipes disk 0 and must only
 be used with a disposable blank root. Clone mode does not partition disks.
+Use the recipe's offline `prepare-sealed-root.py` step after Sysprep/export:
+the tested Windows build needs a credential-free native setup registry pointer
+to `D:\autounattend.xml` to consume its SATA answer CD. Keep clone media at root
+plus that one CD, and remove the pointer after confirmed setup.
 For each clone create a different same-namespace bootstrap Secret containing
 `autounattend.xml` rendered with Windows System Image Manager for the pinned
 edition/build. Use distinct local account credentials/hostnames, XML-safe
@@ -129,10 +140,19 @@ values, no auto-logon and no shared password. Secrets are supplied locally, neve
 committed. This initial fixture references a Secret; the product's automated
 credential generation/retrieval is a later controller/API milestone.
 
-For CDI pod registry imports, create a `kubernetes.io/dockerconfigjson` Secret
-and pass it as `--import-secret`; Pod imagePullSecrets alone do not configure
+For CDI 1.61 pod registry imports, create an Opaque Secret with `accessKeyId`
+(registry username) and `secretKey` (password/token), and pass it as
+`--import-secret`. The catalog's `windows11/render-import-secret.py` converts
+private inline Docker auth to these keys. A Secret with only `.dockerconfigjson`
+causes `CreateContainerConfigError`; Pod imagePullSecrets alone do not configure
 the import. Test authentication to the private registry using the actual CDI
 importer. Do not include registry credentials in the manifest.
+
+For a registry signed by your own CA, create a same-namespace ConfigMap with
+the CA PEM (e.g. `kubectl create configmap registry-ca --from-file=ca.crt -n
+windows11-proof`) and pass `--import-cert-configmap registry-ca`. This sets CDI's
+`registry.certConfigMap`; local workstation trust alone does not configure the
+importer. Keep TLS/hostname verification enabled.
 
 ```sh
 python3 scripts/windows-vm-proof.py render --mode clone --node YOUR_WORKER \

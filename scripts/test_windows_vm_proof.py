@@ -17,7 +17,7 @@ class WindowsProofTests(unittest.TestCase):
         values = dict(mode="firmware", name="windows11-proof", namespace="windows11-proof",
                       node="worker", storage_class="local-path", firmware_uuid=None,
                       installer_pvc=None, drivers_pvc=None, image=None, sysprep_secret=None,
-                      import_secret=None, cpus=4, memory_gi=8)
+                      import_secret=None, import_cert_configmap=None, cpus=4, memory_gi=8)
         values.update(overrides)
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
@@ -74,9 +74,10 @@ class WindowsProofTests(unittest.TestCase):
     def test_clone_private_import_and_sysprep_reference(self):
         image = "registry.example/private/windows@sha256:" + "a" * 64
         vm = self.render(mode="clone", image=image, import_secret="registry-import",
-                         sysprep_secret="clone-bootstrap")
+                         sysprep_secret="clone-bootstrap", import_cert_configmap="registry-ca")
         source = vm["spec"]["dataVolumeTemplates"][0]["spec"]["source"]["registry"]
         self.assertEqual(source["secretRef"], "registry-import")
+        self.assertEqual(source["certConfigMap"], "registry-ca")
         self.assertEqual(source["url"], "docker://" + image)
         self.assertEqual(vm["spec"]["template"]["spec"]["volumes"][1]["sysprep"],
                          {"secret": {"name": "clone-bootstrap"}})
@@ -84,7 +85,9 @@ class WindowsProofTests(unittest.TestCase):
     def test_incomplete_or_mutable_sources_rejected(self):
         for values in ({"mode": "install"}, {"mode": "clone"},
                        {"mode": "clone", "image": "registry/windows:latest", "sysprep_secret": "setup"},
-                       {"mode": "firmware", "sysprep_secret": "setup"}):
+                       {"mode": "firmware", "sysprep_secret": "setup"},
+                       {"mode": "install", "installer_pvc": "iso", "drivers_pvc": "drivers",
+                        "import_cert_configmap": "registry-ca"}):
             with self.subTest(values=values), self.assertRaises(ValueError):
                 self.render(**values)
 
