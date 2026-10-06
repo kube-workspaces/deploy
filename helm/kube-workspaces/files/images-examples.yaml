@@ -480,3 +480,28 @@ spec:
   sourceURL: https://github.com/kasmtech
   defaultUser: kasm_user
   defaultHomedir: /home/kasm_user
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  annotations:
+    catalog.kubeworkspaces.io/example: "true"
+  name: ms-dos-622
+spec:
+  category: Desktop
+  defaultPort: 21
+  description: MS-DOS 6.22 is a classic operating system that provides a command-line interface for running legacy applications and games. This container image allows you to run MS-DOS 6.22 in a virtualized environment, making it easy to access and use old software without needing dedicated hardware.
+  displayName: MS-DOS 6.22
+  homepageURL: https://www.ms-dos.org
+  image: flaccid/containerdisk-ms-dos-622
+  imageHomepageURL: https://hub.docker.com/r/flaccid/containerdisk-ms-dos-622
+  persistentRootDisk: true
+  persistentRootDiskSize: 5Gi
+  sourceURL: https://winworldpc.com/product/ms-dos/622
+  tags:
+    - vm
+    - dos
+    - desktop
+  videoDevice: virtio
+  workspaceTypes:
+    - vm
