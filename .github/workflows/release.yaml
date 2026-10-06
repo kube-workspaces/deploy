@@ -79,17 +79,14 @@ jobs:
           # requiring equality here would force pointless component releases.
           #
           # What must hold is that appVersion names components that exist — the
-          # next step checks that — and that it is not ahead of the chart.
+          # next step checks that against GHCR. The component and chart version
+          # lines are independent and deliberately not matched (see
+          # docs/releasing.md), so appVersion may sit anywhere relative to the
+          # chart version; there is no cross-line ordering rule.
           if [ "$app" = "$bare" ]; then
             echo "chart $chart and appVersion $app both match $VERSION"
           else
-            newest=$(printf '%s\n%s\n' "$bare" "$app" | sort -V | tail -1)
-            if [ "$newest" = "$app" ]; then
-              echo "::error::appVersion $app is ahead of the chart version $bare"
-              echo "appVersion must name an already-released component version."
-              exit 1
-            fi
-            echo "::notice::chart $chart pins component appVersion $app (chart-only release)"
+            echo "::notice::chart $chart pins component appVersion $app (independent version lines)"
           fi
 
       # A release whose chart pins images that were never published would be
