@@ -279,6 +279,24 @@ kubevirt:
   #           resourceName: "intel.com/GVTg_V5_4"
   gpuPassthrough:
     permittedHostDevices: {}
+  # mediatedDevices makes virt-handler itself create and manage mediated
+  # devices on matching nodes (surviving host reboots, unlike hand-created
+  # sysfs mdevs, which KubeVirt garbage-collects). Cluster-wide types plus
+  # per-node overrides. Type names are the mdev_supported_types directory
+  # names (e.g. i915-GVTg_V5_4), not the display names. The matching
+  # permittedHostDevices.mediatedDevices allowlist above is still required
+  # for VMs to attach them.
+  # Example (GVT-g vGPU on one worker):
+  #   mediatedDevices:
+  #     mediatedDeviceTypes: []
+  #     nodeMediatedDeviceTypes:
+  #       - nodeSelector:
+  #           kubernetes.io/hostname: gpu-worker
+  #         mediatedDeviceTypes:
+  #           - i915-GVTg_V5_4
+  mediatedDevices:
+    mediatedDeviceTypes: []
+    nodeMediatedDeviceTypes: []
 
 # Bundled Dex OIDC provider (optional).
 # Set dex.enabled=true and configure connectors to use Dex as the OIDC provider.

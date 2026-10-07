@@ -185,3 +185,35 @@ tests:
           path: spec.configuration.permittedHostDevices.mediatedDevices[0].resourceName
           value: "intel.com/GVTg_V5_4"
         documentIndex: 10
+
+  - it: renders mediatedDevicesConfiguration for node-scoped vGPU types
+    set:
+      kubevirt:
+        enabled: true
+        cdi:
+          enabled: false
+        mediatedDevices:
+          mediatedDeviceTypes: []
+          nodeMediatedDeviceTypes:
+            - nodeSelector:
+                kubernetes.io/hostname: gpu-worker
+              mediatedDeviceTypes:
+                - i915-GVTg_V5_4
+    asserts:
+      - equal:
+          path: spec.configuration.mediatedDevicesConfiguration.nodeMediatedDeviceTypes[0].nodeSelector["kubernetes.io/hostname"]
+          value: "gpu-worker"
+        documentIndex: 10
+      - equal:
+          path: spec.configuration.mediatedDevicesConfiguration.nodeMediatedDeviceTypes[0].mediatedDeviceTypes[0]
+          value: "i915-GVTg_V5_4"
+        documentIndex: 10
+
+  - it: renders no mediatedDevicesConfiguration by default
+    set:
+      kubevirt:
+        enabled: true
+    asserts:
+      - isNull:
+          path: spec.configuration.mediatedDevicesConfiguration
+        documentIndex: 10

@@ -38,6 +38,19 @@ spec:
     {{- if .Values.kubevirt.gpuPassthrough.permittedHostDevices }}
     permittedHostDevices: {{- toYaml .Values.kubevirt.gpuPassthrough.permittedHostDevices | nindent 6 }}
     {{- end }}
+    {{- if or .Values.kubevirt.mediatedDevices.mediatedDeviceTypes .Values.kubevirt.mediatedDevices.nodeMediatedDeviceTypes }}
+    # mediatedDevicesConfiguration makes virt-handler create and manage these
+    # mdev types itself (including across host reboots). KubeVirt removes
+    # foreign manually-created mdevs, so proof/guest vGPUs must come from here,
+    # not from hand-written sysfs.
+    mediatedDevicesConfiguration:
+      {{- if .Values.kubevirt.mediatedDevices.mediatedDeviceTypes }}
+      mediatedDeviceTypes: {{- toYaml .Values.kubevirt.mediatedDevices.mediatedDeviceTypes | nindent 8 }}
+      {{- end }}
+      {{- if .Values.kubevirt.mediatedDevices.nodeMediatedDeviceTypes }}
+      nodeMediatedDeviceTypes: {{- toYaml .Values.kubevirt.mediatedDevices.nodeMediatedDeviceTypes | nindent 8 }}
+      {{- end }}
+    {{- end }}
     imagePullPolicy: IfNotPresent
   customizeComponents: {}
   imagePullPolicy: IfNotPresent
