@@ -269,6 +269,14 @@ kubevirt:
   #       mediatedDevices:
   #         - mdevNameSelector: "GRID T4-1Q"
   #           resourceName: "nvidia.com/GRID_T4-1Q"
+  # Example (Intel GVT-g shared integrated GPU — mediated vGPU profiles such
+  # as GVTg_V5_4/V5_8 on a GVT-enabled host; selector from
+  # /sys/bus/pci/devices/*/mdev_supported_types/*/name):
+  #   gpuPassthrough:
+  #     permittedHostDevices:
+  #       mediatedDevices:
+  #         - mdevNameSelector: "GVTg_V5_4"
+  #           resourceName: "intel.com/GVTg_V5_4"
   gpuPassthrough:
     permittedHostDevices: {}
 

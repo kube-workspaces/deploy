@@ -164,3 +164,24 @@ tests:
           path: spec.configuration.permittedHostDevices.mediatedDevices[0].resourceName
           value: "nvidia.com/GRID_T4-1Q"
         documentIndex: 10
+
+  - it: renders an Intel GVT-g mediated device allowlist entry
+    set:
+      kubevirt:
+        enabled: true
+        cdi:
+          enabled: false
+        gpuPassthrough:
+          permittedHostDevices:
+            mediatedDevices:
+              - mdevNameSelector: "GVTg_V5_4"
+                resourceName: "intel.com/GVTg_V5_4"
+    asserts:
+      - equal:
+          path: spec.configuration.permittedHostDevices.mediatedDevices[0].mdevNameSelector
+          value: "GVTg_V5_4"
+        documentIndex: 10
+      - equal:
+          path: spec.configuration.permittedHostDevices.mediatedDevices[0].resourceName
+          value: "intel.com/GVTg_V5_4"
+        documentIndex: 10

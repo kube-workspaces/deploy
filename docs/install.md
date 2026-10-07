@@ -55,11 +55,19 @@ through to a guest, three conditions must hold:
              resourceName: "nvidia.com/GRID_T4-1Q"
    ```
 
-   (Vendor/product selectors come from `lspci`; mediated device selectors from
-   `/sys/bus/pci/devices/*/mdev_supported_types/*/name`. When the device
-   plugin advertises the resource directly, e.g. the NVIDIA GPU Operator's
-   `nvidia.com/gpu`, asking for it by name still requires it to be permitted
-   here before it can be assigned to a VM.)
+    (Vendor/product selectors come from `lspci`; mediated device selectors from
+    `/sys/bus/pci/devices/*/mdev_supported_types/*/name`. When the device
+    plugin advertises the resource directly, e.g. the NVIDIA GPU Operator's
+    `nvidia.com/gpu`, asking for it by name still requires it to be permitted
+    here before it can be assigned to a VM.)
+
+    Intel GVT-g shared integrated GPUs follow the same mediated-device path
+    (host needs `i915.enable_gvt=1` and the `kvmgt` module; e.g.
+    `mdevNameSelector: "GVTg_V5_4"` with `resourceName: "intel.com/GVTg_V5_4"`).
+    Created mediated devices do not survive a host reboot — recreate them after
+    maintenance before scheduling GPU VMs. Guest-driver support is
+    OS-specific; Windows guests need a signed driver that recognises the vGPU,
+    which is a separate acceptance gate from exposing the resource.
 
 The controller translates a workspace's `gpu_request` into a KubeVirt
 `domain.devices.gpus` passthrough declaration plus the matching resource limit;
