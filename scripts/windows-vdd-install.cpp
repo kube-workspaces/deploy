@@ -221,28 +221,41 @@ int wmain(int argc, wchar_t** argv) {
         return 0;
     }
     if (op == L"uninstall") {
-        bool present = false;
-        std::wstring instance = findDevice(&present);
-        if (instance.empty()) {
-            json("uninstall", false, "no device (present or phantom)", false);
-            return 1;
-        }
-        HDEVINFO set = SetupDiCreateDeviceInfoList(&cls, nullptr);
+        // Remove EVERY matching devnode (an IDD install typically creates
+        // one per virtual monitor); report the count.
+        GUID cls2 = displayClass();
+        HDEVINFO set = SetupDiGetClassDevsW(&cls2, L"Root", nullptr, DIGCF_ALLCLASSES);
         if (set == INVALID_HANDLE_VALUE) {
-            json("uninstall", false, "device list failed", false);
+            json("uninstall", false, "enumeration failed", false);
             return 1;
         }
+        int removed = 0;
         SP_DEVINFO_DATA data{};
         data.cbSize = sizeof(data);
-        bool removed = false;
-        if (SetupDiOpenDeviceInfoW(set, instance.c_str(), nullptr, 0, &data)) {
-            removed = SetupDiCallClassInstaller(DIF_REMOVE, set, &data);
+        for (DWORD i = 0; SetupDiEnumDeviceInfo(set, i, &data); ++i) {
+            DWORD type = 0, needed = 0;
+            SetupDiGetDeviceRegistryPropertyW(set, &data, SPDRP_HARDWAREID, &type,
+                nullptr, 0, &needed);
+            if (GetLastError() != ERROR_INSUFFICIENT_BUFFER || needed < 2) continue;
+            std::vector<wchar_t> buffer(needed / 2 + 1, L'\0');
+            if (!SetupDiGetDeviceRegistryPropertyW(set, &data, SPDRP_HARDWAREID, &type,
+                    reinterpret_cast<BYTE*>(buffer.data()), needed, nullptr)) {
+                continue;
+            }
+            bool match = false;
+            for (const wchar_t* id = buffer.data(); *id; id += wcslen(id) + 1) {
+                if (_wcsicmp(id, HW_ID) == 0 || _wcsicmp(id, L"MttVDD") == 0) {
+                    match = true;
+                    break;
+                }
+            }
+            if (match && SetupDiCallClassInstaller(DIF_REMOVE, set, &data)) ++removed;
         }
         SetupDiDestroyDeviceInfoList(set);
-        json("uninstall", removed,
-            removed ? "devnode removed (driver package staged)" : "remove refused",
-            false);
-        return removed ? 0 : 1;
+        char detail[128];
+        snprintf(detail, sizeof(detail), "%d devnode(s) removed (driver package staged)", removed);
+        json("uninstall", removed > 0, detail, false);
+        return removed > 0 ? 0 : 1;
     }
     json("usage", false, "install <inf-dir> | uninstall", false);
     return 2;
