@@ -25,6 +25,22 @@ ORG="kube-workspaces"
 RUN_LIMIT=10
 REPOS=()
 
+# Repositories skipped by the scan. Edit this list to add (or drop) entries.
+IGNORE_REPOS=(
+  .github
+  .github-private
+  tracking
+)
+
+is_ignored() {
+  [ "${#IGNORE_REPOS[@]}" -eq 0 ] && return 1
+  local r
+  for r in "${IGNORE_REPOS[@]}"; do
+    [ "$r" = "$1" ] && return 0
+  done
+  return 1
+}
+
 while [ $# -gt 0 ]; do
   case "$1" in
     --runs) RUN_LIMIT="$2"; shift 2 ;;
@@ -41,6 +57,8 @@ Usage: scripts/org-project-recent-actions-status.sh [ORG] [--runs N] [--repo NAM
 
 Looks at the newest commit on each repo's default branch and reports whether
 its workflow runs are green. Exits 1 when any repo needs action.
+
+Repositories in IGNORE_REPOS (top of this script) are skipped entirely.
 EOF
       exit 0
       ;;
@@ -117,6 +135,9 @@ printf '%.0s─' {1..120}; echo
 
 needs_action=0
 for repo in $repos; do
+  if is_ignored "$repo"; then
+    continue
+  fi
   branch=$(gh repo view "$ORG/$repo" --json defaultBranchRef \
     --jq '.defaultBranchRef.name' 2>/dev/null) || true
 

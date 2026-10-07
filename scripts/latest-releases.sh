@@ -10,6 +10,23 @@ set -uo pipefail
 
 ORG="${1:-kube-workspaces}"
 
+# Repositories skipped by the scan. Edit this list to add (or drop) entries.
+IGNORE_REPOS=(
+  .github
+  .github-private
+  demo-repository
+  tracking
+)
+
+is_ignored() {
+  [ "${#IGNORE_REPOS[@]}" -eq 0 ] && return 1
+  local r
+  for r in "${IGNORE_REPOS[@]}"; do
+    [ "$r" = "$1" ] && return 0
+  done
+  return 1
+}
+
 if ! command -v gh &>/dev/null; then
   echo "error: gh (GitHub CLI) is not installed." >&2
   echo "  install: https://cli.github.com/" >&2
@@ -40,6 +57,9 @@ printf "${BOLD}%-26s  %-14s  %-16s  %s${OFF}\n" "REPOSITORY" "LATEST RELEASE" "C
 printf '%.0s─' {1..100}; echo
 
 for repo in $repos; do
+  if is_ignored "$repo"; then
+    continue
+  fi
   result=$(gh release view \
     -R "$ORG/$repo" \
     --json tagName,url \
