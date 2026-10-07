@@ -9946,6 +9946,15 @@ spec:
               proxyConfig:
                 description: Proxy configuration for this image.
                 properties:
+                  agentPort:
+                    description: |-
+                      AgentPort: guest TCP port of the workspace-agent listener. When set on a
+                      VM image, the controller forwards it through the KubeVirt masquerade
+                      interface and exposes it on the workspace Service, and the proxy serves
+                      the /agent/ bridge against it. 0 (unset) disables the agent data plane
+                      entirely: no masquerade forward, no Service port, proxy refuses with 503.
+                    format: int32
+                    type: integer
                   audioPort:
                     description: |-
                       AudioPort: backend port for audio WebSocket connections. When set, the proxy routes
