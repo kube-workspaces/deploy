@@ -1739,6 +1739,68 @@ paths:
                                 type: string
                                 example: agent session for workspace "my-workspace" not found
                             example: agent session for workspace "my-workspace" not found
+    /v1/workspaces/{name}/agent/status:
+        get:
+            tags:
+                - agent
+            summary: status agent
+            description: Report live agent session state for a workspace
+            operationId: agent#status
+            parameters:
+                - name: namespace
+                  in: query
+                  description: Workspace namespace
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                  example: workspaces
+                - name: name
+                  in: path
+                  description: Workspace name
+                  required: true
+                  schema:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                  example: my-workspace
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AgentStatus'
+                            example:
+                                active: true
+                                protocol: 1
+                                sessions: 1
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: authentication required
+                            example: authentication required
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: no access to workspace namespace
+                            example: no access to workspace namespace
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: workspace "my-workspace" not found
+                            example: workspace "my-workspace" not found
     /v1/workspaces/{name}/clone:
         post:
             tags:
@@ -2803,6 +2865,32 @@ components:
                 ttl_ms: 60000
             required:
                 - ttl_ms
+                - protocol
+        AgentStatus:
+            type: object
+            properties:
+                active:
+                    type: boolean
+                    description: Whether at least one live agent session is bound to this workspace
+                    example: true
+                protocol:
+                    type: integer
+                    description: Agent ticket/API revision
+                    example: 1
+                    format: int64
+                sessions:
+                    type: integer
+                    description: Live (unexpired) session count for this workspace
+                    example: 1
+                    format: int64
+            description: 'Live agent session state for a workspace: whether any unexpired attach session exists'
+            example:
+                active: true
+                protocol: 1
+                sessions: 1
+            required:
+                - active
+                - sessions
                 - protocol
         AgentTicket:
             type: object
