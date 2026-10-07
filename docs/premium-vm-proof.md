@@ -51,7 +51,7 @@ runtime install. Build with MinGW-w64 (or a reviewed equivalent Windows toolchai
 ```sh
 x86_64-w64-mingw32-g++ -std=c++17 -O2 -Wall -Wextra -Werror -static \
   scripts/windows-premium-probe.cpp -o windows-premium-probe.exe \
-  -ld3d11 -ldxgi -lmfplat -lmfuuid -lole32 -luuid -lpropsys
+  -ld3d11 -ldxgi -lmfplat -lmfuuid -lole32 -luuid -lpropsys -lversion
 ```
 
 Transfer it to the disposable guest through the isolated proof tooling and run
@@ -63,7 +63,9 @@ from its **logged-in console session**, saving JSON in a private evidence folder
 ```
 
 Default inventory enumerates DXGI adapter identity/VRAM/output modes, D3D11
-device creation, separate WARP creation, actual active MMDevice render endpoints
+device creation, per-adapter **D3D12** creation, **Vulkan** loader/instance/
+physical-device enumeration, Intel OpenGL ICD file presence, separate WARP
+creation, actual active MMDevice render endpoints
 and non-hardware Media Foundation H.264 candidates. Optional Desktop Duplication
 tries frames for a **shared 1–10 second capture budget**; it does not copy/save
 pixels, change modes, inject input, install drivers or open network sockets.

@@ -45,8 +45,7 @@ static std::string hr(HRESULT value) {
     return result.str();
 }
 
-static void graphics(int seconds) {
-    ComPtr<IDXGIFactory1> factory;
+static void graphics(int seconds) {    ComPtr<IDXGIFactory1> factory;
     HRESULT status = CreateDXGIFactory1(IID_PPV_ARGS(&factory));
     std::cout << "\"dxgiFactoryResult\":" << hr(status) << ",\"adapters\":[";
     bool firstAdapter = true;
@@ -71,8 +70,28 @@ static void graphics(int seconds) {
                   << ",\"dedicatedVideoMemoryBytes\":" << desc.DedicatedVideoMemory
                   << ",\"softwareFlag\":" << ((desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) ? "true" : "false")
                   << ",\"d3d11CreateResult\":" << hr(create)
-                  << ",\"d3dFeatureLevel\":" << static_cast<unsigned>(level)
-                  << ",\"outputs\":[";
+                  << ",\"d3dFeatureLevel\":" << static_cast<unsigned>(level);
+            // D3D12 on the same enumerated adapter (dynamic load: no SDK header/link needed).
+            {
+                HMODULE d3d12 = LoadLibraryW(L"d3d12.dll");
+                if (d3d12) {
+                    typedef HRESULT(WINAPI* CreateFn)(IUnknown*, unsigned, const IID&, void**);
+                    CreateFn create12 = reinterpret_cast<CreateFn>(reinterpret_cast<void*>(GetProcAddress(d3d12, "D3D12CreateDevice")));
+                    // D3D_FEATURE_LEVEL_11_0 = 0xb000; IID_ID3D12Device inline to avoid d3d12.h.
+                    static const GUID IID_ID3D12Device = {0x189819f1, 0x1db6, 0x4b57,
+                        {0xbe, 0x54, 0x18, 0x21, 0x33, 0x9b, 0x85, 0xf7}};
+                    void* device12 = nullptr;
+                    HRESULT r12 = create12
+                        ? create12(adapter.Get(), 0xb000, IID_ID3D12Device, &device12)
+                        : E_NOTIMPL;
+                    if (device12) reinterpret_cast<IUnknown*>(device12)->Release();
+                    std::cout << ",\"d3d12CreateResult\":" << hr(r12);
+                    FreeLibrary(d3d12);
+                } else {
+                    std::cout << ",\"d3d12CreateResult\":\"d3d12.dll-absent\"";
+                }
+            }
+            std::cout << ",\"outputs\":[";
         bool firstOutput = true;
         for (UINT j = 0; j < 32; ++j) {
             ComPtr<IDXGIOutput> output;
@@ -164,6 +183,54 @@ static void audio() {
     std::cout << ']';
 }
 
+static void renderAPIs() {
+    // Vulkan enumeration via the loader only (dynamic load, no SDK needed).
+    // OpenGL is reported as Intel ICD file evidence only: a real context needs
+    // a drawable, which Session 0 has none of. Neither proves app rendering.
+    std::cout << ",\"vulkan\":{";
+    HMODULE loader = LoadLibraryW(L"vulkan-1.dll");
+    if (!loader) {
+        std::cout << "\"loaderPresent\":false}";
+    } else {
+        typedef int(WINAPI* VkCreateFn)(const void*, const void*, void**);
+        typedef void(WINAPI* VkDestroyFn)(void*, const void*);
+        typedef int(WINAPI* VkEnumFn)(void*, unsigned*, void*);
+        VkCreateFn create = reinterpret_cast<VkCreateFn>(reinterpret_cast<void*>(GetProcAddress(loader, "vkCreateInstance")));
+        std::cout << "\"loaderPresent\":true,\"createInstanceResult\":";
+        void* instance = nullptr;
+        // Minimal VkApplicationInfo + VkInstanceCreateInfo (sType 0/1, apiVersion 1.0).
+        struct AppInfo { int sType; const void* next; const char* name; unsigned ver;
+                         const char* eng; unsigned engVer; unsigned api; } app{0, nullptr, "probe", 1,
+                         "probe", 1, 0x00400000};
+        struct InstInfo { int sType; const void* next; unsigned flags; const AppInfo* app;
+                          unsigned layerCount; const char* const* layers;
+                          unsigned extCount; const char* const* exts; } inst{1, nullptr, 0, &app, 0, nullptr, 0, nullptr};
+        int created = create ? create(&inst, nullptr, &instance) : -1;
+        std::cout << created;
+        if (created == 0 && instance) {
+            VkEnumFn enumerate = reinterpret_cast<VkEnumFn>(reinterpret_cast<void*>(GetProcAddress(loader, "vkEnumeratePhysicalDevices")));
+            unsigned count = 0;
+            int listed = enumerate ? enumerate(instance, &count, nullptr) : -1;
+            std::cout << ",\"enumerateResult\":" << listed << ",\"deviceCount\":" << count;
+            VkDestroyFn destroy = reinterpret_cast<VkDestroyFn>(reinterpret_cast<void*>(GetProcAddress(loader, "vkDestroyInstance")));
+            if (destroy) destroy(instance, nullptr);
+        }
+        std::cout << '}';
+        FreeLibrary(loader);
+    }
+    wchar_t systemDir[MAX_PATH]{};
+    std::string icd = "absent";
+    if (GetSystemDirectoryW(systemDir, MAX_PATH)) {
+        std::wstring path = std::wstring(systemDir) + L"\\ig9icd64.dll";
+        DWORD attrs = GetFileAttributesW(path.c_str());
+        if (attrs != INVALID_FILE_ATTRIBUTES) {
+            DWORD ver = 0, size = GetFileVersionInfoSizeW(path.c_str(), &ver);
+            icd = size ? "present-with-version-info" : "present-no-version-info";
+        }
+    }
+    std::cout << ",\"openGLIntelICD\":\"" << icd << '"';
+}
+
 static void encoders() {
     HRESULT startup = MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET);
     std::cout << ",\"mediaFoundationStartupResult\":" << hr(startup);
@@ -206,16 +273,18 @@ int main(int argc, char** argv) {
     if (FAILED(com)) { std::cerr << "COM initialization failed\n"; return 1; }
     DWORD session = 0;
     ProcessIdToSessionId(GetCurrentProcessId(), &session);
-    std::cout << "{\"schemaVersion\":1,\"processSessionId\":" << session
+    std::cout << "{\"schemaVersion\":2,\"processSessionId\":" << session
               << ",\"activeConsoleSessionId\":" << WTSGetActiveConsoleSessionId()
               << ",\"requestedCaptureSeconds\":" << seconds << ',';
     graphics(seconds);
     audio();
     encoders();
+    renderAPIs();
     std::cout << ",\"limitations\":[\"Inventory/capture availability only, not encode or rendering benchmarks\","
                  "\"No pixels saved; static screens may yield few capture frames\","
                  "\"Software encoder candidates are not proven activated encoders\","
                  "\"Render endpoint presence is not WASAPI loopback or playback acceptance\","
+                 "\"Vulkan/OpenGL results are API availability, not app-rendering proof\","
                  "\"Session 0 is not interactive-console capture acceptance\"]}\n";
     CoUninitialize();
     return 0;
