@@ -65,7 +65,9 @@ from its **logged-in console session**, saving JSON in a private evidence folder
 Default inventory enumerates DXGI adapter identity/VRAM/output modes, D3D11
 device creation, per-adapter **D3D12** creation, **Vulkan** loader/instance/
 physical-device enumeration, Intel OpenGL ICD file presence, separate WARP
-creation, actual active MMDevice render endpoints
+creation, actual active MMDevice render endpoints,
+**WASAPI loopback capture trial** (endpoint → mix format → 2s packet capture
+with silence accounting — silence is recorded, not hidden),
 and non-hardware Media Foundation H.264 candidates. Optional Desktop Duplication
 tries frames for a **shared 1–10 second capture budget**; it does not copy/save
 pixels, change modes, inject input, install drivers or open network sockets.

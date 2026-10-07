@@ -7,6 +7,7 @@
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mmdeviceapi.h>
+#include <audioclient.h>
 #include <initguid.h>
 #include <functiondiscoverykeys_devpkey.h>
 #include <wrl/client.h>
@@ -183,6 +184,70 @@ static void audio() {
     std::cout << ']';
 }
 
+static void loopback() {
+    // WASAPI loopback capture on the default render endpoint: proves the
+    // capture path initializes, negotiates a mix format and delivers packets.
+    // Silence is expected (nothing plays); it is recorded, not hidden.
+    std::cout << ",\"loopback\":{";
+    ComPtr<IMMDeviceEnumerator> enumerator;
+    HRESULT result = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr,
+        CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&enumerator));
+    ComPtr<IMMDevice> endpoint;
+    if (SUCCEEDED(result)) result = enumerator->GetDefaultAudioEndpoint(eRender, eConsole, &endpoint);
+    std::cout << "\"defaultEndpointResult\":" << hr(result);
+    if (FAILED(result)) { std::cout << '}'; return; }
+    ComPtr<IAudioClient> client;
+    result = endpoint->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr, (void**)&client);
+    std::cout << ",\"activateResult\":" << hr(result);
+    if (FAILED(result)) { std::cout << '}'; return; }
+    WAVEFORMATEX* mix = nullptr;
+    result = client->GetMixFormat(&mix);
+    std::cout << ",\"mixFormatResult\":" << hr(result);
+    if (FAILED(result) || !mix) { std::cout << '}'; return; }
+    std::cout << ",\"mixRate\":" << mix->nSamplesPerSec << ",\"mixChannels\":" << mix->nChannels
+              << ",\"mixBits\":" << mix->wBitsPerSample;
+    unsigned frameBytes = mix->nChannels * (mix->wBitsPerSample / 8u);
+    result = client->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_LOOPBACK,
+        10000000, 0, mix, nullptr);
+    std::cout << ",\"initializeResult\":" << hr(result);
+    CoTaskMemFree(mix);
+    if (FAILED(result)) { std::cout << '}'; return; }
+    ComPtr<IAudioCaptureClient> capture;
+    result = client->GetService(__uuidof(IAudioCaptureClient), (void**)&capture);
+    std::cout << ",\"captureServiceResult\":" << hr(result);
+    if (FAILED(result)) { std::cout << '}'; return; }
+    result = client->Start();
+    std::cout << ",\"startResult\":" << hr(result);
+    unsigned packets = 0;
+    unsigned long long frames = 0, bytes = 0, nonzero = 0;
+    auto deadline = Clock::now() + std::chrono::seconds(2);
+    HRESULT last = result;
+    if (SUCCEEDED(result)) while (Clock::now() < deadline) {
+        UINT32 available = 0;
+        last = capture->GetNextPacketSize(&available);
+        if (FAILED(last) || available == 0) { Sleep(20); continue; }
+        BYTE* data = nullptr;
+        UINT32 count = 0;
+        DWORD flags = 0;
+        last = capture->GetBuffer(&data, &count, &flags, nullptr, nullptr);
+        if (FAILED(last)) break;
+        ++packets;
+        frames += count;
+        for (UINT32 i = 0; i + 4 <= count * frameBytes; i += 4) {
+            bytes += 4;
+            unsigned v = 0;
+            memcpy(&v, data + i, 4);
+            if (v) ++nonzero;
+        }
+        last = capture->ReleaseBuffer(count);
+        if (FAILED(last)) break;
+    }
+    client->Stop();
+    std::cout << ",\"packets\":" << packets << ",\"frames\":" << frames
+              << ",\"dwordsScanned\":" << bytes / 4 << ",\"nonzeroDwords\":" << nonzero
+              << ",\"lastResult\":" << hr(last) << '}';
+}
+
 static void renderAPIs() {
     // Vulkan enumeration via the loader only (dynamic load, no SDK needed).
     // OpenGL is reported as Intel ICD file evidence only: a real context needs
@@ -273,11 +338,12 @@ int main(int argc, char** argv) {
     if (FAILED(com)) { std::cerr << "COM initialization failed\n"; return 1; }
     DWORD session = 0;
     ProcessIdToSessionId(GetCurrentProcessId(), &session);
-    std::cout << "{\"schemaVersion\":2,\"processSessionId\":" << session
+    std::cout << "{\"schemaVersion\":3,\"processSessionId\":" << session
               << ",\"activeConsoleSessionId\":" << WTSGetActiveConsoleSessionId()
               << ",\"requestedCaptureSeconds\":" << seconds << ',';
     graphics(seconds);
     audio();
+    loopback();
     encoders();
     renderAPIs();
     std::cout << ",\"limitations\":[\"Inventory/capture availability only, not encode or rendering benchmarks\","
