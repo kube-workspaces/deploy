@@ -160,6 +160,14 @@ spec:
   additionalPorts:
   - name: ssh
     port: 22
+  # Premium agent steel thread (opt-in): guest TCP port of the kw-agent
+  # listener. The controller forwards it through the KubeVirt masquerade
+  # interface and exposes it on the workspace Service; the proxy bridges
+  # /agent/ to it once AGENT_API_URL is configured chart-side. Selkies stays
+  # the default path until the Linux agent passes parity. Canonical port
+  # 44787 is shared with the Windows premium test image.
+  proxyConfig:
+    agentPort: 44787
   remoteDesktop:
     protocol: selkies
     port: 8080
