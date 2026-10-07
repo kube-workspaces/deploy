@@ -52,6 +52,12 @@ spec:
             # before upgrade. Operator-set origin, never derived from requests.
             - name: DISPLAY_API_URL
               value: "http://kube-workspaces-api.kube-workspaces-system.svc.cluster.local"
+            # Premium workspace-agent bridge (/agent/) issues short-lived
+            # attach tickets against the same API. Same operator-set origin
+            # contract. Without this the bridge fails closed (503 via the
+            # Image agentPort gate).
+            - name: AGENT_API_URL
+              value: "http://kube-workspaces-api.kube-workspaces-system.svc.cluster.local"
           resources:
             limits:
               cpu: 500m
