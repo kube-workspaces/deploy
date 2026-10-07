@@ -1519,6 +1519,226 @@ paths:
                                 type: string
                                 example: workspace "my-workspace" not found
                             example: workspace "my-workspace" not found
+    /v1/workspaces/{name}/agent/attach:
+        post:
+            tags:
+                - agent
+            summary: attach agent
+            description: Attach a controller to a workspace's guest agent session, minting a short-lived ticket
+            operationId: agent#attach
+            parameters:
+                - name: namespace
+                  in: query
+                  description: Workspace namespace
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                  example: workspaces
+                - name: name
+                  in: path
+                  description: Workspace name
+                  required: true
+                  schema:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                  example: my-workspace
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AgentAttachPayload2'
+                        example:
+                            participant: chris-laptop
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AgentTicket'
+                            example:
+                                id: 8ec18121f4c2409aa7c025487f4e310c
+                                protocol: 1
+                                ticket: 8ec18121f4c2409aa7c025487f4e310c.eyJ3b3Jrc3BhY2VVaWQiOiJ3cy0xIn0.c2ln
+                                ttl_ms: 60000
+                "400":
+                    description: 'invalid: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: agent sessions are only available for VM workspaces
+                            example: agent sessions are only available for VM workspaces
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: authentication required
+                            example: authentication required
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: no access to workspace namespace
+                            example: no access to workspace namespace
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: workspace "my-workspace" not found
+                            example: workspace "my-workspace" not found
+    /v1/workspaces/{name}/agent/release:
+        post:
+            tags:
+                - agent
+            summary: release agent
+            description: Release a workspace guest agent session by its server-side id (best-effort; unknown ids report ok)
+            operationId: agent#release
+            parameters:
+                - name: namespace
+                  in: query
+                  description: Workspace namespace
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                  example: workspaces
+                - name: name
+                  in: path
+                  description: Workspace name
+                  required: true
+                  schema:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                  example: my-workspace
+                - name: X-KW-Agent-Session
+                  in: header
+                  description: Server-side session identifier from attach
+                  allowEmptyValue: true
+                  required: true
+                  schema:
+                    type: string
+                    description: Server-side session identifier from attach
+                    example: 8ec18121f4c2409aa7c025487f4e310c
+                  example: 8ec18121f4c2409aa7c025487f4e310c
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AgentRelease'
+                            example:
+                                ok: true
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: authentication required
+                            example: authentication required
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: no access to workspace namespace
+                            example: no access to workspace namespace
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: workspace "my-workspace" not found
+                            example: workspace "my-workspace" not found
+    /v1/workspaces/{name}/agent/renew:
+        post:
+            tags:
+                - agent
+            summary: renew agent
+            description: Renew a workspace guest agent session by its server-side id (X-KW-Agent-Session header)
+            operationId: agent#renew
+            parameters:
+                - name: namespace
+                  in: query
+                  description: Workspace namespace
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                  example: workspaces
+                - name: name
+                  in: path
+                  description: Workspace name
+                  required: true
+                  schema:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                  example: my-workspace
+                - name: X-KW-Agent-Session
+                  in: header
+                  description: Server-side session identifier from attach
+                  allowEmptyValue: true
+                  required: true
+                  schema:
+                    type: string
+                    description: Server-side session identifier from attach
+                    example: 8ec18121f4c2409aa7c025487f4e310c
+                  example: 8ec18121f4c2409aa7c025487f4e310c
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AgentRenew'
+                            example:
+                                protocol: 1
+                                ttl_ms: 60000
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: authentication required
+                            example: authentication required
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: no access to workspace namespace
+                            example: no access to workspace namespace
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: agent session for workspace "my-workspace" not found
+                            example: agent session for workspace "my-workspace" not found
     /v1/workspaces/{name}/clone:
         post:
             tags:
@@ -2520,6 +2740,102 @@ paths:
                             example: workspace "my-workspace" not found
 components:
     schemas:
+        AgentAttachPayload:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Workspace name
+                    example: my-workspace
+                namespace:
+                    type: string
+                    description: Workspace namespace
+                    default: workspaces
+                    example: workspaces
+                participant:
+                    type: string
+                    description: Viewer-chosen participant label, echoed in session records. Not an authorization boundary
+                    example: chris-laptop
+            description: Payload for attaching a controller to a workspace's guest agent session
+            example:
+                name: my-workspace
+                namespace: workspaces
+                participant: chris-laptop
+            required:
+                - name
+        AgentAttachPayload2:
+            type: object
+            properties:
+                participant:
+                    type: string
+                    description: Viewer-chosen participant label, echoed in session records. Not an authorization boundary
+                    example: chris-laptop
+            example:
+                participant: chris-laptop
+        AgentRelease:
+            type: object
+            properties:
+                ok:
+                    type: boolean
+                    description: 'Whether the session is gone (unknown ids report ok: best-effort release)'
+                    example: true
+            description: Result of releasing a workspace guest agent session
+            example:
+                ok: true
+            required:
+                - ok
+        AgentRenew:
+            type: object
+            properties:
+                protocol:
+                    type: integer
+                    description: Agent ticket/API revision
+                    example: 1
+                    format: int64
+                ttl_ms:
+                    type: integer
+                    description: Renewed lifetime in milliseconds
+                    example: 60000
+                    format: int64
+            description: Result of renewing a workspace guest agent session
+            example:
+                protocol: 1
+                ttl_ms: 60000
+            required:
+                - ttl_ms
+                - protocol
+        AgentTicket:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: Opaque server-side session identifier for renew/release correlation. Never sent to the guest
+                    example: 8ec18121f4c2409aa7c025487f4e310c
+                protocol:
+                    type: integer
+                    description: Agent ticket/API revision
+                    example: 1
+                    format: int64
+                ticket:
+                    type: string
+                    description: Signed bearer ticket (id.payload.signature) to present in the agent attach message
+                    example: 8ec18121f4c2409aa7c025487f4e310c.eyJ3b3Jrc3BhY2VVaWQiOiJ3cy0xIn0.c2ln
+                ttl_ms:
+                    type: integer
+                    description: Ticket/session lifetime in milliseconds; renew at half of it
+                    example: 60000
+                    format: int64
+            description: Short-lived attach ticket for a workspace guest agent session
+            example:
+                id: 8ec18121f4c2409aa7c025487f4e310c
+                protocol: 1
+                ticket: 8ec18121f4c2409aa7c025487f4e310c.eyJ3b3Jrc3BhY2VVaWQiOiJ3cy0xIn0.c2ln
+                ttl_ms: 60000
+            required:
+                - id
+                - ticket
+                - ttl_ms
+                - protocol
         CheckResponseBody:
             type: object
             properties:
@@ -4295,3 +4611,5 @@ tags:
       description: Health check service
     - name: display
       description: 'Shared display session membership and control: one controller plus view-only observers per VM desktop'
+    - name: agent
+      description: 'Workspace guest agent sessions: short-lived attach tickets with renew/release for the proxy bridge'
