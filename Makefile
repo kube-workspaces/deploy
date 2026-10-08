@@ -169,6 +169,11 @@ check-images: ## Fail if vendored image manifests drifted
 generate-godoc: ## Regenerate Go docs for the API godoc page
 	@scripts/generate-godoc.sh
 
+show: ## show-ci-status and show-latest-releases
+	@clear
+	-@$(MAKE) --no-print-directory show-ci-status
+	@$(MAKE) --no-print-directory show-latest-releases
+
 show-latest-releases: ## List the latest release (if any) for every kube-workspaces repo
 	@scripts/latest-releases.sh
 
