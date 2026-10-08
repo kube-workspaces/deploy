@@ -6,7 +6,7 @@
 	port-forward-frontend port-forward-api \
 	port-forward-proxy helm-install helm-upgrade helm-template lint-helm \
 	sync-helm-crds check-helm-crds sync-images check-images \
-	generate-godoc show-latest-releases show-ci-status \
+	generate-godoc show show-latest-releases show-ci-status \
 	test-tools test-lint test-smoke test-e2e test-all test-dump \
 	kind-up kind-down \
 	test-deploy-kustomize test-deploy-helm test-deploy-helm-oci \
