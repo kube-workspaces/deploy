@@ -17,9 +17,28 @@
 #include <string>
 #include <vector>
 
+static std::string jsonEscape(const char* text) {
+    std::string escaped;
+    for (const unsigned char* c = reinterpret_cast<const unsigned char*>(text ? text : ""); *c; ++c) {
+        if (*c == '\\' || *c == '"') {
+            escaped += '\\';
+            escaped += static_cast<char>(*c);
+        } else if (*c < 0x20) {
+            char unicode[7];
+            snprintf(unicode, sizeof(unicode), "\\u%04x", static_cast<unsigned int>(*c));
+            escaped += unicode;
+        } else {
+            escaped += static_cast<char>(*c);
+        }
+    }
+    return escaped;
+}
+
 static void json(const char* op, bool ok, const char* detail, bool reboot) {
-    printf("{\"op\":\"%s\",\"ok\":%s,\"detail\":\"%s\",\"rebootRequired\":%s}\n", op,
-        ok ? "true" : "false", detail ? detail : "", reboot ? "true" : "false");
+    const std::string escapedOp = jsonEscape(op);
+    const std::string escapedDetail = jsonEscape(detail);
+    printf("{\"op\":\"%s\",\"ok\":%s,\"detail\":\"%s\",\"rebootRequired\":%s}\n", escapedOp.c_str(),
+        ok ? "true" : "false", escapedDetail.c_str(), reboot ? "true" : "false");
 }
 
 // Display class GUID {4d36e968-e325-11ce-bfc1-08002be10318}.
