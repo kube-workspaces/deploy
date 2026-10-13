@@ -38,6 +38,58 @@ Two runtime requirements apply to every archive, and neither is bundled:
   (`libwebkit2gtk-4.1`, Ubuntu 23.10+ / Debian 12+). macOS and Windows use
   engines the OS already provides (WebKit, WebView2).
 
+### Tier 1 media libraries (where to get them)
+
+Release packages bundle the Tier 1 libraries, so Tier 1 works out of the
+box: Windows zips/MSIs, Linux tarballs, AppImage, Flatpak and RPMs carry
+LGPL FFmpeg 5.1 + Opus builds beside the binaries (with `NOTICE`/`COPYING`
+attribution and per-target `BUILD-INFO` records); the `.deb` instead
+recommends the distro packages (`libavcodec59`, `libavutil57`, `libopus0`
+— installed by default on Debian 12). The only exception is windows/arm64,
+which has no 5.1 shared source yet and keeps the Tier 0 fallback there.
+
+You only need this section if you run a bare build (e.g. `make build`) or
+a platform without bundled libraries. Tier 1 needs the **FFmpeg 5.1 ABI**
+— libavcodec 59 + libavutil 57 — plus libopus. Any other FFmpeg major is
+rejected (renaming a newer library does not work), and every library must
+match the exe's CPU architecture. Two failure modes tell you what is
+missing: without video decoders the client falls back to Tier 0 (run with
+`-v` and look for `cannot decode it` naming the module); without audio
+decode Tier 1 video still engages but stays muted (the Debug card shows the
+audio state). A compatible build placed beside the executable always wins
+over system libraries, so manual libraries also serve as an override.
+
+- **Linux (distro packages):** Debian 12 ships exactly the right ABI:
+  `sudo apt install libavcodec59 libavutil57 libopus0`. Other distros vary —
+  Ubuntu 22.04's stock FFmpeg is 4.4 (`libavcodec58`, too old). Check what
+  is actually installed with
+  `ldconfig -p | grep -E 'libavcodec\.so\.59|libopus\.so\.0'`.
+- **macOS:** you need `libavcodec.59.dylib`, `libavutil.57.dylib` and
+  `libopus.0.dylib`. Current Homebrew `ffmpeg` tracks newer majors and is
+  incompatible; options are building 5.1.x from [ffmpeg.org](https://ffmpeg.org/download.html)
+  source or retaining a 5.1 install, then confirming the `.59`/`.57` filenames.
+- **Windows:** the clean route is building the LGPL libraries from pinned
+  source with the repo's scripts (desktop-client
+  `third_party/media-libs/`: `build-ffmpeg.sh win-amd64` needs mingw-w64,
+  then `build-opus.sh win-amd64`, then copy the staged DLLs beside the
+  exe) — same ABI the release packages ship, no license strings attached
+  beyond LGPL/BSD. In a hurry, the **5.1 full build** archive from the
+  [GyanD/codexffmpeg releases page](https://github.com/GyanD/codexffmpeg/releases)
+  also works for personal use (copy `bin\avcodec-59.dll` +
+  `bin\avutil-57.dll` beside `kube-workspaces.exe`), but note it is a
+  GPL-configured build: fine on your own machine, never redistribute it —
+  see [Display tiers & audio](display-tiers.md#redistribution). Either way,
+  if `-v` then names a further missing module, it is a transitive
+  dependency (e.g. `swresample`) — copy it from the same `bin\` too.
+  For audio, place a 64-bit `opus.dll` (or `libopus-0.dll`) beside the exe,
+  e.g. via `vcpkg install opus:x64-windows`. `Unblock-File` everything
+  copied in, and keep x64 DLLs with the amd64 exe (ARM64 DLLs with arm64).
+  DLLs load from the app directory only; running from a network share works,
+  but if the loader refuses, move the folder to a local disk first.
+
+The client bundles none of these; redistribution and license notes live
+under [Display tiers & audio](display-tiers.md#redistribution).
+
 ## Installing on Windows
 
 The release offers Windows zips (amd64 + arm64) and an **unsigned** MSI for
@@ -184,9 +236,10 @@ guest and client requirements, network quality tiers) lives in
   advertises a sound device (audio playback over Tier 0 is a web-client
   feature).
 - **Tier 1 (in-guest agent)** is the premium path: Selkies H.264 plus Opus
-  audio decoded to stereo 48 kHz PCM on Selkies-capable images, or the
-  `kw-agent` premium window where opted in — both selected automatically with
-  sticky Tier 0 fallback. Both need the FFmpeg 59 / libopus runtime libraries
+  audio decoded to stereo 48 kHz PCM on Selkies-capable images (selected
+  automatically), or the `kw-agent` premium window wherever the image
+  advertises protocol `agent` —
+  both with sticky Tier 0 fallback. Both need the FFmpeg 59 / libopus runtime libraries
   above; without them the client falls back to Tier 0 instead of failing.
 
 The display is single-session across both transports: if someone else holds it,

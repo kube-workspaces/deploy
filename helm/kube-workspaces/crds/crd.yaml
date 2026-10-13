@@ -10033,9 +10033,12 @@ spec:
                     format: int32
                     type: integer
                   protocol:
-                    description: Protocol name (e.g. "selkies").
+                    description: |-
+                      Protocol name: "selkies" (Linux in-guest agent) or "agent"
+                      (cross-platform kw-agent, Windows first).
                     enum:
                     - selkies
+                    - agent
                     type: string
                 required:
                 - port

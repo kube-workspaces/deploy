@@ -51,8 +51,10 @@ premium path for interactive use.
 | Container `/audio/` | Via proxied audio socket where the image wires it | Embedded webview child where shipped; else system browser |
 
 The desktop client never lets the user pick a tier: Selkies is chosen from
-the workspace's image advert, the agent window is an explicit opt-in, and
-anything unplayable falls back to Tier 0 for the rest of the session.
+the workspace's image advert, the agent window opens automatically where the
+image advertises protocol `agent` (`--agent-tier` forces it even without an
+advert, `--no-agent-tier` keeps Selkies/RFB), and anything unplayable falls
+back to Tier 0 for the rest of the session.
 
 ## Tier 0 — universal RFB
 
@@ -188,8 +190,9 @@ retained as the setup/recovery path. Wire spec:
 ### Client requirements
 
 Same FFmpeg 59 / libopus native libraries as Selkies (not bundled). The
-premium window is an **explicit opt-in** — the client never guesses agent
-availability from other capability data. Refusal, busy seats and auth
+premium window opens automatically where the image advertises protocol
+`agent` — the client never guesses agent availability from other capability
+data. Refusal, busy seats and auth
 failures surface; only recoverable transport failures fall back to Tier 0.
 Input, resize and clipboard are capability-gated per session (unsupported
 input is dropped, not fatal), with focus-loss key cleanup. The debug card
@@ -386,14 +389,30 @@ explicit guest upgrade on a snapshot or clone of an existing disk.
 
 ## Redistribution
 
-The client currently bundles no FFmpeg or Opus libraries. Any future binary
-bundle must record exact source versions, build flags, licenses, notices and
-corresponding source/relinking obligations. FFmpeg's license depends on its
-configuration: the Debian validation build enables GPL components, so it is
-not evidence that a redistributable LGPL-only bundle has been prepared.
-Opus uses the BSD-style license published with libopus. Dynamic loading
-alone does not remove license obligations. Include native libraries in the
-platform signing/notarization work when distribution is implemented.
+The client bundles FFmpeg and Opus libraries in its release packages so Tier
+1 works out of the box. The recorded bundling decision (kept current in
+`third_party/media-libs/` in desktop-client):
+
+- **FFmpeg is LGPL-only by construction:** pinned 5.1.x source, built with
+  `--disable-gpl --disable-nonfree --disable-version3`, decoder-only (H.264
+  decode; no x264/x265). Prebuilt "full" shared FFmpeg must never be
+  substituted — those builds enable GPL components. The per-target
+  `BUILD-INFO` files shipped in every package record source, version and the
+  full configure line; `MANIFEST` pins source URLs and hashes.
+- **Opus** uses the BSD-style license published with libopus; attribution
+  (`NOTICE`, `COPYING.opus-BSD`) ships in every package.
+- Both are used through **dynamic loading** and stay replaceable with any
+  ABI-compatible build (drop-in beside the executable takes precedence).
+  The client never statically links either library.
+
+Any future change of source, version or flags must update the manifest,
+rebuild every target, and refresh the shipped notices — exactly as this
+section requires. FFmpeg's license depends on its configuration: the Debian
+validation build enables GPL components, so it is not evidence that the
+shipped LGPL-only bundle is compliant; only the recorded bundle build is.
+Opus uses the BSD-style license published with libopus. Dynamic loading alone
+does not remove license obligations. Include native libraries in the platform
+signing/notarization work when distribution is implemented.
 
 ## Rollback
 
