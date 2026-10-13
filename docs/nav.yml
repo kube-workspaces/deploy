@@ -12,7 +12,7 @@
   items:
     - proxy
     - vm
-    - tier1
+    - display-tiers
     - shared-display
     - desktop-client
     - api

@@ -32,8 +32,8 @@ Two runtime requirements apply to every archive, and neither is bundled:
   ABI) plus libopus, matching the executable's CPU architecture — `libavcodec.so.59`,
   `libavutil.so.57`, `libopus.so.0` on Linux; `.59.dylib` / `.57.dylib` / `.0.dylib`
   on macOS; `avcodec-59.dll`, `avutil-57.dll`, `opus.dll` or `libopus-0.dll` on
-  Windows. Without them the client falls back to Tier 0 instead of failing. See
-  [Tier 1](tier1.md) for the full runtime detail.
+  Windows. Without them the client falls back   to Tier 0 instead of failing. See
+  [Display tiers & audio](display-tiers.md) for the full runtime detail.
 - On **Linux** the embedded webview needs the **WebKitGTK 4.1** runtime
   (`libwebkit2gtk-4.1`, Ubuntu 23.10+ / Debian 12+). macOS and Windows use
   engines the OS already provides (WebKit, WebView2).
@@ -172,18 +172,22 @@ in-app terminal (Console) and the system browser are the secondary actions.
 
 ## Display tiers
 
-Two transports, chosen from the workspace's image — never a user setting:
+Two display tiers, chosen from the workspace's image — never a user setting.
+The full matrix (what each tier does, which client plays it, audio per tier,
+guest and client requirements, network quality tiers) lives in
+[Display tiers & audio](display-tiers.md):
 
 - **Tier 0 (RFB/VNC)** is the universal floor and fallback: works on any image,
   including pre-boot, BIOS/GRUB, and the login screen. Adaptive quality (Tight
   JPEG tuning with a lossless repaint when idle) is on by default. There is no
-  Tier 0 audio playback — the client only detects whether the guest advertises
-  a sound device.
-- **Tier 1 (in-guest agent)** is the premium path where the image ships the
-  pinned Selkies agent: H.264 video plus Opus audio decoded to stereo 48 kHz
-  PCM, selected automatically with sticky Tier 0 fallback. Native
-  decode/presentation has been validated on Linux amd64; other native platforms
-  and physical A/V checks remain pending work — see [Tier 1](tier1.md).
+  Tier 0 audio playback in this client — it only detects whether the guest
+  advertises a sound device (audio playback over Tier 0 is a web-client
+  feature).
+- **Tier 1 (in-guest agent)** is the premium path: Selkies H.264 plus Opus
+  audio decoded to stereo 48 kHz PCM on Selkies-capable images, or the
+  `kw-agent` premium window where opted in — both selected automatically with
+  sticky Tier 0 fallback. Both need the FFmpeg 59 / libopus runtime libraries
+  above; without them the client falls back to Tier 0 instead of failing.
 
 The display is single-session across both transports: if someone else holds it,
 the server returns HTTP 409 and the client offers Enter-to-take-over consent.

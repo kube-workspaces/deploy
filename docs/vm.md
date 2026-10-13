@@ -336,10 +336,16 @@ For `vm` workspaces, the `/vnc` bridge dials the VMI VNC subresource
 decoding server-side. The frontend attaches a noVNC `RFB` client to the bridge;
 the two talk RFB end-to-end (including `SetDesktopSize` for fluid resize). Like
 the console, VNC is a single-session, last-wins subresource, guarded by the same
-registry with a strict 409 (no silent take-over for the display).
+registry with a strict 409 (no silent take-over for the display). Tier 0 is one
+of two display tiers — see [Display tiers & audio](display-tiers.md) for how
+Tier 0 compares with the Tier 1 premium paths, which client plays each tier,
+and what audio each combination provides.
 
 #### Adaptive Quality Controller (AQC)
 
+The AQC's Poor / Fair / Good network quality tiers tune **Tier 0 RFB only**;
+Tier 1 sessions have no quality tiers (see
+[Network quality tiers](display-tiers.md#network-quality-tiers-tier-0-only)).
 The VNC display includes an **Adaptive Quality Controller** that dynamically
 tunes the visual experience based on real-time network conditions:
 
@@ -362,7 +368,7 @@ tunes the visual experience based on real-time network conditions:
 
 #### Native desktop client — adaptive RFB quality
 
-The native client's RFB controller is implemented
+The native client's Tier 0 RFB controller is implemented
 and enabled by default in shell/CLI graphical sessions (matching the web
 client), with per-generation configuration, shared adaptive request cadence,
 manual override flags, and the one-second lossless idle refresh. Tier
