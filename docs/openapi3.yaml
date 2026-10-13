@@ -450,7 +450,7 @@ paths:
                             remote_desktop:
                                 path: /
                                 port: 8080
-                                protocol: selkies
+                                protocol: agent
                             source_url: https://github.com/coder/code-server
                             tags:
                                 - development
@@ -516,7 +516,7 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: selkies
+                                    protocol: agent
                                 source_url: https://github.com/coder/code-server
                                 tags:
                                     - development
@@ -1384,7 +1384,7 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: selkies
+                                    protocol: agent
                                 stopped: false
                                 type: container
                                 vm_profile: A enim repellendus et.
@@ -1504,7 +1504,7 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: selkies
+                                    protocol: agent
                                 stopped: false
                                 type: container
                                 vm_profile: Porro quibusdam ratione maiores.
@@ -1875,7 +1875,7 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: selkies
+                                    protocol: agent
                                 stopped: false
                                 type: container
                                 vm_profile: Ut quasi commodi ratione veniam.
@@ -2627,7 +2627,7 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: selkies
+                                    protocol: agent
                                 stopped: false
                                 type: container
                                 vm_profile: Odit modi repudiandae.
@@ -2710,7 +2710,7 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: selkies
+                                    protocol: agent
                                 stopped: false
                                 type: container
                                 vm_profile: Tenetur consectetur consequatur odio sequi.
@@ -2785,7 +2785,7 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: selkies
+                                    protocol: agent
                                 stopped: false
                                 type: container
                                 vm_profile: Ut minus dolorum voluptatem facilis.
@@ -4076,15 +4076,16 @@ components:
                     format: int64
                 protocol:
                     type: string
-                    description: Protocol name (e.g. "selkies")
-                    example: selkies
+                    description: 'Protocol name: "selkies" (Linux in-guest agent) or "agent" (cross-platform kw-agent)'
+                    example: agent
                     enum:
                         - selkies
+                        - agent
             description: In-guest remote desktop agent configuration
             example:
                 path: /
                 port: 8080
-                protocol: selkies
+                protocol: agent
             required:
                 - protocol
                 - port
