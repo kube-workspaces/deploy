@@ -8,7 +8,9 @@ four drifting ones. The chart itself has its **own version line** (e.g.
 released more often than the components (chart-only fixes), so the deploy
 version routinely outruns the component version. The desktop client is an
 additional independent line, released alongside them only when it has changes
-(see "Order matters").
+(see "Order matters"). The workspace agent is a second independent line with
+the same standalone shape — own semver, tag-driven archives plus the unsigned
+Windows MSI, released only when it has changes (see §1B).
 
 ## Order matters
 
@@ -32,6 +34,8 @@ proxy      ─┼─> deploy (chart + appVersion)
 frontend   ─┘
 
 desktop-client ──> standalone binaries (not in the chart); released only when it has changes
+
+workspace-agent ──> standalone guest binaries (archives + MSI, not in the chart); released only when it has changes
 ```
 
 ## Procedure
@@ -104,6 +108,38 @@ patch release on the same line.
 
 The client must be green first. `make show-ci-status` flags it `failed` if the
 newest commit's runs (notably `Build`) are not passing.
+
+### 1B. Workspace agent
+
+`workspace-agent` follows the same standalone shape as the desktop client:
+it does **not** use the component `release.yaml` workflow. Release it only
+when there are new commits on `main` since its last release tag, on its
+**own `vX.Y.Z` semver lineage** — never matched to the client, component or
+deploy versions:
+
+```sh
+# commits on main since the last release; skip this step entirely when it is 0
+gh api repos/kube-workspaces/workspace-agent/compare/<last-tag>...main \
+  --jq '.ahead_by'
+```
+
+```sh
+# in kube-workspaces/workspace-agent
+git tag -a vX.Y.Z -m "vX.Y.Z"
+git push origin vX.Y.Z
+```
+
+Pushing the tag triggers `build.yml`, which builds the per-target archives
+and the unsigned Windows MSI and publishes the GitHub Release — binaries
+plus `SHA256SUMS`. Guests pick it up through the normal install path
+(`install.ps1`, shipped in the archives and the MSI payload, also registers
+the interactive logon serve task), so cut it whenever guest-side fixes are
+validated — inside a coordinated platform release or on its own. Like the
+client there is no dry-run preview: show the commits that will ship before
+tagging, review the composed notes and assets on the releases page after
+publish, and fix anything wrong in a follow-up patch release on the same
+line. The agent must be green first — a red `Build` at the tag's commit
+ships broken binaries the same way.
 
 ### 2. Component repositories
 

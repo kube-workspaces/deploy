@@ -1,6 +1,6 @@
 ---
 name: create-new-release
-description: Cut a full kube-workspaces release following docs/releasing.md. Use when the user asks to create/cut/make/run a new release, do a release, cut the release, release the platform, or release a new version — this covers the CI pre-flight gate, the desktop-client tag release, the four component releases, the chart bump, the deploy release, and the website bump. Do not use for single-repo patches outside the coordinated release.
+description: Cut a full kube-workspaces release following docs/releasing.md. Use when the user asks to create/cut/make/run a new release, do a release, cut the release, release the platform, or release a new version — this covers the CI pre-flight gate, the desktop-client tag release, an optional standalone workspace-agent tag release, the four component releases, the chart bump, the deploy release, and the website bump. Do not use for single-repo patches outside the coordinated release.
 ---
 
 # Create a New kube-workspaces Release
@@ -9,13 +9,14 @@ Carry out the full coordinated release exactly as documented in
 `docs/releasing.md` in this repo. This deploy repo is the working directory; the
 sibling checkouts under `<workspace-root>/..` (`/home/flaccid/src/github/kube-workspaces/`)
 contain `controller`, `api`, `proxy`, `frontend`, `desktop-client`,
-`image-catalog`, `kube-workspaces.github.io`. Use them when a step needs a local
+`workspace-agent`, `image-catalog`, `kube-workspaces.github.io`. Use them when a step needs a local
 checkout; otherwise clone into a temp dir. **Never skip a step, renumber the
 sequence, or move a gate.**
 
 ## Invariants
 
-- Order is fixed: **desktop-client → controller/api/proxy/frontend → deploy**.
+- Order is fixed: **desktop-client → workspace-agent (optional) →
+  controller/api/proxy/frontend → deploy**.
   Three version lines ride separately and are **deliberately not** matched:
   1. **Component version** — controller/api/proxy/frontend share one `vX.Y.Z`
      (e.g. `v0.6.0`), the number the chart's `appVersion` pins. Judge semver
@@ -27,6 +28,11 @@ sequence, or move a gate.**
      history, never matched to either line above, and only released **when it
      has new commits** since its last tag. Nothing pins the client image (it is
      not a Docker image).
+  4. **Workspace agent** — its **own semver lineage**, same standalone shape
+     as the client (tag-driven archives + unsigned MSI), and only released
+     **when it has new commits** since its last tag. Never matched to any line
+     above; order-independent, so it may also ship alone outside a coordinated
+     release.
 - The deploy chart's `appVersion` names component images that must already be
   published before deploy is released — that is why components precede deploy.
 - Every workflow_dispatch release has a dry-run gate: run with `dry_run=true`,
@@ -55,9 +61,14 @@ passes. Each decision is asked where it falls in the procedure:
    Own line, suggested as next patch above its latest tag from `gh api
    repos/kube-workspaces/desktop-client/releases`; never the component or
    deploy version.
-3. **Before each `dry_run=false` (Steps 2, 4):** show the classification
+3. **In Step 1B:** the workspace-agent version — only if it has new commits,
+   on its **own semver lineage** (next patch above its latest tag from `gh api
+   repos/kube-workspaces/workspace-agent/releases`; minor when the change adds
+   features). Never matched to any other line. Skip the step entirely at
+   `ahead_by` 0.
+4. **Before each `dry_run=false` (Steps 2, 4):** show the classification
    summary, not just a "yes".
-4. **In Step 3:** how to land the chart bump + website bump: direct push to
+5. **In Step 3:** how to land the chart bump + website bump: direct push to
    `main` (this repo has admin pushes that bypass PR rules) or an actual PR.
 
 ## Step 0 — Pre-flight: CI must be green
@@ -140,6 +151,46 @@ commits since its last release tag.**
    in step 6 is scope only, not the composed notes; the real ones only exist
    after publish. Anything wrong becomes a follow-up patch release on the same
    line.
+
+## Step 1B — Workspace agent (kube-workspaces/workspace-agent, standalone)
+
+Independent of the platform release and of Step 1: cut it whenever guest-side
+fixes are validated, coordinated release or not. Same tag-driven shape as the
+client (no `release.yaml`; tag push triggers `build.yml`, which publishes
+archives + unsigned MSI + `SHA256SUMS`).
+
+1. Find the last release tag and count commits on `main` since it — same
+   commands as Step 1 with `kube-workspaces/workspace-agent` in place of
+   `kube-workspaces/desktop-client`.
+2. **If `ahead_by` is `0`, skip this step entirely.** Report that the agent is
+   unchanged and no tag or release will be made; continue without asking for
+   a version.
+3. If there are changes, confirm the version with the user — on its **own
+   semver lineage**, next patch above its latest tag (minor, not patch, when
+   the change adds features). Never aligned with any other line.
+4. Work in the sibling checkout (`../workspace-agent`) or clone. Fetch latest:
+   `git fetch origin main && git checkout -B main origin/main`. Record the
+   exact commit (`git rev-parse HEAD`).
+5. Verify the runs for that commit are green (`gh run list -R
+   kube-workspaces/workspace-agent --branch main --commit <sha>`); especially
+   `Build` — a red Build at the tag's commit ships broken binaries. If red, stop.
+6. **Scope preview before tagging.** No dry-run exists, so this is the last
+   reversible checkpoint. Show the commit list for the release and get explicit
+   go-ahead before anything is tagged.
+7. Tag and push:
+   ```sh
+   git tag -a vX.Y.Z -m "vX.Y.Z"
+   git push origin vX.Y.Z
+   ```
+8. Watch the `Build` workflow until it publishes, then verify the GitHub
+   Release exists with the archives, MSI and `SHA256SUMS`:
+   ```sh
+   gh api repos/kube-workspaces/workspace-agent/releases --jq '.[0] | [.tag_name, .created_at] | @tsv'
+   ```
+9. Ask the user to review the published release (notes and assets). Anything
+   wrong becomes a follow-up patch release on the same line. Guests pick the
+   release up through the normal install path (`install.ps1`, shipped in the
+   archives and the MSI payload).
 
 ## Step 2 — Component repositories (shared component version)
 
@@ -224,6 +275,8 @@ Confirm all of:
   `appVersion` (bare).
 - `desktop-client` release page has the archives + `SHA256SUMS` (only if step 1
   was run — skipped when it had no new commits).
+- `workspace-agent` release page has the archives, MSI + `SHA256SUMS` (only if
+  step 1B was run — skipped when it had no new commits).
 - Chart published at the deploy version.
 - `deploy` tag + release exist at `vX.Y.Z`.
 - Website badge and desktop-client link updated.
