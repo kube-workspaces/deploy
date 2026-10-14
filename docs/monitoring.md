@@ -181,6 +181,31 @@ Configure `KW_PROMETHEUS_URL` on the API deployment through a Kustomize patch;
 optionally configure `KW_PROMETHEUS_TOKEN` from a separate query-auth Secret.
 The query URL is operator-controlled, never supplied by the browser.
 
+Kustomize operators needing VMI series can create an equivalent ServiceMonitor
+for the KubeVirt metrics Service:
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kube-workspaces-kubevirt-vmi
+  namespace: kube-workspaces-system
+  # Add labels required by your Prometheus ServiceMonitor selector.
+spec:
+  namespaceSelector:
+    matchNames: [kubevirt]
+  selector:
+    matchLabels:
+      prometheus.kubevirt.io: "true"
+  endpoints:
+    - port: metrics
+      path: /metrics
+      scheme: https
+      interval: 30s
+      tlsConfig:
+        insecureSkipVerify: true
+```
+
 The page offers 15-minute, one-hour and 24-hour connection and bidirectional
 traffic charts broken down by category/tier/transport. Queries are scoped to
 `KW_MONITORING_PLATFORM`. No raw PromQL or arbitrary upstream URL is accepted
@@ -254,10 +279,23 @@ platform proxy series:
 | `network_vmi_packets` | `kubevirt_vmi_network_receive/transmit_packets_total` | VMI packets, same direction mapping |
 
 Prerequisites: Prometheus must already scrape the kubelet/cAdvisor targets
-for container series and the KubeVirt metrics Service for VMI series. This
-chart only queries them; it does not install scrape jobs for those
-components. If either family is absent, its charts return empty results while
-live monitoring and proxy history keep working.
+for container series. For VMI series, enable the chart's optional KubeVirt
+scrape (off by default; only useful when KubeVirt is installed):
+
+```yaml
+monitoring:
+  kubevirtServiceMonitor:
+    enabled: true
+    interval: 30s
+    namespace: kubevirt # where the KubeVirt metrics Service lives
+    labels:
+      release: monitoring # match the installed Prometheus selector
+```
+
+This selects the `kubevirt-prometheus-metrics` Service
+(`prometheus.kubevirt.io: "true"`) over self-signed HTTPS. If it stays
+disabled or KubeVirt is absent, VMI charts return empty results while live
+monitoring, proxy history and container network history keep working.
 
 These are cluster-level sums in this milestone, not per-workspace
 attribution and not platform-scoped by `KW_MONITORING_PLATFORM` (neither

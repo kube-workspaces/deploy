@@ -91,3 +91,40 @@ tests:
                 key: token
                 optional: true
         documentIndex: 0
+  - it: omits the KubeVirt VMI ServiceMonitor by default
+    template: templates/monitoring.yaml
+    asserts:
+      - hasDocuments:
+          count: 2
+  - it: scrapes KubeVirt VMI metrics over self-signed HTTPS when enabled
+    template: templates/monitoring.yaml
+    set:
+      monitoring.kubevirtServiceMonitor.enabled: true
+      monitoring.kubevirtServiceMonitor.labels.release: monitoring
+    asserts:
+      - hasDocuments:
+          count: 3
+      - isKind:
+          of: ServiceMonitor
+        documentIndex: 2
+      - equal:
+          path: metadata.labels.release
+          value: monitoring
+        documentIndex: 2
+      - equal:
+          path: spec.namespaceSelector.matchNames[0]
+          value: kubevirt
+        documentIndex: 2
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            prometheus.kubevirt.io: "true"
+        documentIndex: 2
+      - equal:
+          path: spec.endpoints[0].scheme
+          value: https
+        documentIndex: 2
+      - equal:
+          path: spec.endpoints[0].tlsConfig.insecureSkipVerify
+          value: true
+        documentIndex: 2

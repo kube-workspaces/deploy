@@ -13,6 +13,14 @@ monitoring:
     enabled: false
     interval: 15s
     labels: {}
+  # Optional scrape of the KubeVirt metrics Service so network_vmi_*
+  # history has data. KubeVirt serves self-signed HTTPS; the endpoint
+  # skips TLS verification like the upstream KubeVirt monitor examples.
+  kubevirtServiceMonitor:
+    enabled: false
+    interval: 30s
+    namespace: kubevirt
+    labels: {}
 
 controller:
   image:

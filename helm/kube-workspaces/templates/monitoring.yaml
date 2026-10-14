@@ -46,3 +46,28 @@ spec:
           name: {{ .Values.monitoring.existingSecret | default (printf "%s-monitoring" (include "kube-workspaces.fullname" .)) }}
           key: token
 {{- end }}
+{{- if .Values.monitoring.kubevirtServiceMonitor.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "kube-workspaces.fullname" . }}-kubevirt-vmi
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.kubevirtServiceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames: [{{ .Values.monitoring.kubevirtServiceMonitor.namespace | quote }}]
+  selector:
+    matchLabels:
+      prometheus.kubevirt.io: "true"
+  endpoints:
+    - port: metrics
+      path: /metrics
+      scheme: https
+      interval: {{ .Values.monitoring.kubevirtServiceMonitor.interval }}
+      tlsConfig:
+        insecureSkipVerify: true
+{{- end }}
