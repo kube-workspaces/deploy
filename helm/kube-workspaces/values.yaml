@@ -1,6 +1,19 @@
 # Default values for kube-workspaces
 replicaCount: 1
 
+# Live admin monitoring is always instrumented. Create this shared Secret with
+# a random `token` key to enable private replica reports and metrics on :9090.
+# Empty existingSecret uses <fullname>-monitoring. See docs/monitoring.md.
+monitoring:
+  existingSecret: ""
+  prometheusURL: ""
+  # Optional Secret containing a `token` key for the Prometheus query API.
+  prometheusAuthSecret: ""
+  serviceMonitor:
+    enabled: false
+    interval: 15s
+    labels: {}
+
 controller:
   image:
     repository: ghcr.io/kube-workspaces/controller

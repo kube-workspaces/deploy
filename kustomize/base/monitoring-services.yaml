@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-workspaces-api-monitoring
+  namespace: kube-workspaces-system
+  labels:
+    app.kubernetes.io/name: kube-workspaces
+    app.kubernetes.io/component: api
+    kubeworkspaces.io/monitoring: "true"
+spec:
+  type: ClusterIP
+  ports:
+    - name: monitoring
+      port: 9090
+      targetPort: monitoring
+  selector:
+    app.kubernetes.io/name: kube-workspaces
+    app.kubernetes.io/component: api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-workspaces-proxy-monitoring
+  namespace: kube-workspaces-system
+  labels:
+    app.kubernetes.io/name: kube-workspaces
+    app.kubernetes.io/component: proxy
+    kubeworkspaces.io/monitoring: "true"
+spec:
+  type: ClusterIP
+  ports:
+    - name: monitoring
+      port: 9090
+      targetPort: monitoring
+  selector:
+    app.kubernetes.io/name: kube-workspaces
+    app.kubernetes.io/component: proxy

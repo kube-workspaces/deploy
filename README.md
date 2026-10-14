@@ -33,6 +33,7 @@ Modelled on the Kubeflow Notebooks architecture but as a standalone, lightweight
 - Volume (PVC) management - create, list, attach to workspaces
 - Start/Stop workspaces without deleting them (annotation-based)
 - Admin section with user management, auth settings, API docs, and CRD browser
+- [Admin monitoring](docs/monitoring.md) for live workspace connections, proxy traffic, replica coverage, and optional Prometheus platform/tier history
 - Workspace detail view with Overview, Logs, Events, Metrics, and YAML tabs
 
 ## Quick Start

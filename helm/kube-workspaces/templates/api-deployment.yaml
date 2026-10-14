@@ -29,8 +29,32 @@ spec:
           ports:
             - containerPort: {{ .Values.api.port }}
               name: http
-          {{- if or .Values.api.externalHost .Values.api.allowedOrigins .Values.auth.enabled }}
+            - containerPort: 9090
+              name: monitoring
           env:
+            - name: KW_MONITORING_PLATFORM
+              value: {{ printf "%s/%s" .Release.Namespace .Release.Name | quote }}
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KW_MONITORING_SELECTOR
+              value: {{ printf "app.kubernetes.io/instance=%s" .Release.Name | quote }}
+            - name: KW_MONITORING_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.monitoring.existingSecret | default (printf "%s-monitoring" (include "kube-workspaces.fullname" .)) }}
+                  key: token
+                  optional: true
+            - name: KW_PROMETHEUS_URL
+              value: {{ .Values.monitoring.prometheusURL | quote }}
+            {{- if .Values.monitoring.prometheusAuthSecret }}
+            - name: KW_PROMETHEUS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.monitoring.prometheusAuthSecret }}
+                  key: token
+            {{- end }}
             {{- if .Values.api.externalHost }}
             - name: EXTERNAL_HOST
               value: {{ .Values.api.externalHost | quote }}
@@ -48,7 +72,6 @@ spec:
               value: "https://{{ .Values.api.externalHost }}/auth/callback"
             {{- end }}
             {{- end }}
-          {{- end }}
           livenessProbe:
             httpGet:
               path: /healthz

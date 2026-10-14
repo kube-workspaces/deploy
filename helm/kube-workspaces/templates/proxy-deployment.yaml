@@ -29,7 +29,17 @@ spec:
           ports:
             - containerPort: {{ .Values.proxy.port }}
               name: http
+            - containerPort: 9090
+              name: monitoring
           env:
+            - name: KW_MONITORING_PLATFORM
+              value: {{ printf "%s/%s" .Release.Namespace .Release.Name | quote }}
+            - name: KW_MONITORING_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.monitoring.existingSecret | default (printf "%s-monitoring" (include "kube-workspaces.fullname" .)) }}
+                  key: token
+                  optional: true
             {{- if .Values.proxy.allowedOrigins }}
             - name: ALLOWED_ORIGINS
               value: {{ .Values.proxy.allowedOrigins | quote }}

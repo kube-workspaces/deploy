@@ -30,6 +30,8 @@ spec:
           ports:
             - containerPort: 8080
               name: http
+            - containerPort: 9090
+              name: monitoring
           livenessProbe:
             httpGet:
               path: /healthz
@@ -39,6 +41,18 @@ spec:
               path: /healthz
               port: http
           env:
+            - name: KW_MONITORING_PLATFORM
+              value: kube-workspaces-system/kube-workspaces
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KW_MONITORING_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: kube-workspaces-monitoring
+                  key: token
+                  optional: true
             - name: EXTERNAL_HOST
               value: "api.workspaces.example.com"
             - name: AUTH_CALLBACK_URL

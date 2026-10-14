@@ -1,0 +1,48 @@
+{{- range $component := list "api" "proxy" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kube-workspaces.fullname" $ }}-{{ $component }}-monitoring
+  labels:
+    {{- include "kube-workspaces.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+    kubeworkspaces.io/monitoring: "true"
+spec:
+  type: ClusterIP
+  ports:
+    - name: monitoring
+      port: 9090
+      targetPort: monitoring
+  selector:
+    {{- include "kube-workspaces.selectorLabels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+{{- end }}
+{{- if .Values.monitoring.serviceMonitor.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "kube-workspaces.fullname" . }}-connections
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  namespaceSelector:
+    matchNames: [{{ .Release.Namespace | quote }}]
+  selector:
+    matchLabels:
+      {{- include "kube-workspaces.selectorLabels" . | nindent 6 }}
+      kubeworkspaces.io/monitoring: "true"
+  endpoints:
+    - port: monitoring
+      path: /metrics
+      interval: {{ .Values.monitoring.serviceMonitor.interval }}
+      authorization:
+        type: Bearer
+        credentials:
+          name: {{ .Values.monitoring.existingSecret | default (printf "%s-monitoring" (include "kube-workspaces.fullname" .)) }}
+          key: token
+{{- end }}

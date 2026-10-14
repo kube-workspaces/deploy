@@ -1,0 +1,93 @@
+suite: monitoring wiring
+templates:
+  - templates/monitoring.yaml
+  - templates/api-deployment.yaml
+  - templates/proxy-deployment.yaml
+tests:
+  - it: creates private monitoring Services without a ServiceMonitor by default
+    template: templates/monitoring.yaml
+    asserts:
+      - hasDocuments:
+          count: 2
+      - isKind:
+          of: Service
+        documentIndex: 0
+      - equal:
+          path: spec.type
+          value: ClusterIP
+        documentIndex: 0
+      - equal:
+          path: spec.ports[0].port
+          value: 9090
+        documentIndex: 1
+  - it: renders authenticated per-pod scraping when enabled
+    template: templates/monitoring.yaml
+    set:
+      monitoring.existingSecret: monitoring-token
+      monitoring.serviceMonitor.enabled: true
+      monitoring.serviceMonitor.labels.release: monitoring
+    asserts:
+      - hasDocuments:
+          count: 3
+      - isKind:
+          of: ServiceMonitor
+        documentIndex: 2
+      - equal:
+          path: metadata.labels.release
+          value: monitoring
+        documentIndex: 2
+      - equal:
+          path: spec.endpoints[0].authorization.credentials.name
+          value: monitoring-token
+        documentIndex: 2
+      - equal:
+          path: spec.endpoints[0].interval
+          value: 15s
+        documentIndex: 2
+  - it: configures API reporting and optional authenticated history
+    template: templates/api-deployment.yaml
+    set:
+      monitoring.existingSecret: monitoring-token
+      monitoring.prometheusURL: http://prometheus:9090
+      monitoring.prometheusAuthSecret: prometheus-token
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_MONITORING_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: monitoring-token
+                key: token
+                optional: true
+        documentIndex: 0
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_PROMETHEUS_URL
+            value: http://prometheus:9090
+        documentIndex: 0
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_PROMETHEUS_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: prometheus-token
+                key: token
+        documentIndex: 0
+  - it: configures proxy with the same internal report token
+    template: templates/proxy-deployment.yaml
+    set:
+      monitoring.existingSecret: monitoring-token
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_MONITORING_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: monitoring-token
+                key: token
+                optional: true
+        documentIndex: 0

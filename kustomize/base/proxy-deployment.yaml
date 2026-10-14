@@ -30,6 +30,8 @@ spec:
           ports:
             - containerPort: 8080
               name: http
+            - containerPort: 9090
+              name: monitoring
           livenessProbe:
             httpGet:
               path: /healthz
@@ -43,6 +45,14 @@ spec:
             initialDelaySeconds: 2
             periodSeconds: 5
           env:
+            - name: KW_MONITORING_PLATFORM
+              value: kube-workspaces-system/kube-workspaces
+            - name: KW_MONITORING_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: kube-workspaces-monitoring
+                  key: token
+                  optional: true
             - name: ALLOWED_ORIGINS
               value: "https://workspaces.example.com,http://localhost:3000"
             - name: PATH_PREFIX

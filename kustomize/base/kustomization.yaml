@@ -9,6 +9,7 @@ resources:
   - api-deployment.yaml
   - proxy-rbac.yaml
   - proxy-deployment.yaml
+  - monitoring-services.yaml
   - frontend-deployment.yaml
   - ingress.yaml
 
