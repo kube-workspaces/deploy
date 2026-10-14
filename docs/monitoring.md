@@ -46,11 +46,11 @@ retransmissions. Last traffic includes protocol control/keepalive traffic;
 it is not a user-input/idle-time indicator. A quiet established connection
 remains connected.
 
-Actual workspace/interface network packets and bytes require separately
-verified container/KubeVirt interface metrics. They are not synthesized from
-WebSocket messages or agent frames and are not collected by the live bridge
-endpoint in this milestone. Whole-VM network traffic must not be added to
-proxy traffic totals.
+Actual workspace/interface network packets and bytes come from existing
+cluster telemetry through the history API, not from the live bridge
+endpoint. They are not synthesized from WebSocket messages or agent frames.
+Whole-VM network traffic must not be added to proxy traffic totals, and
+virt-launcher pod traffic appears under both container and VMI families.
 
 ## Enable private replica reporting
 
@@ -219,7 +219,14 @@ GET /admin/monitoring/overview
 GET /admin/monitoring/series?metric=connections&range=1h
 GET /admin/monitoring/series?metric=toward_workspace&range=1h
 GET /admin/monitoring/series?metric=toward_client&range=1h
+GET /admin/monitoring/series?metric=network_container_bytes&range=1h
+GET /admin/monitoring/series?metric=network_container_packets&range=1h
+GET /admin/monitoring/series?metric=network_vmi_bytes&range=1h
+GET /admin/monitoring/series?metric=network_vmi_packets&range=1h
 ```
+
+Only these fixed metric keys are accepted; the browser cannot submit PromQL
+or an upstream URL.
 
 They require admin authorization through the existing API middleware and
 return `Cache-Control: no-store`. With platform auth disabled, the existing
@@ -233,6 +240,31 @@ The overview includes `observed_at`, `complete`, `rates_ready`, `workspaces`
 started, and `history_configured`. It is a full cached inventory; filters in
 the first milestone are client-side. Separate paginated detail endpoints are
 a future scale extension.
+
+## Workspace/interface network history
+
+Four fixed history queries expose cluster interface counters alongside the
+platform proxy series:
+
+| Metric key | Source family | Meaning |
+|---|---|---|
+| `network_container_bytes` | `container_network_receive/transmit_bytes_total` (kubelet/cAdvisor) | Cluster pod bytes, receive = toward workspaces, transmit = toward clients |
+| `network_container_packets` | `container_network_receive/transmit_packets_total` | Cluster pod packets, same direction mapping |
+| `network_vmi_bytes` | `kubevirt_vmi_network_receive/transmit_bytes_total` (KubeVirt `kubevirt-prometheus-metrics` Service) | VMI bytes by guest interface, same direction mapping |
+| `network_vmi_packets` | `kubevirt_vmi_network_receive/transmit_packets_total` | VMI packets, same direction mapping |
+
+Prerequisites: Prometheus must already scrape the kubelet/cAdvisor targets
+for container series and the KubeVirt metrics Service for VMI series. This
+chart only queries them; it does not install scrape jobs for those
+components. If either family is absent, its charts return empty results while
+live monitoring and proxy history keep working.
+
+These are cluster-level sums in this milestone, not per-workspace
+attribution and not platform-scoped by `KW_MONITORING_PLATFORM` (neither
+family carries that label). Per-workspace/interface breakdowns remain future
+work subject to a cardinality budget. Validate attribution live by running
+traffic in one workspace and confirming the expected direction moves while
+proxy stream bytes and interface bytes stay in separate charts.
 
 ## Operational acceptance
 
@@ -249,6 +281,10 @@ After deploying the updated API, proxy, frontend, controller and chart/base:
    rates do not spike. Make a report unavailable and confirm partial coverage.
 6. Confirm history appears after sufficient scrapes and remains independently
    unavailable if Prometheus is disabled/unreachable.
+7. Open each network history metric and confirm container and VMI series move
+   in the expected direction during workspace traffic, stay separate from
+   proxy stream-byte charts, and report empty (not failed live monitoring)
+   when the underlying target is unscraped.
 
 Live collection does not change existing ownership guarantees. API serial/SSH/
 TCP registries and agent grants remain process-local; agent renew/release on a
