@@ -1,4 +1,4 @@
-# Desktop client
+# Desktop Client
 
 The desktop client is a native application for accessing workspaces on a Kube
 Workspaces instance — a real remote-desktop client (clipboard, audio on Tier 1,
