@@ -5,7 +5,7 @@
 </div>
 <div id="api-redoc" style="height: calc(100vh - 100px);"></div>
 
-<script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+<script src="https://cdn.redoc.ly/redoc/v2.1.3/bundles/redoc.standalone.js"></script>
 <script>
 (function () {
   var el = document.getElementById('api-redoc');
