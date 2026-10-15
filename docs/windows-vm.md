@@ -292,6 +292,55 @@ PVCs and manually created bootstrap/import Secrets are independent resources;
 delete them separately. Remove only the dedicated proof namespace after all
 required disk exports/evidence are saved.
 
+## Guest access without VNC (QEMU guest agent)
+
+The QEMU guest agent (QGA) channel gives shell access to a running Windows VM
+without opening VNC or the desktop client, which is what makes headless
+diagnosis possible: read the agent's own version, service/worker state, event
+log, files and logs while a UAC prompt or a dead interactive session blocks the
+normal path. It rides the virtio-serial agent channel, not the network, so it
+also works when the desktop session is unusable.
+
+Run the agent command through the VMI's `virt-launcher` pod. The domain is named
+`<namespace>_<name>` and the command JSON is a single argument:
+
+```sh
+VM=windows11-pro
+NS=windows11-proof
+POD=$(kubectl get pod -n "$NS" -l kubevirt.io/domain="$VM" \
+  -o jsonpath='{.items[0].metadata.name}')
+qga() {
+  kubectl exec -n "$NS" "$POD" -c compute -- \
+    virsh -c qemu:///session qemu-agent-command "${NS}_${VM}" "$1"
+}
+```
+
+`guest-exec` runs a guest process; `capture-output` collects stdout/stderr and
+`guest-exec-status` polls it. Encode a PowerShell script as base64 UTF-16LE and
+run it with `-EncodedCommand`:
+
+```sh
+SCRIPT='Get-Service KubeWorkspacesAgent | Format-List *; \
+  Get-Content C:\ProgramData\workspace-agent\status.json'
+B64=$(printf '%s' "$SCRIPT" | iconv -f UTF-8 -t UTF-16LE | base64 -w0)
+qga "{\"execute\":\"guest-exec\",\"arguments\":{\"path\":\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\",\"arg\":[\"-NoProfile\",\"-EncodedCommand\",\"$B64\"],\"capture-output\":true}}"
+# -> {"return":{"pid":1234}}; then poll:
+qga '{"execute":"guest-exec-status","arguments":{"pid":1234}}'
+```
+
+A small Python helper loops the poll until `exited` and decodes `out-data`/
+`err-data`. Useful probes: the running worker's `ExecutablePath`, `StartTime`
+and command line (`Get-CimInstance Win32_Process`), the on-disk binary's
+compiled version (`kw-agent.exe --version`) and SHA-256, `service-status.json`
+and `status.json` under `C:\ProgramData\workspace-agent`, and the worker logs
+under `C:\Users\<user>\AppData\Local\workspace-agent\`. Comparing the running
+process image hash with the installed file on disk is how a stale worker (old
+binary still resident after an MSI upgrade) is ruled out.
+
+`guest-exec` requires the guest agent service to be running; a completed
+`guest-exec-status` only reports the guest process's own exit, so read its
+captured output rather than assuming success from an empty result.
+
 ## Tool checks
 
 ```sh
