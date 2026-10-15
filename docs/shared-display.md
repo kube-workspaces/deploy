@@ -1,7 +1,3 @@
----
-title: Shared Display (multi-session)
----
-
 # Shared Display (multi-session)
 
 The shared display lets several participants watch one VM desktop at the same

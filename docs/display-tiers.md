@@ -1,7 +1,3 @@
----
-title: Display tiers & audio
----
-
 # Display tiers & audio
 
 VM workspaces have **two display tiers** served over **three transports**.

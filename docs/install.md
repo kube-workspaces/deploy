@@ -41,7 +41,8 @@ through to a guest, three conditions must hold:
    devices KubeVirt's built-in device plugin discovers them — but only once
    they are **permitted** in step 3.
 3. **Permitted in the KubeVirt CR.** Allowlist the device so KubeVirt can hand
-   it to VMs:
+   it to VMs. In the Helm chart, configure `kubevirt.gpuPassthrough.permittedHostDevices`
+   (which renders `spec.configuration.permittedHostDevices` on the KubeVirt CR):
 
    ```yaml
    kubevirt:

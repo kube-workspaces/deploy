@@ -1,7 +1,3 @@
----
-title: Admin monitoring
----
-
 # Admin monitoring
 
 **Admin → Monitoring** shows live workspace/VM connections, client-facing

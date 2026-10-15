@@ -205,7 +205,7 @@ gh workflow run release.yaml --repo kube-workspaces/deploy \
 The workflow checks, before doing anything irreversible, that:
 
 - the version is `vX.Y.Z` and the tag does not already exist
-- `Chart.yaml` `version` **and** `appVersion` both match
+- `Chart.yaml` `version` matches the release tag (and `appVersion` names an existing component release)
 - a matching image is published for all four components
 
 Re-run with `dry_run=false` to tag and publish.

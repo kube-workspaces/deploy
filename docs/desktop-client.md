@@ -1,7 +1,3 @@
----
-title: Desktop client
----
-
 # Desktop client
 
 The desktop client is a native application for accessing workspaces on a Kube
@@ -26,13 +22,14 @@ fully; container workspaces fall back to the system browser instead of the
 embedded webview. A shell-only local build (`make build` into `bin/`) behaves
 the same way: the `web` subcommand reports the browser engine is unavailable.
 
-Two runtime requirements apply to every archive, and neither is bundled:
+Two runtime considerations apply depending on your platform and build:
 
 - **Tier 1** decoding needs FFmpeg **libavcodec 59 / libavutil 57** (FFmpeg 5.1
   ABI) plus libopus, matching the executable's CPU architecture — `libavcodec.so.59`,
   `libavutil.so.57`, `libopus.so.0` on Linux; `.59.dylib` / `.57.dylib` / `.0.dylib`
   on macOS; `avcodec-59.dll`, `avutil-57.dll`, `opus.dll` or `libopus-0.dll` on
-  Windows. Without them the client falls back   to Tier 0 instead of failing. See
+  Windows. These are bundled in official release packages (except windows/arm64);
+  bare unbundled builds fall back to Tier 0 if they are absent. See
   [Display tiers & audio](display-tiers.md) for the full runtime detail.
 - On **Linux** the embedded webview needs the **WebKitGTK 4.1** runtime
   (`libwebkit2gtk-4.1`, Ubuntu 23.10+ / Debian 12+). macOS and Windows use
@@ -87,8 +84,9 @@ over system libraries, so manual libraries also serve as an override.
   DLLs load from the app directory only; running from a network share works,
   but if the loader refuses, move the folder to a local disk first.
 
-The client bundles none of these; redistribution and license notes live
-under [Display tiers & audio](display-tiers.md#redistribution).
+Official release packages bundle compliant LGPL/BSD libraries; for unbundled
+or manual builds, redistribution and license notes live under
+[Display tiers & audio](display-tiers.md#redistribution).
 
 ## Installing on Windows
 

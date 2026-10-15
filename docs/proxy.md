@@ -368,8 +368,8 @@ Workspace apps served under `/proxy/ns/name/...` may use absolute paths like `/s
 2. The app's JavaScript requests `/static/app.js` (absolute path)
 3. The browser sends this to the frontend (catch-all ingress rule)
 4. Proxy file inspects the `Referer` header
-5. Extracts the proxy prefix: `/api/proxy/ns/name`
-6. Responds with **308 Permanent Redirect** to `/api/proxy/ns/name/static/app.js`
+5. Extracts the proxy prefix: `/proxy/ns/name`
+6. Responds with **308 Permanent Redirect** to `/proxy/ns/name/static/app.js`
 7. Browser follows redirect → ingress routes to proxy service
 
 **Exclusions** (not redirected):
@@ -711,7 +711,7 @@ spec:
 
 For example, a workspace `my-code` in namespace `chris` with a process on port 8000 produces:
 ```
-/proxy/user1/my-code/proxy/8000/
+/proxy/chris/my-code/proxy/8000/
 ```
 
 **code-server also supports `/absproxy/<port>/`** which passes the full path (including the prefix) to the target process. Use `proxy` (not `absproxy`) for most applications.
@@ -935,7 +935,7 @@ Proxy routing:
 8. Parses: namespace=user1, name=my-code, rest=/
 9. GetWorkspaceImage("user1", "my-code") → "codercom/code-server:latest"
 10. GetImageProxyConfig("codercom/code-server:latest") → {needsNoopSW, rewriteHostAbsolutePaths}
-11. Target: http://my-code.chris.svc.cluster.local:80/
+11. Target: http://my-code.user1.svc.cluster.local:80/
 
 12. Director: sets Host, X-Forwarded-Host, X-Forwarded-Proto
 13. Request forwarded to pod
@@ -978,6 +978,8 @@ Proxy routing:
 | `HTTP_PORT` | `8080` | Listen port |
 | `ALLOWED_ORIGINS` | (empty) | Comma-separated origins for CORS |
 | `PATH_PREFIX` | `/proxy` | Path prefix for proxy routes |
+| `DISPLAY_API_URL` | (empty) | API URL for shared display ownership lease validation |
+| `AGENT_API_URL` | (empty) | API URL for workspace-agent bridge attach ticket validation |
 
 ### Frontend
 

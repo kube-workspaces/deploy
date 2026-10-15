@@ -54,7 +54,7 @@ The Helm chart exposes every hostname-dependent value. The values that matter:
 
 | Value | Default | Purpose |
 |-------|---------|---------|
-| `api.externalHost` | `""` | `Host` header forwarded to proxied workspace backends |
+| `api.externalHost` | `""` | External hostname of the API (e.g. for OIDC callback URLs) |
 | `api.allowedOrigins` | `https://workspaces.example.com,...` | CORS allow-list for the API |
 | `proxy.allowedOrigins` | `https://workspaces.example.com,...` | CORS allow-list for the proxy |
 | `auth.callbackURL` | `""` | Optional override of the OIDC callback URL |
@@ -350,22 +350,38 @@ patches:
       kind: Deployment
       name: kube-workspaces-api
     patch: |-
-      - op: replace
-        path: /spec/template/spec/containers/0/env/0/value
-        value: api.workspaces.example.com
-      - op: replace
-        path: /spec/template/spec/containers/0/env/1/value
-        value: https://workspaces.example.com/auth/callback
-      - op: replace
-        path: /spec/template/spec/containers/0/env/2/value
-        value: https://workspaces.example.com,http://localhost:3000
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: kube-workspaces-api
+      spec:
+        template:
+          spec:
+            containers:
+              - name: api
+                env:
+                  - name: EXTERNAL_HOST
+                    value: api.workspaces.example.com
+                  - name: AUTH_CALLBACK_URL
+                    value: https://workspaces.example.com/auth/callback
+                  - name: ALLOWED_ORIGINS
+                    value: https://workspaces.example.com,http://localhost:3000
   - target:
       kind: Deployment
       name: kube-workspaces-proxy
     patch: |-
-      - op: replace
-        path: /spec/template/spec/containers/0/env/0/value
-        value: https://workspaces.example.com,http://localhost:3000
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: kube-workspaces-proxy
+      spec:
+        template:
+          spec:
+            containers:
+              - name: proxy
+                env:
+                  - name: ALLOWED_ORIGINS
+                    value: https://workspaces.example.com,http://localhost:3000
 ```
 
 The same patches can be expressed inline in an ArgoCD Application via

@@ -11,7 +11,7 @@ layers before merging anything that touches manifests.
 | 0 — static | `make test-lint` | no | ~15 s | Everything renders, validates and is internally consistent |
 | 1 — smoke | `make test-deploy-kustomize` etc. | kind | ~4 min | The components install and serve traffic |
 | 2 — functional | `make test-e2e` | kind | ~5 min | A real workspace works end to end |
-| 3 — upgrade | `make test-upgrade` | kind | ~8 min | Existing installs can move to this version |
+| 3 — upgrade & ingress | `make test-upgrade`, `make test-ingress` | kind / k3d | ~8 min | Upgrade path and real Traefik Ingress on k3d |
 
 ## Prerequisites
 
@@ -154,7 +154,7 @@ actually take effect on an upgraded install.
 | Workflow | Trigger | Contents |
 |----------|---------|----------|
 | `test.yaml` | push, PR | Layer 0, then kustomize/helm/helm-oci in parallel plus Layer 2 |
-| `nightly.yaml` | 03:00 UTC | argocd, auth, upgrade, a Kubernetes version matrix, Layer 2, and an image-drift report |
+| `nightly.yaml` | 03:00 UTC | argocd, auth, upgrade, Ingress on k3d (Traefik), a Kubernetes version matrix, Layer 2, and an image-drift report |
 | `helm-publish.yaml` | push to main touching `helm/**` | Packages and pushes the chart, refusing to overwrite a published version |
 
 Point branch protection at the `All tests passed` check from `test.yaml`; it
@@ -194,8 +194,9 @@ plus a cert-manager annotation. A default kind cluster has neither, so:
 - `kustomize/overlays/test/` removes the Ingress entirely. Tests reach services
   via `kubectl port-forward`.
 
-Genuinely testing `base/ingress.yaml` needs a cluster that ships Traefik — k3d
-is the cheapest option and is planned as a separate nightly job.
+Genuinely testing `base/ingress.yaml` needs a cluster that ships Traefik —
+this is exercised by `make test-ingress` on k3d (Layer 3) and runs in the
+nightly CI job.
 
 ### `helm-oci` tests a released artifact
 

@@ -1,7 +1,3 @@
----
-title: Tier 1 transport pilot
----
-
 # Superseded: Tier 1 transport pilot and rollback
 
 This page has moved. Display tiers and audio are now documented in

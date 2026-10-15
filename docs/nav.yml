@@ -15,6 +15,7 @@
     - display-tiers
     - shared-display
     - desktop-client
+    - monitoring
     - api
 - title: Project Operations
   items:
