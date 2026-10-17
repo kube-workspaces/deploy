@@ -1,0 +1,138 @@
+suite: execution storage
+templates:
+  - api-deployment.yaml
+tests:
+  - it: installs no execution configuration or volumes by default
+    documentSelector:
+      path: kind
+      value: Deployment
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_STORAGE_MODE
+          any: true
+      - notContains:
+          path: spec.template.spec.volumes
+          content:
+            name: execution-temporary
+          any: true
+
+  - it: supports ephemeral recording without persistent services or key Secrets
+    set:
+      auth.enabled: true
+      execution.enabled: true
+    documentSelector:
+      path: kind
+      value: Deployment
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_STORAGE_MODE
+            value: ephemeral
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: execution-temporary
+            emptyDir:
+              sizeLimit: 1Gi
+      - equal:
+          path: spec.strategy.type
+          value: Recreate
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 65532
+
+  - it: forbids anonymous execution infrastructure
+    set:
+      execution.enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: execution requires auth.enabled=true
+
+  - it: forbids ambiguous external and bundled modes
+    set:
+      execution.enabled: true
+      execution.storage.external.enabled: true
+      execution.storage.bundled.enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: execution storage external and bundled modes are mutually exclusive
+
+  - it: rejects multiple API replicas with ephemeral execution state
+    set:
+      auth.enabled: true
+      execution.enabled: true
+      replicaCount: 2
+    asserts:
+      - failedTemplate:
+          errorMessage: ephemeral execution storage requires replicaCount=1; use persistent storage for multiple API replicas
+
+  - it: requires a stable encryption key in persistent modes
+    set:
+      auth.enabled: true
+      execution.enabled: true
+      execution.storage.external.enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: persistent execution recording requires execution.storage.encryption.existingSecret
+
+  - it: wires external credentials only through Secret references
+    set:
+      auth.enabled: true
+      execution.enabled: true
+      replicaCount: 2
+      execution.storage.external.enabled: true
+      execution.storage.external.postgresql.existingSecret: database
+      execution.storage.encryption.existingSecret: recording-key
+      execution.storage.s3.endpoint: https://s3.example.com
+      execution.storage.s3.existingSecret: objects
+    documentSelector:
+      path: kind
+      value: Deployment
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_STORAGE_MODE
+            value: external
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: database
+                key: database-url
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_S3_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: objects
+                key: secret-key
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: execution-recording-key
+            secret:
+              secretName: recording-key
+              defaultMode: 288
+              items:
+                - key: key
+                  path: key
+
+  - it: refuses unencrypted external object transport by default
+    set:
+      auth.enabled: true
+      execution.enabled: true
+      execution.storage.external.enabled: true
+      execution.storage.external.postgresql.existingSecret: database
+      execution.storage.encryption.existingSecret: recording-key
+      execution.storage.s3.endpoint: http://s3.example.com
+      execution.storage.s3.existingSecret: objects
+    asserts:
+      - failedTemplate:
+          errorMessage: external execution S3 endpoint must use HTTPS, or explicitly opt into insecure transport

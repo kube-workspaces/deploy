@@ -18,6 +18,8 @@ cd "$REPO_ROOT"
 group "Windows proof tooling"
 check "Windows proof hardware/storage regression tests" \
   python3 -m unittest discover -s scripts -p 'test_windows_vm_proof.py'
+check "Execution storage profiles and real subchart wiring" \
+  python3 -m unittest discover -s scripts -p 'test_execution_storage.py'
 endgroup
 
 # Kubernetes version to validate manifests against. Keep in step with the
@@ -110,6 +112,9 @@ render_case auth-local-and-oidc \
   --set auth.oidc.clientSecret.create=true \
   --set auth.oidc.clientSecret.value=shhh \
   --set auth.localAuth.enabled=true
+render_case execution-ephemeral -f examples/execution-storage/ephemeral.yaml
+render_case execution-external -f examples/execution-storage/external.yaml
+render_case execution-bundled -f examples/execution-storage/bundled.yaml
 render_case dex --set dex.enabled=true
 render_case ingress --set ingress.enabled=true
 render_case ingress-traefik \

@@ -7,12 +7,22 @@ suite: auth
 templates:
   - authconfig.yaml
 tests:
-  - it: renders nothing when auth is disabled
+  - it: explicitly disables authentication rather than relying on a missing configuration
     set:
       auth.enabled: false
     asserts:
       - hasDocuments:
-          count: 0
+          count: 1
+      - equal:
+          path: metadata.name
+          value: default
+      - equal:
+          path: spec.enabled
+          value: false
+      - isNull:
+          path: spec.session
+      - isNull:
+          path: spec.oidc
 
   - it: renders an AuthConfig when auth is enabled
     set:

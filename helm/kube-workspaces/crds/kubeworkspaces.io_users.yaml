@@ -67,6 +67,63 @@ spec:
                 description: Email is the unique identifier for the user (immutable).
                 format: email
                 type: string
+              executionGrants:
+                description: |-
+                  ExecutionGrants are administrator-managed, scoped VM execution abilities.
+                  Empty grants give non-admin users no execution, elevation or recording rights.
+                items:
+                  description: |-
+                    ExecutionGrant delegates abilities within existing namespace/workspace access.
+                    It never creates namespace access or permits the recipient to delegate onward.
+                  properties:
+                    expiresAt:
+                      description: |-
+                        ExpiresAt is the exclusive expiry bound; omitted means no grant expiry.
+                        Active executions must still renew short-lived authorization leases.
+                      format: date-time
+                      type: string
+                    namespace:
+                      description: Namespace is the exact namespace; wildcard grants
+                        are not supported.
+                      maxLength: 63
+                      minLength: 1
+                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                      type: string
+                    permissions:
+                      description: Permissions are additive; elevation alone never
+                        permits exec or shell.
+                      items:
+                        description: ExecutionPermission is an independently delegated
+                          VM management ability.
+                        enum:
+                        - workspace.exec
+                        - workspace.shell
+                        - workspace.exec.elevated
+                        - workspace.execution.manage
+                        - workspace.execution.recordings.read
+                        type: string
+                      maxItems: 5
+                      minItems: 1
+                      type: array
+                      x-kubernetes-list-type: set
+                    workspaces:
+                      description: |-
+                        Workspaces optionally narrows the grant to exact Workspace names.
+                        Omit to cover accessible workspaces throughout Namespace.
+                      items:
+                        maxLength: 253
+                        minLength: 1
+                        pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                        type: string
+                      maxItems: 100
+                      type: array
+                      x-kubernetes-list-type: set
+                  required:
+                  - namespace
+                  - permissions
+                  type: object
+                maxItems: 100
+                type: array
               groups:
                 description: Groups are the groups this user belongs to.
                 items:

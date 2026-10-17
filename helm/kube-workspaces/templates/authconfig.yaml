@@ -1,4 +1,3 @@
-{{- if .Values.auth.enabled }}
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: AuthConfig
 metadata:
@@ -6,7 +5,8 @@ metadata:
   labels:
     {{- include "kube-workspaces.labels" . | nindent 4 }}
 spec:
-  enabled: true
+  enabled: {{ .Values.auth.enabled }}
+  {{- if .Values.auth.enabled }}
   {{- if and .Values.auth.oidc .Values.auth.oidc.issuerURL }}
   oidc:
     issuerURL: {{ .Values.auth.oidc.issuerURL | quote }}

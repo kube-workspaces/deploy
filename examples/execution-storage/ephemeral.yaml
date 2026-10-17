@@ -1,0 +1,6 @@
+# No PostgreSQL, object store or PVC for execution. History is temporary.
+auth:
+  enabled: true
+replicaCount: 1
+execution:
+  enabled: true

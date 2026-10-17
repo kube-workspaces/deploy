@@ -1,0 +1,16 @@
+# Pre-create the referenced Secrets and bucket; replace example endpoints.
+auth:
+  enabled: true
+execution:
+  enabled: true
+  storage:
+    external:
+      enabled: true
+      postgresql:
+        existingSecret: execution-postgresql
+    encryption:
+      existingSecret: execution-recording-key
+    s3:
+      endpoint: https://s3.example.com
+      bucket: workspace-execution
+      existingSecret: execution-s3

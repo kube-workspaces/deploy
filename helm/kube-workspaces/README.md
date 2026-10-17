@@ -21,6 +21,11 @@ This chart installs:
   controller/API/proxy, namespaced Role/RoleBinding for local-auth password Secrets),
   **Namespaces**, and a curated or full **Image** CR catalog
 - Optionally, a bundled **Dex** sub-chart as an OIDC provider
+- Opt-in execution storage profiles: ephemeral, externally managed PostgreSQL/S3,
+  or bundled PostgreSQL/RustFS subcharts. See
+  [VM execution storage](../../docs/vm-execution-storage.md) for implementation
+  status, Secret setup, retention and example values. Storage provisioning alone
+  does not enable guest command/shell execution.
 
 Authentication (OIDC and/or local username/password) is **opt-in and disabled by
 default** — installing with defaults gives every caller full access. See

@@ -10,3 +10,12 @@ dependencies:
     version: "0.22.1"
     repository: "https://charts.dexidp.io"
     condition: dex.enabled
+  - name: postgres
+    alias: postgresql
+    version: "0.21.2"
+    repository: "oci://registry-1.docker.io/cloudpirates"
+    condition: execution.storage.bundled.enabled
+  - name: rustfs
+    version: "1.0.2"
+    repository: "https://charts.rustfs.com"
+    condition: execution.storage.bundled.enabled

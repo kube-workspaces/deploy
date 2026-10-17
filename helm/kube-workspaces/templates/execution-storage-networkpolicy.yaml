@@ -1,0 +1,48 @@
+{{- if .Values.execution.storage.bundled.enabled }}
+{{- $pg := index .Subcharts "postgresql" }}
+{{- $s3 := index .Subcharts "rustfs" }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "kube-workspaces.fullname" . }}-execution-postgresql
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "postgres.selectorLabels" $pg | nindent 6 }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "kube-workspaces.selectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: api
+      ports:
+        - protocol: TCP
+          port: {{ .Values.postgresql.service.targetPort }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "kube-workspaces.fullname" . }}-execution-objects
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "rustfs.selectorLabels" $s3 | nindent 6 }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "kube-workspaces.selectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: api
+        - podSelector:
+            matchLabels:
+              {{- include "rustfs.selectorLabels" $s3 | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.rustfs.service.endpoint.port }}
+{{- end }}

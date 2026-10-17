@@ -1,0 +1,6 @@
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: AuthConfig
+metadata:
+  name: default
+spec:
+  enabled: false

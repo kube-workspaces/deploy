@@ -1,0 +1,23 @@
+# Test baseline: one PostgreSQL and one RustFS with persistent volumes.
+# Pre-create credential/key Secrets as described in docs/vm-execution-storage.md.
+auth:
+  enabled: true
+execution:
+  enabled: true
+  storage:
+    bundled:
+      enabled: true
+    encryption:
+      existingSecret: execution-recording-key
+    # Explicitly allow internal PostgreSQL/TCP and S3/HTTP in the test cluster.
+    # Recording contents must be application-encrypted. NetworkPolicies restrict
+    # storage ingress; external mode supports verified TLS endpoints.
+    allowInsecureTransport: true
+postgresql:
+  auth:
+    existingSecret: execution-postgresql-admin
+  customUser:
+    existingSecret: execution-postgresql-app
+rustfs:
+  secret:
+    existingSecret: execution-rustfs

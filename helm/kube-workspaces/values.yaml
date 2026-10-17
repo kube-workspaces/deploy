@@ -22,6 +22,101 @@ monitoring:
     namespace: kubevirt
     labels: {}
 
+# Agent execution infrastructure. This does not enable the runtime PlatformConfig
+# vmExecution policy or bypass the authenticated-agent/recording readiness gates.
+execution:
+  enabled: false
+  storage:
+    # Neither external nor bundled selected => ephemeral (no PVC/database/S3).
+    # Exactly one of these may be enabled. Bundled is intended as a convenient
+    # single-instance test baseline; external mode supports managed services.
+    external:
+      enabled: false
+      postgresql:
+        existingSecret: ""
+        urlKey: database-url
+    bundled:
+      enabled: false
+    ephemeral:
+      sizeLimit: 1Gi
+      maxBytes: "536870912"
+    # Required in persistent modes: Secret key holding a base64-encoded 32-byte
+    # recording master key. Keep this Secret across restarts and storage changes.
+    encryption:
+      existingSecret: ""
+      key: key
+    # Explicit opt-in for a trusted internal test network. External mode uses
+    # HTTPS/verified PostgreSQL TLS by default. Never disables certificate checks.
+    allowInsecureTransport: false
+    s3:
+      # External endpoint only; bundled resolves the RustFS Service automatically.
+      endpoint: ""
+      bucket: workspace-execution
+      region: us-east-1
+      forcePathStyle: true
+      # External mode only; bundled uses rustfs.secret.existingSecret below.
+      existingSecret: ""
+      accessKeyKey: access-key
+      secretKeyKey: secret-key
+      # Optional private CA bundle (key ca.crt) for the S3 TLS endpoint.
+      caSecret: ""
+    retention:
+      recordings: 720h
+      metadata: 8760h
+
+# Upstream subchart settings, consumed only when execution.storage.bundled.enabled.
+# Supply existing Secrets: avoid credentials in values and render-time random
+# passwords that change during GitOps reconciliation. See docs/vm-execution-storage.md.
+postgresql:
+  auth:
+    existingSecret: ""
+    secretKeys:
+      adminPasswordKey: postgres-password
+  customUser:
+    name: execution
+    database: execution
+    existingSecret: ""
+    secretKeys:
+      name: CUSTOM_USER
+      database: CUSTOM_DB
+      password: CUSTOM_PASSWORD
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass: ""
+  serviceAccount:
+    create: true
+    automountServiceAccountToken: false
+
+rustfs:
+  mode:
+    standalone:
+      enabled: true
+      strategy:
+        type: Recreate
+    distributed:
+      enabled: false
+  replicaCount: 1
+  secret:
+    existingSecret: ""
+    allowInsecureDefaults: false
+  ingress:
+    enabled: false
+  gatewayApi:
+    enabled: false
+  service:
+    type: ClusterIP
+  serviceAccount:
+    create: true
+    automount: false
+  storageclass:
+    name: ""
+    dataStorageSize: 20Gi
+  config:
+    rustfs:
+      console_enable: "false"
+      obs_log_directory: ""
+
 controller:
   image:
     repository: ghcr.io/kube-workspaces/controller

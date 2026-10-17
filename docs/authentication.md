@@ -18,6 +18,26 @@ kube-workspaces supports two authentication methods:
 
 Authentication is **opt-in** and disabled by default. When disabled, the system operates without auth (everyone has full access).
 
+The manifests explicitly install `AuthConfig/default` with `spec.enabled: false`
+for unauthenticated mode. A missing/unreadable configuration must not be used as
+a way to disable authentication: the API returns `503 auth_unavailable` if it
+cannot resolve configuration. Authenticated overlays patch the same singleton.
+Apply/adopt this manifest behavior before updating older auth-disabled installs
+to an API with fail-closed configuration handling. Chart adoption is a separate
+operator-coordinated change.
+
+Authenticated users need a current, enabled User CR; OIDC auto-provisioning must
+succeed or the account must already exist. Role and namespace changes apply to
+subsequent API requests rather than waiting for old token claims to expire.
+New credentials bind to the User UID; agent-backed execution requires these
+bound credentials and will require a fresh sign-in for legacy sessions.
+
+Configure `ALLOWED_ORIGINS` (Helm `api.allowedOrigins`) with the exact trusted
+frontend origins, including scheme/port. The API rejects untrusted WebSocket
+origins and cookie-authenticated mutations without a trusted Origin. Native
+bearer clients can omit Origin. Keep workspace-hosted applications on origins
+that are not in this trusted browser list.
+
 ## Architecture
 
 ![Authentication flow](authentication-architecture.svg)

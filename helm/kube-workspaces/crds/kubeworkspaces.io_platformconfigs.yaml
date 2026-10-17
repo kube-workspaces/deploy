@@ -94,6 +94,21 @@ spec:
                       Supports plain text. If empty, a default message is shown.
                     type: string
                 type: object
+              vmExecution:
+                description: VMExecution configures opt-in agent-backed VM commands
+                  and shells.
+                properties:
+                  allowElevated:
+                    description: |-
+                      AllowElevated permits separately authorized root/SYSTEM targets.
+                      Absent/false denies elevated targets even for admins.
+                    type: boolean
+                  enabled:
+                    description: |-
+                      Enabled permits admission only when transport, recording and guest identity
+                      prerequisites are healthy. Absent/false disables execution even for admins.
+                    type: boolean
+                type: object
             type: object
           status:
             description: PlatformConfigStatus defines the observed state of PlatformConfig.
