@@ -1,0 +1,41 @@
+suite: auth namespace wiring
+templates:
+  - templates/api-deployment.yaml
+  - templates/proxy-deployment.yaml
+  - templates/auth-secrets.yaml
+release:
+  namespace: custom-install
+tests:
+  - it: supplies the API pod namespace for auth Secret lookup
+    template: templates/api-deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        documentIndex: 0
+  - it: supplies the proxy pod namespace for the same signing key lookup
+    template: templates/proxy-deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        documentIndex: 0
+  - it: creates the session signing key in the release namespace
+    template: templates/auth-secrets.yaml
+    set:
+      auth.enabled: true
+      auth.session.signingKey.create: true
+      auth.session.signingKey.value: test-key
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: custom-install
+        documentIndex: 0

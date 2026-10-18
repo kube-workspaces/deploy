@@ -45,6 +45,10 @@ spec:
             initialDelaySeconds: 2
             periodSeconds: 5
           env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
             - name: KW_MONITORING_PLATFORM
               value: kube-workspaces-system/kube-workspaces
             - name: KW_MONITORING_TOKEN

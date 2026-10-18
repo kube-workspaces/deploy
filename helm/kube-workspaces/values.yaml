@@ -359,6 +359,8 @@ auth:
       # Set to true to skip auto-creating the bootstrap admin user, e.g. if one
       # has already been provisioned manually.
       skip: false
+      # Applies only when the bootstrap User is created; existing users are unchanged.
+      mustChangePassword: true
 
 # Install workspace RBAC ClusterRoles (used by User controller for RoleBindings)
 workspaceRoles:

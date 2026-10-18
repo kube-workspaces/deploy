@@ -85,6 +85,9 @@ spec:
       email: {{ .Values.auth.localAuth.bootstrapAdmin.email | quote }}
       {{- end }}
       skip: {{ .Values.auth.localAuth.bootstrapAdmin.skip | default false }}
+      {{- if hasKey .Values.auth.localAuth.bootstrapAdmin "mustChangePassword" }}
+      mustChangePassword: {{ .Values.auth.localAuth.bootstrapAdmin.mustChangePassword }}
+      {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}

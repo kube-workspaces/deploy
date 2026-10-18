@@ -89,6 +89,12 @@ spec:
                         description: Email is the identifier used for the auto-created
                           admin user.
                         type: string
+                      mustChangePassword:
+                        default: true
+                        description: |-
+                          MustChangePassword requires a password change on the bootstrap admin's
+                          first login. Defaults to true; only applies when creating a new User.
+                        type: boolean
                       skip:
                         description: |-
                           Skip disables auto-creation of the bootstrap admin user, e.g. when an

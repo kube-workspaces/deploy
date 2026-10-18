@@ -187,6 +187,19 @@ tests:
       - equal:
           path: spec.localAuth.bootstrapAdmin.skip
           value: false
+      - equal:
+          path: spec.localAuth.bootstrapAdmin.mustChangePassword
+          value: true
+
+  - it: preserves an explicit false bootstrap password-change option
+    set:
+      auth.enabled: true
+      auth.localAuth.enabled: true
+      auth.localAuth.bootstrapAdmin.mustChangePassword: false
+    asserts:
+      - equal:
+          path: spec.localAuth.bootstrapAdmin.mustChangePassword
+          value: false
 
   - it: can override the bootstrap admin email and skip creation
     set:

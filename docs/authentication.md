@@ -404,6 +404,14 @@ make deploy-auth-local
 
 ### Retrieving the bootstrap admin password
 
+Session-signing and OIDC client Secrets created by Helm live in the release
+namespace. The API and proxy resolve these references using `POD_NAMESPACE`
+(supplied from their pod metadata), so a non-default Helm namespace does not
+require copying those Secrets into `kube-workspaces-system`. When running either
+service outside the supplied manifests, set `POD_NAMESPACE` to the namespace
+containing its auth Secrets. Local-user password Secrets are a separate store
+and currently remain in `kube-workspaces-system`.
+
 ```bash
 make get-admin-password
 # or directly:
@@ -413,10 +421,10 @@ kubectl get secret kw-user-admin-at-local-local-auth \
 
 Log in with email **`admin@local`** (the default) and the retrieved password.
 If you customized `auth.localAuth.bootstrapAdmin.email`, use that email instead.
-You will be prompted to change the password on first login.
+By default, you will be prompted to change the password on first login.
 
 The plaintext `password` key only exists until the admin changes their
-password for the first time (they are required to on first login) — after
+password for the first time — after
 that, only the bcrypt `passwordHash` key remains, and `get-admin-password`
 will report an error.
 
@@ -430,7 +438,16 @@ auth:
     bootstrapAdmin:
       email: "root@example.com"   # defaults to admin@local
       skip: false                  # set true to skip auto-creation entirely
+      mustChangePassword: true     # set false to keep the generated password on first login
 ```
+
+`mustChangePassword` defaults to `true` in both the chart and AuthConfig CRD.
+An explicit `false` lets a newly bootstrapped admin log in with the generated
+password without a forced change. The setting applies only when creating the
+bootstrap User (including re-creation after deletion); changing it does not
+modify an existing User or rotate its password. The plaintext password remains
+retrievable from the Secret until the user changes it. Password resets still
+require a change on the next login.
 
 ### Enabling local auth alongside OIDC
 
