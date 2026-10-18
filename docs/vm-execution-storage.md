@@ -5,9 +5,10 @@ audit. **Persistence is optional**: choose ephemeral history, externally managed
 PostgreSQL/S3, or bundled PostgreSQL/RustFS. Ordinary execution and elevation have
 separate permissions; selecting a storage mode does not grant either permission.
 
-**Implementation status:** the deployment/configuration foundation is implemented.
-Database migrations, recording writes/replay, guest-authenticated transport and
-execution runners are still being implemented. Provisioned services or accepted
+**Implementation status:** deployment/configuration, database migrations,
+encrypted recording stores, protected playback and admission foundations are
+implemented. Guest-authenticated transport, recording-spool integration and
+execution runners remain pending. Provisioned services or accepted
 configuration do not establish execution readiness. These examples do not enable
 `PlatformConfig.spec.vmExecution` or expose a guest shell by themselves.
 
@@ -150,3 +151,37 @@ recordings encrypted with it remain. Back up keys separately with controlled
 access; neither PostgreSQL/S3 availability nor a chart install alone establishes
 recording health. Admission must verify both stores, the encryption key, write
 authorization and available recording capacity before any process starts.
+
+## Opt-in management issuer
+
+The API now supports optional dedicated CA loading, shared enrollment-ledger
+initialization and a protected-bootstrap import worker. The existing authenticated
+`GET /v1/executions/status` reports `issuer_ready` separately from recording-store
+availability. That bit does not advertise a guest execution capability or a public
+enrollment endpoint.
+
+The runtime opts in through `KW_MANAGEMENT_ISSUER_ENABLED` and requires mounted
+CA certificate/chain, PKCS#8 private-key and explicit trust-root files, plus
+`KW_MANAGEMENT_BOOTSTRAP_NAMESPACE` matching the controller's protected namespace.
+CA signing private keys are not generated automatically or placed in images/Helm values.
+Credential/Secret mounts and runtime environment adoption remain separately
+coordinated; the storage profiles above do not enable the issuer.
+
+The current issuer requires `external` or `bundled` execution storage with the
+shared PostgreSQL enrollment ledger. It rejects ephemeral/process-local issuance
+state: after restart, a forgotten redeemed token could otherwise enroll a second
+CSR. Ephemeral recording remains a storage option, but full guest execution in
+that mode still needs a replica-safe alternative enrollment ledger and the other
+guest prerequisites.
+
+The worker watches only protected-namespace management bootstrap metadata and
+re-reads credentials before trusted import. It preserves committed CSR/certificate
+results across re-import, denies token rebinding/expiry extension, and withholds
+issuance when current identity, policy, authentication, CA trust/lifetime,
+recording or ledger prerequisites fail. Trust/key rotation is coordinated with
+process restart and old/new root overlap; it is not silent hot reload.
+
+Detailed runtime configuration and lifecycle contracts:
+[API management issuer](https://github.com/kube-workspaces/api/blob/main/internal/execution/management/README.md).
+Protected guest key/token delivery and authenticated enrollment transport are
+still required before a reachable machine listener or runner is enabled.

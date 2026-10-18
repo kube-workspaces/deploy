@@ -22,6 +22,604 @@ paths:
                                 $ref: '#/components/schemas/CheckResponseBody'
                             example:
                                 status: ok
+    /v1/executions:
+        get:
+            tags:
+                - executions
+            summary: list executions
+            description: List execution records visible to the actor
+            operationId: executions#list
+            parameters:
+                - name: namespace
+                  in: query
+                  description: Filter by namespace
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Filter by namespace
+                    example: Et ut consectetur.
+                  example: Modi assumenda.
+                - name: workspace_name
+                  in: query
+                  description: Filter by workspace name
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Filter by workspace name
+                    example: Hic cupiditate.
+                  example: Magnam quia eos sequi est autem voluptas.
+                - name: actor_id
+                  in: query
+                  description: Filter by actor
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: Filter by actor
+                    example: Laborum error.
+                  example: Ad incidunt velit ut suscipit.
+                - name: since
+                  in: query
+                  description: RFC3339 lower bound
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    description: RFC3339 lower bound
+                    example: "1994-10-08T19:03:22Z"
+                    format: date-time
+                  example: "1995-06-24T11:18:59Z"
+                - name: limit
+                  in: query
+                  description: Max results
+                  allowEmptyValue: true
+                  schema:
+                    type: integer
+                    description: Max results
+                    default: 100
+                    example: 937
+                    format: int64
+                    minimum: 1
+                    maximum: 1000
+                  example: 362
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/ExecutionRecord'
+                                example:
+                                    - actor_id: user@example.com
+                                      admission_time: "2026-10-17T00:00:00Z"
+                                      admitted: true
+                                      deny_reason: ""
+                                      durability: none
+                                      elevated: false
+                                      end_time: "1977-11-20T00:08:11Z"
+                                      execution_id: exec_9f82
+                                      exit_code: 0
+                                      grant_version: "1.0"
+                                      mode: ephemeral
+                                      namespace: team-a
+                                      operation: shell
+                                      os_identity: root
+                                      recording_id: rec_9f82
+                                      recording_lost: false
+                                      start_time: "1981-03-23T15:05:11Z"
+                                      state: succeeded
+                                      termination: graceful
+                                      workspace_generation: 3
+                                      workspace_name: vm-1
+                                      workspace_uid: abc123
+                                    - actor_id: user@example.com
+                                      admission_time: "2026-10-17T00:00:00Z"
+                                      admitted: true
+                                      deny_reason: ""
+                                      durability: none
+                                      elevated: false
+                                      end_time: "1977-11-20T00:08:11Z"
+                                      execution_id: exec_9f82
+                                      exit_code: 0
+                                      grant_version: "1.0"
+                                      mode: ephemeral
+                                      namespace: team-a
+                                      operation: shell
+                                      os_identity: root
+                                      recording_id: rec_9f82
+                                      recording_lost: false
+                                      start_time: "1981-03-23T15:05:11Z"
+                                      state: succeeded
+                                      termination: graceful
+                                      workspace_generation: 3
+                                      workspace_name: vm-1
+                                      workspace_uid: abc123
+                                    - actor_id: user@example.com
+                                      admission_time: "2026-10-17T00:00:00Z"
+                                      admitted: true
+                                      deny_reason: ""
+                                      durability: none
+                                      elevated: false
+                                      end_time: "1977-11-20T00:08:11Z"
+                                      execution_id: exec_9f82
+                                      exit_code: 0
+                                      grant_version: "1.0"
+                                      mode: ephemeral
+                                      namespace: team-a
+                                      operation: shell
+                                      os_identity: root
+                                      recording_id: rec_9f82
+                                      recording_lost: false
+                                      start_time: "1981-03-23T15:05:11Z"
+                                      state: succeeded
+                                      termination: graceful
+                                      workspace_generation: 3
+                                      workspace_name: vm-1
+                                      workspace_uid: abc123
+                            example:
+                                - actor_id: user@example.com
+                                  admission_time: "2026-10-17T00:00:00Z"
+                                  admitted: true
+                                  deny_reason: ""
+                                  durability: none
+                                  elevated: false
+                                  end_time: "1977-11-20T00:08:11Z"
+                                  execution_id: exec_9f82
+                                  exit_code: 0
+                                  grant_version: "1.0"
+                                  mode: ephemeral
+                                  namespace: team-a
+                                  operation: shell
+                                  os_identity: root
+                                  recording_id: rec_9f82
+                                  recording_lost: false
+                                  start_time: "1981-03-23T15:05:11Z"
+                                  state: succeeded
+                                  termination: graceful
+                                  workspace_generation: 3
+                                  workspace_name: vm-1
+                                  workspace_uid: abc123
+                                - actor_id: user@example.com
+                                  admission_time: "2026-10-17T00:00:00Z"
+                                  admitted: true
+                                  deny_reason: ""
+                                  durability: none
+                                  elevated: false
+                                  end_time: "1977-11-20T00:08:11Z"
+                                  execution_id: exec_9f82
+                                  exit_code: 0
+                                  grant_version: "1.0"
+                                  mode: ephemeral
+                                  namespace: team-a
+                                  operation: shell
+                                  os_identity: root
+                                  recording_id: rec_9f82
+                                  recording_lost: false
+                                  start_time: "1981-03-23T15:05:11Z"
+                                  state: succeeded
+                                  termination: graceful
+                                  workspace_generation: 3
+                                  workspace_name: vm-1
+                                  workspace_uid: abc123
+                                - actor_id: user@example.com
+                                  admission_time: "2026-10-17T00:00:00Z"
+                                  admitted: true
+                                  deny_reason: ""
+                                  durability: none
+                                  elevated: false
+                                  end_time: "1977-11-20T00:08:11Z"
+                                  execution_id: exec_9f82
+                                  exit_code: 0
+                                  grant_version: "1.0"
+                                  mode: ephemeral
+                                  namespace: team-a
+                                  operation: shell
+                                  os_identity: root
+                                  recording_id: rec_9f82
+                                  recording_lost: false
+                                  start_time: "1981-03-23T15:05:11Z"
+                                  state: succeeded
+                                  termination: graceful
+                                  workspace_generation: 3
+                                  workspace_name: vm-1
+                                  workspace_uid: abc123
+                                - actor_id: user@example.com
+                                  admission_time: "2026-10-17T00:00:00Z"
+                                  admitted: true
+                                  deny_reason: ""
+                                  durability: none
+                                  elevated: false
+                                  end_time: "1977-11-20T00:08:11Z"
+                                  execution_id: exec_9f82
+                                  exit_code: 0
+                                  grant_version: "1.0"
+                                  mode: ephemeral
+                                  namespace: team-a
+                                  operation: shell
+                                  os_identity: root
+                                  recording_id: rec_9f82
+                                  recording_lost: false
+                                  start_time: "1981-03-23T15:05:11Z"
+                                  state: succeeded
+                                  termination: graceful
+                                  workspace_generation: 3
+                                  workspace_name: vm-1
+                                  workspace_uid: abc123
+                "400":
+                    description: 'invalid: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: In et sed id laborum.
+                            example: Voluptas aut voluptate et.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Quia dicta nostrum et enim enim id.
+                            example: Maxime qui qui sit quos.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Consectetur est.
+                            example: Sapiente aut.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Qui facere minima perspiciatis mollitia.
+                            example: Harum exercitationem voluptatem quis corporis esse.
+                "503":
+                    description: 'unavailable: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Doloribus expedita enim fugit culpa qui ducimus.
+                            example: Quibusdam sunt ut.
+    /v1/executions/{execution_id}:
+        get:
+            tags:
+                - executions
+            summary: get executions
+            description: Get an execution record and its last known outcome
+            operationId: executions#get
+            parameters:
+                - name: execution_id
+                  in: path
+                  description: Execution identifier
+                  required: true
+                  schema:
+                    type: string
+                    description: Execution identifier
+                    example: exec_9f82
+                  example: exec_9f82
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ExecutionRecord'
+                            example:
+                                actor_id: user@example.com
+                                admission_time: "2026-10-17T00:00:00Z"
+                                admitted: true
+                                deny_reason: ""
+                                durability: none
+                                elevated: false
+                                end_time: "1983-04-24T14:36:54Z"
+                                execution_id: exec_9f82
+                                exit_code: 0
+                                grant_version: "1.0"
+                                mode: ephemeral
+                                namespace: team-a
+                                operation: shell
+                                os_identity: root
+                                recording_id: rec_9f82
+                                recording_lost: false
+                                start_time: "1991-10-05T22:05:38Z"
+                                state: succeeded
+                                termination: graceful
+                                workspace_generation: 3
+                                workspace_name: vm-1
+                                workspace_uid: abc123
+                "400":
+                    description: 'invalid: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Nostrum magni numquam in praesentium.
+                            example: Doloremque adipisci sint.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: In facilis optio distinctio reiciendis.
+                            example: Fuga sed impedit.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Et quae est.
+                            example: Sit et sint consequuntur numquam id omnis.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Veritatis non.
+                            example: Quidem quibusdam ut quidem qui ea.
+                "503":
+                    description: 'unavailable: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Maiores et ipsam vitae in est.
+                            example: Vel aperiam totam et.
+    /v1/executions/{execution_id}/recording:
+        get:
+            tags:
+                - executions
+            summary: manifest executions
+            description: Verify recording integrity and audit protected playback access
+            operationId: executions#manifest
+            parameters:
+                - name: execution_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    example: Molestias soluta illum voluptatem sit voluptatem.
+                  example: Ut illum quaerat voluptas atque.
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ExecutionRecordingManifest'
+                            example:
+                                chunks: 18079904784971218314
+                                plaintext_bytes: 362359454137998968
+                                recording_id: Eum esse quo voluptatem quis sapiente sit.
+                                verified: false
+                "400":
+                    description: 'invalid: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Qui alias delectus sed eligendi pariatur.
+                            example: Nihil neque totam totam.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Adipisci voluptatibus tenetur.
+                            example: Eum occaecati tempora fugit beatae voluptate suscipit.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Eveniet dolorem sint veniam velit.
+                            example: Mollitia voluptatem.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Et omnis.
+                            example: Odio ducimus nobis eligendi eum tempore.
+                "503":
+                    description: 'unavailable: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Quo dolorem excepturi debitis ipsam.
+                            example: Est nulla nihil non qui tempore accusantium.
+    /v1/executions/{execution_id}/recording/chunks/{index}:
+        get:
+            tags:
+                - executions
+            summary: chunk executions
+            description: Read a verified recording chunk with fresh scoped recording-read permission
+            operationId: executions#chunk
+            parameters:
+                - name: execution_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    example: Suscipit quibusdam mollitia.
+                  example: Est reiciendis illum.
+                - name: index
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    example: 8821492332637082156
+                    format: int64
+                  example: 17206316567132745074
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ExecutionRecordingChunk'
+                            example:
+                                data:
+                                    - 67
+                                    - 111
+                                    - 110
+                                    - 115
+                                    - 101
+                                    - 113
+                                    - 117
+                                    - 97
+                                    - 116
+                                    - 117
+                                    - 114
+                                    - 32
+                                    - 117
+                                    - 116
+                                    - 32
+                                    - 118
+                                    - 111
+                                    - 108
+                                    - 117
+                                    - 112
+                                    - 116
+                                    - 97
+                                    - 116
+                                    - 101
+                                    - 109
+                                    - 32
+                                    - 114
+                                    - 101
+                                    - 99
+                                    - 117
+                                    - 115
+                                    - 97
+                                    - 110
+                                    - 100
+                                    - 97
+                                    - 101
+                                    - 32
+                                    - 110
+                                    - 111
+                                    - 110
+                                    - 32
+                                    - 111
+                                    - 109
+                                    - 110
+                                    - 105
+                                    - 115
+                                    - 46
+                                index: 0
+                "400":
+                    description: 'invalid: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Maiores assumenda voluptas quia.
+                            example: Laboriosam rerum facere aut.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Exercitationem consequatur nostrum et.
+                            example: Fugiat aliquid distinctio in enim.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Labore ut.
+                            example: Aut qui omnis provident vel dignissimos.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Voluptas cum enim iure provident.
+                            example: Et ipsa ipsum accusamus.
+                "503":
+                    description: 'unavailable: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Sunt est et.
+                            example: Iure eos quibusdam ut dolore.
+    /v1/executions/status:
+        get:
+            tags:
+                - executions
+            summary: status executions
+            description: Get execution management status (policy + storage readiness)
+            operationId: executions#status
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ExecutionStatus'
+                            example:
+                                allow_elevated: false
+                                durable: false
+                                enabled: false
+                                issuer_ready: false
+                                storage_available: false
+                                storage_mode: disabled
+                "400":
+                    description: 'invalid: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Vero rerum omnis animi.
+                            example: Quia hic in enim sit.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Eligendi sunt iusto qui aut aperiam.
+                            example: Voluptatibus nam aspernatur cum sapiente neque omnis.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Explicabo rerum cumque.
+                            example: Sequi quaerat ipsam enim sapiente.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Possimus vitae fugiat repudiandae fugiat et sequi.
+                            example: Ipsam ut inventore velit minima et et.
+                "503":
+                    description: 'unavailable: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Dolorum unde dolorem fuga porro ratione.
+                            example: Totam quod doloremque eligendi.
     /v1/images:
         get:
             tags:
@@ -213,7 +811,123 @@ paths:
                                       vm_profile: Repudiandae molestiae voluptatem nemo dolor id nemo.
                                       workspace_types:
                                         - container
+                                    - category: IDE
+                                      cr_name: code-server
+                                      default_args:
+                                        - --bind-addr
+                                        - 0.0.0.0:8080
+                                      default_cloud_init: false
+                                      default_credentials:
+                                        password: changeme
+                                        username: coder
+                                      default_env:
+                                        - name: PASSWORD
+                                          value: changeme
+                                      default_homedir: /home/coder
+                                      default_password: changeme
+                                      default_path: /
+                                      default_port: 8080
+                                      default_shared_memory: false
+                                      default_shell: /bin/bash
+                                      default_uid: 1000
+                                      default_user: coder
+                                      default_user_data: ""
+                                      description: Code editor in the browser
+                                      homepage_url: https://github.com/coder/code-server
+                                      icon: code
+                                      image: codercom/code-server:latest
+                                      image_homepage_url: https://hub.docker.com/r/codercom/code-server
+                                      links:
+                                        - title: GitHub
+                                          url: https://github.com/coder/code-server
+                                        - title: Docker Hub
+                                          url: https://hub.docker.com/r/codercom/code-server
+                                      memory_limit: Illum quia cum corrupti voluptatem inventore dicta.
+                                      memory_request: Perferendis eius.
+                                      name: Code Server (VS Code)
+                                      persistent_root_disk: false
+                                      persistent_root_disk_size: Dolore libero repudiandae facere provident quos laborum.
+                                      privileged: false
+                                      proxy_config:
+                                        custom_request_headers:
+                                            x-tenant: workspaces
+                                        inject_base_tag: false
+                                        needs_noop_sw: true
+                                        preserve_path_prefix: true
+                                        rewrite_host_absolute_paths: false
+                                        tls_insecure: false
+                                        websocket_paths:
+                                            - /websockify
+                                      remote_desktop:
+                                        path: /
+                                        port: 8080
+                                        protocol: selkies
+                                      source_url: https://github.com/coder/code-server
+                                      tags:
+                                        - development
+                                        - vscode
+                                      vm_profile: Repudiandae molestiae voluptatem nemo dolor id nemo.
+                                      workspace_types:
+                                        - container
                             example:
+                                - category: IDE
+                                  cr_name: code-server
+                                  default_args:
+                                    - --bind-addr
+                                    - 0.0.0.0:8080
+                                  default_cloud_init: false
+                                  default_credentials:
+                                    password: changeme
+                                    username: coder
+                                  default_env:
+                                    - name: PASSWORD
+                                      value: changeme
+                                  default_homedir: /home/coder
+                                  default_password: changeme
+                                  default_path: /
+                                  default_port: 8080
+                                  default_shared_memory: false
+                                  default_shell: /bin/bash
+                                  default_uid: 1000
+                                  default_user: coder
+                                  default_user_data: ""
+                                  description: Code editor in the browser
+                                  homepage_url: https://github.com/coder/code-server
+                                  icon: code
+                                  image: codercom/code-server:latest
+                                  image_homepage_url: https://hub.docker.com/r/codercom/code-server
+                                  links:
+                                    - title: GitHub
+                                      url: https://github.com/coder/code-server
+                                    - title: Docker Hub
+                                      url: https://hub.docker.com/r/codercom/code-server
+                                  memory_limit: Illum quia cum corrupti voluptatem inventore dicta.
+                                  memory_request: Perferendis eius.
+                                  name: Code Server (VS Code)
+                                  persistent_root_disk: false
+                                  persistent_root_disk_size: Dolore libero repudiandae facere provident quos laborum.
+                                  privileged: false
+                                  proxy_config:
+                                    custom_request_headers:
+                                        x-tenant: workspaces
+                                    inject_base_tag: false
+                                    needs_noop_sw: true
+                                    preserve_path_prefix: true
+                                    rewrite_host_absolute_paths: false
+                                    tls_insecure: false
+                                    websocket_paths:
+                                        - /websockify
+                                  remote_desktop:
+                                    path: /
+                                    port: 8080
+                                    protocol: selkies
+                                  source_url: https://github.com/coder/code-server
+                                  tags:
+                                    - development
+                                    - vscode
+                                  vm_profile: Repudiandae molestiae voluptatem nemo dolor id nemo.
+                                  workspace_types:
+                                    - container
                                 - category: IDE
                                   cr_name: code-server
                                   default_args:
@@ -431,26 +1145,26 @@ paths:
                                   url: https://github.com/coder/code-server
                                 - title: Docker Hub
                                   url: https://hub.docker.com/r/codercom/code-server
-                            memory_limit: Ab et eligendi aliquid.
-                            memory_request: Reiciendis maiores tempora qui dolorum.
+                            memory_limit: Quibusdam soluta praesentium.
+                            memory_request: Sequi qui nisi vel ut facere dolorum.
                             name: Code Server (VS Code)
-                            persistent_root_disk: true
-                            persistent_root_disk_size: Nemo sint illo adipisci voluptas.
+                            persistent_root_disk: false
+                            persistent_root_disk_size: Delectus sit ut quis maiores.
                             privileged: false
                             proxy_config:
                                 custom_request_headers:
                                     x-tenant: workspaces
-                                inject_base_tag: false
-                                needs_noop_sw: false
+                                inject_base_tag: true
+                                needs_noop_sw: true
                                 preserve_path_prefix: true
-                                rewrite_host_absolute_paths: true
-                                tls_insecure: true
+                                rewrite_host_absolute_paths: false
+                                tls_insecure: false
                                 websocket_paths:
                                     - /websockify
                             remote_desktop:
                                 path: /
                                 port: 8080
-                                protocol: agent
+                                protocol: selkies
                             source_url: https://github.com/coder/code-server
                             tags:
                                 - development
@@ -497,18 +1211,18 @@ paths:
                                       url: https://github.com/coder/code-server
                                     - title: Docker Hub
                                       url: https://hub.docker.com/r/codercom/code-server
-                                memory_limit: Rerum rerum consequatur placeat delectus.
-                                memory_request: Ut quis maiores odio quibusdam soluta.
+                                memory_limit: Necessitatibus provident non officiis est.
+                                memory_request: Consectetur et ullam quia ad explicabo.
                                 name: Code Server (VS Code)
                                 persistent_root_disk: true
-                                persistent_root_disk_size: Aliquid porro cupiditate commodi qui eius quo.
+                                persistent_root_disk_size: Vero occaecati expedita nobis occaecati sint.
                                 privileged: false
                                 proxy_config:
                                     custom_request_headers:
                                         x-tenant: workspaces
                                     inject_base_tag: false
                                     needs_noop_sw: true
-                                    preserve_path_prefix: false
+                                    preserve_path_prefix: true
                                     rewrite_host_absolute_paths: true
                                     tls_insecure: true
                                     websocket_paths:
@@ -521,7 +1235,7 @@ paths:
                                 tags:
                                     - development
                                     - vscode
-                                vm_profile: Velit fugit culpa.
+                                vm_profile: Cumque hic ab et illum ad laborum.
                                 workspace_types:
                                     - container
                 "400":
@@ -566,7 +1280,16 @@ paths:
                                     - created_at: "2025-01-02T15:04:05Z"
                                       name: workspaces
                                       phase: Active
+                                    - created_at: "2025-01-02T15:04:05Z"
+                                      name: workspaces
+                                      phase: Active
                             example:
+                                - created_at: "2025-01-02T15:04:05Z"
+                                  name: workspaces
+                                  phase: Active
+                                - created_at: "2025-01-02T15:04:05Z"
+                                  name: workspaces
+                                  phase: Active
                                 - created_at: "2025-01-02T15:04:05Z"
                                   name: workspaces
                                   phase: Active
@@ -618,19 +1341,7 @@ paths:
                                       name: laptop-2025
                                       namespace: chris-at-fordham-id-au
                                       public_key: ssh-rsa AAAAB3Nza... user@example.com
-                                    - created_at: "2025-01-02T15:04:05Z"
-                                      fingerprint: SHA256:aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789
-                                      key_name: Laptop 2025
-                                      name: laptop-2025
-                                      namespace: chris-at-fordham-id-au
-                                      public_key: ssh-rsa AAAAB3Nza... user@example.com
                             example:
-                                - created_at: "2025-01-02T15:04:05Z"
-                                  fingerprint: SHA256:aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789
-                                  key_name: Laptop 2025
-                                  name: laptop-2025
-                                  namespace: chris-at-fordham-id-au
-                                  public_key: ssh-rsa AAAAB3Nza... user@example.com
                                 - created_at: "2025-01-02T15:04:05Z"
                                   fingerprint: SHA256:aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789
                                   key_name: Laptop 2025
@@ -841,17 +1552,6 @@ paths:
                                       size: 10Gi
                                       storage_class: standard
                                       type: vm-disk
-                                    - access_mode: ReadWriteOnce
-                                      created_at: "2025-01-02T15:04:05Z"
-                                      labels:
-                                        managed-by: kube-workspaces
-                                        workspace: my-workspace
-                                      name: my-workspace-data
-                                      namespace: workspaces
-                                      phase: Bound
-                                      size: 10Gi
-                                      storage_class: standard
-                                      type: vm-disk
                             example:
                                 - access_mode: ReadWriteOnce
                                   created_at: "2025-01-02T15:04:05Z"
@@ -893,7 +1593,7 @@ paths:
                             namespace: workspaces
                             size: 10Gi
                             storage_class: standard
-                            type: pvc
+                            type: vm-disk
             responses:
                 "201":
                     description: Created response.
@@ -912,7 +1612,7 @@ paths:
                                 phase: Bound
                                 size: 10Gi
                                 storage_class: standard
-                                type: vm-disk
+                                type: pvc
                 "400":
                     description: 'invalid: Bad Request response.'
                     content:
@@ -1011,7 +1711,7 @@ paths:
                                 phase: Bound
                                 size: 10Gi
                                 storage_class: standard
-                                type: vm-disk
+                                type: pvc
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
@@ -1112,103 +1812,7 @@ paths:
                                       volume_mounts:
                                         - mount_path: /home/coder
                                           name: my-workspace-data
-                                    - conditions:
-                                        - last_transition_time: "2025-01-02T15:04:05Z"
-                                          message: StatefulSet my-workspace is available
-                                          reason: MinimumReplicasAvailable
-                                          status: "True"
-                                          type: Ready
-                                      container_state:
-                                        message: Container started successfully
-                                        reason: Started
-                                        started_at: "2025-01-02T15:04:05Z"
-                                        state: running
-                                      cpu_limit: "1"
-                                      cpu_request: 500m
-                                      created_at: "2025-01-02T15:04:05Z"
-                                      image: codercom/code-server:latest
-                                      memory_limit: 2Gi
-                                      memory_request: 512Mi
-                                      name: my-workspace
-                                      namespace: workspaces
-                                      port: 8080
-                                      provisioned: false
-                                      ready_replicas: 1
-                                      remote_desktop:
-                                        path: /
-                                        port: 8080
-                                        protocol: selkies
-                                      stopped: false
-                                      type: container
-                                      vm_profile: Animi molestias omnis veniam qui dicta.
-                                      volume_mounts:
-                                        - mount_path: /home/coder
-                                          name: my-workspace-data
-                                    - conditions:
-                                        - last_transition_time: "2025-01-02T15:04:05Z"
-                                          message: StatefulSet my-workspace is available
-                                          reason: MinimumReplicasAvailable
-                                          status: "True"
-                                          type: Ready
-                                      container_state:
-                                        message: Container started successfully
-                                        reason: Started
-                                        started_at: "2025-01-02T15:04:05Z"
-                                        state: running
-                                      cpu_limit: "1"
-                                      cpu_request: 500m
-                                      created_at: "2025-01-02T15:04:05Z"
-                                      image: codercom/code-server:latest
-                                      memory_limit: 2Gi
-                                      memory_request: 512Mi
-                                      name: my-workspace
-                                      namespace: workspaces
-                                      port: 8080
-                                      provisioned: false
-                                      ready_replicas: 1
-                                      remote_desktop:
-                                        path: /
-                                        port: 8080
-                                        protocol: selkies
-                                      stopped: false
-                                      type: container
-                                      vm_profile: Animi molestias omnis veniam qui dicta.
-                                      volume_mounts:
-                                        - mount_path: /home/coder
-                                          name: my-workspace-data
                             example:
-                                - conditions:
-                                    - last_transition_time: "2025-01-02T15:04:05Z"
-                                      message: StatefulSet my-workspace is available
-                                      reason: MinimumReplicasAvailable
-                                      status: "True"
-                                      type: Ready
-                                  container_state:
-                                    message: Container started successfully
-                                    reason: Started
-                                    started_at: "2025-01-02T15:04:05Z"
-                                    state: running
-                                  cpu_limit: "1"
-                                  cpu_request: 500m
-                                  created_at: "2025-01-02T15:04:05Z"
-                                  image: codercom/code-server:latest
-                                  memory_limit: 2Gi
-                                  memory_request: 512Mi
-                                  name: my-workspace
-                                  namespace: workspaces
-                                  port: 8080
-                                  provisioned: false
-                                  ready_replicas: 1
-                                  remote_desktop:
-                                    path: /
-                                    port: 8080
-                                    protocol: selkies
-                                  stopped: false
-                                  type: container
-                                  vm_profile: Animi molestias omnis veniam qui dicta.
-                                  volume_mounts:
-                                    - mount_path: /home/coder
-                                      name: my-workspace-data
                                 - conditions:
                                     - last_transition_time: "2025-01-02T15:04:05Z"
                                       message: StatefulSet my-workspace is available
@@ -1344,10 +1948,10 @@ paths:
                                   value: "true"
                             type: container
                             vm_options:
-                                import_cert_config_map_name: Hic labore tenetur culpa at quae.
-                                import_secret_name: Consequatur ducimus voluptatem amet labore enim praesentium.
-                                root_disk_size: Natus magnam.
-                                storage_class_name: Nobis ipsum qui reiciendis non sit repudiandae.
+                                import_cert_config_map_name: Sequi totam ratione ut minus dolorum.
+                                import_secret_name: Id reiciendis tenetur consectetur consequatur.
+                                root_disk_size: Reiciendis ut quasi commodi ratione.
+                                storage_class_name: Facilis velit fugit odit modi repudiandae.
                             volume_mounts:
                                 - mount_path: /home/coder
                                   name: my-workspace-data
@@ -1387,7 +1991,7 @@ paths:
                                     protocol: agent
                                 stopped: false
                                 type: container
-                                vm_profile: A enim repellendus et.
+                                vm_profile: Fugit consequatur non ipsa placeat.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -1499,7 +2103,7 @@ paths:
                                 name: my-workspace
                                 namespace: workspaces
                                 port: 8080
-                                provisioned: false
+                                provisioned: true
                                 ready_replicas: 1
                                 remote_desktop:
                                     path: /
@@ -1507,7 +2111,7 @@ paths:
                                     protocol: agent
                                 stopped: false
                                 type: container
-                                vm_profile: Porro quibusdam ratione maiores.
+                                vm_profile: Veritatis nemo esse.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -1878,7 +2482,7 @@ paths:
                                     protocol: agent
                                 stopped: false
                                 type: container
-                                vm_profile: Ut quasi commodi ratione veniam.
+                                vm_profile: Et nostrum.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -1920,15 +2524,15 @@ paths:
                   schema:
                     type: string
                     default: workspaces
-                    example: Dolores non.
-                  example: Adipisci minus est itaque ut doloremque.
+                    example: Quos iure inventore vel enim et odit.
+                  example: Ad quas.
                 - name: name
                   in: path
                   required: true
                   schema:
                     type: string
-                    example: Quo enim repellendus repellat odio odit.
-                  example: Quia voluptas rerum consequatur.
+                    example: Reiciendis minus odio quas.
+                  example: Ut doloribus aut.
             responses:
                 "200":
                     description: OK response.
@@ -1936,39 +2540,39 @@ paths:
                         Cache-Control:
                             schema:
                                 type: string
-                                example: Praesentium enim consequatur excepturi ab.
-                            example: Quidem dicta neque quia in.
+                                example: Et repellendus in.
+                            example: Perspiciatis dolorem distinctio accusamus quis nam.
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/WorkspaceInitialCredentials2'
                             example:
-                                password: Qui quasi ad cum omnis aut.
-                                username: Ab aut voluptatum iusto culpa at consequatur.
+                                password: Quia voluptas rerum consequatur.
+                                username: Quo enim repellendus repellat odio odit.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Vitae ut eum sapiente perferendis.
-                            example: Laboriosam quod eum minima quo ratione.
+                                example: Dolore dolorum.
+                            example: Blanditiis eum ex reprehenderit cupiditate quas.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Odio occaecati deleniti ut qui quidem.
-                            example: Quia in dolores suscipit non aut ut.
+                                example: Aspernatur est.
+                            example: Voluptatem minima.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Itaque qui repudiandae sunt voluptatem ullam praesentium.
-                            example: Delectus voluptatem non.
+                                example: Rerum et.
+                            example: Voluptate officiis nostrum corrupti ut ex repudiandae.
     /v1/workspaces/{name}/display:
         get:
             tags:
@@ -2342,7 +2946,7 @@ paths:
                         schema:
                             $ref: '#/components/schemas/JoinDisplayPayload2'
                         example:
-                            role: controller
+                            role: observer
             responses:
                 "200":
                     description: OK response.
@@ -2537,10 +3141,6 @@ paths:
                                       id: 97f8c4b7a2
                                       joined_at: "2026-09-19T15:04:05Z"
                                       role: observer
-                                    - connected: false
-                                      id: 97f8c4b7a2
-                                      joined_at: "2026-09-19T15:04:05Z"
-                                      role: observer
                                 participants: 3
                                 protocol: 1
                 "401":
@@ -2630,7 +3230,7 @@ paths:
                                     protocol: agent
                                 stopped: false
                                 type: container
-                                vm_profile: Odit modi repudiandae.
+                                vm_profile: Error et.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -2705,7 +3305,7 @@ paths:
                                 name: my-workspace
                                 namespace: workspaces
                                 port: 8080
-                                provisioned: false
+                                provisioned: true
                                 ready_replicas: 1
                                 remote_desktop:
                                     path: /
@@ -2713,7 +3313,7 @@ paths:
                                     protocol: agent
                                 stopped: false
                                 type: container
-                                vm_profile: Tenetur consectetur consequatur odio sequi.
+                                vm_profile: Sint consequatur autem.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -2788,7 +3388,7 @@ paths:
                                     protocol: agent
                                 stopped: false
                                 type: container
-                                vm_profile: Ut minus dolorum voluptatem facilis.
+                                vm_profile: Culpa quidem magni reiciendis.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -3020,7 +3620,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Illo quia commodi voluptates vel perferendis.
+                        example: Numquam est est dolorem at reprehenderit aut.
                     description: Default command-line args
                     example:
                         - --bind-addr
@@ -3110,11 +3710,11 @@ components:
                 memory_limit:
                     type: string
                     description: Guest memory default
-                    example: Officia minima aliquid magnam et.
+                    example: Magni a.
                 memory_request:
                     type: string
                     description: Guest memory request default
-                    example: In rerum consequatur ut.
+                    example: Quis illum.
                 name:
                     type: string
                     description: Display name
@@ -3122,11 +3722,11 @@ components:
                 persistent_root_disk:
                     type: boolean
                     description: Import a per-workspace persistent root disk
-                    example: true
+                    example: false
                 persistent_root_disk_size:
                     type: string
                     description: Persistent root capacity
-                    example: Sapiente nemo dicta nostrum.
+                    example: Illum inventore excepturi laborum ullam exercitationem et.
                 privileged:
                     type: boolean
                     description: Run container in privileged mode
@@ -3144,7 +3744,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Quidem sit omnis voluptatum ut quam.
+                        example: Optio vel dignissimos.
                     description: Tags for filtering/searching images
                     example:
                         - development
@@ -3159,7 +3759,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Tenetur velit voluptas iusto.
+                        example: Placeat blanditiis officiis quaerat.
                     description: Workspace types this image supports (container, vm, scratch). Empty means container-only
                     example:
                         - container
@@ -3195,11 +3795,11 @@ components:
                       url: https://github.com/coder/code-server
                     - title: Docker Hub
                       url: https://hub.docker.com/r/codercom/code-server
-                memory_limit: Dolorem eius esse consequatur non et impedit.
-                memory_request: Quo et.
+                memory_limit: Vitae nulla unde.
+                memory_request: Quam officia voluptatibus sunt et.
                 name: Code Server (VS Code)
                 persistent_root_disk: true
-                persistent_root_disk_size: Itaque vel assumenda beatae vitae quidem voluptatem.
+                persistent_root_disk_size: Repudiandae quasi.
                 privileged: false
                 proxy_config:
                     custom_request_headers:
@@ -3292,7 +3892,7 @@ components:
                     type: string
                     description: 'Volume type: container PVC or reusable CDI blank VM disk'
                     default: pvc
-                    example: vm-disk
+                    example: pvc
                     enum:
                         - pvc
                         - vm-disk
@@ -3303,7 +3903,7 @@ components:
                 namespace: workspaces
                 size: 10Gi
                 storage_class: standard
-                type: pvc
+                type: vm-disk
             required:
                 - name
                 - size
@@ -3347,7 +3947,7 @@ components:
                         nvidia.com/gpu: "true"
                     additionalProperties:
                         type: string
-                        example: Quas dolore sed suscipit in.
+                        example: Qui doloremque sunt sed eius itaque culpa.
                 shared_memory:
                     type: boolean
                     description: Mount /dev/shm as an emptyDir with medium=Memory (required for Chrome, ML frameworks)
@@ -3470,7 +4070,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Sint sed ipsa est repudiandae ducimus recusandae.
+                        example: Tempore id ut debitis.
                     description: Supported display transports
                     example:
                         - rfb
@@ -3714,6 +4314,10 @@ components:
                       id: 97f8c4b7a2
                       joined_at: "2026-09-19T15:04:05Z"
                       role: observer
+                    - connected: false
+                      id: 97f8c4b7a2
+                      joined_at: "2026-09-19T15:04:05Z"
+                      role: observer
                 participants: 3
                 protocol: 1
             required:
@@ -3739,6 +4343,320 @@ components:
             required:
                 - name
                 - value
+        ExecutionGrantPayload:
+            type: object
+            properties:
+                grant:
+                    type: string
+                    description: Opaque, versioned, guest-verified grant token
+                    example: eyJ2IjoiMS4wIn0....
+                    minLength: 10
+                os_identity:
+                    type: string
+                    description: Target OS identity (e.g. 'root', 'SYSTEM')
+                    example: root
+            description: Signed, short-lived grant used to admit an execution request (placeholder)
+            example:
+                grant: eyJ2IjoiMS4wIn0....
+                os_identity: root
+            required:
+                - grant
+        ExecutionRecord:
+            type: object
+            properties:
+                actor_id:
+                    type: string
+                    description: Actor identifier
+                    example: user@example.com
+                admission_time:
+                    type: string
+                    description: RFC3339 timestamp
+                    example: "2026-10-17T00:00:00Z"
+                    format: date-time
+                admitted:
+                    type: boolean
+                    example: true
+                deny_reason:
+                    type: string
+                    example: ""
+                durability:
+                    type: string
+                    description: none|durable
+                    example: none
+                    enum:
+                        - none
+                        - durable
+                elevated:
+                    type: boolean
+                    example: false
+                end_time:
+                    type: string
+                    description: RFC3339 timestamp
+                    example: "1979-11-19T15:07:14Z"
+                    format: date-time
+                execution_id:
+                    type: string
+                    description: Execution identifier
+                    example: exec_9f82
+                exit_code:
+                    type: integer
+                    example: 0
+                    format: int64
+                grant_version:
+                    type: string
+                    example: "1.0"
+                mode:
+                    type: string
+                    description: 'Storage mode: ephemeral|external|bundled'
+                    example: ephemeral
+                    enum:
+                        - ephemeral
+                        - external
+                        - bundled
+                namespace:
+                    type: string
+                    example: team-a
+                operation:
+                    type: string
+                    description: command|script|shell
+                    example: shell
+                    enum:
+                        - command
+                        - script
+                        - shell
+                os_identity:
+                    type: string
+                    example: root
+                recording_id:
+                    type: string
+                    example: rec_9f82
+                recording_lost:
+                    type: boolean
+                    example: false
+                start_time:
+                    type: string
+                    description: RFC3339 timestamp
+                    example: "1972-11-07T18:00:09Z"
+                    format: date-time
+                state:
+                    type: string
+                    description: lifecycle state
+                    example: succeeded
+                    enum:
+                        - admitted
+                        - running
+                        - succeeded
+                        - failed
+                        - cancelled
+                        - timed_out
+                        - revoked
+                        - unknown
+                        - recording_lost
+                termination:
+                    type: string
+                    example: graceful
+                workspace_generation:
+                    type: integer
+                    example: 3
+                    format: int64
+                workspace_name:
+                    type: string
+                    example: vm-1
+                workspace_uid:
+                    type: string
+                    example: abc123
+            description: Execution admission record and last known outcome
+            example:
+                actor_id: user@example.com
+                admission_time: "2026-10-17T00:00:00Z"
+                admitted: true
+                deny_reason: ""
+                durability: none
+                elevated: false
+                end_time: "2000-02-17T13:11:28Z"
+                execution_id: exec_9f82
+                exit_code: 0
+                grant_version: "1.0"
+                mode: ephemeral
+                namespace: team-a
+                operation: shell
+                os_identity: root
+                recording_id: rec_9f82
+                recording_lost: false
+                start_time: "1978-09-24T08:41:42Z"
+                state: succeeded
+                termination: graceful
+                workspace_generation: 3
+                workspace_name: vm-1
+                workspace_uid: abc123
+            required:
+                - execution_id
+                - operation
+                - namespace
+                - workspace_name
+                - recording_id
+                - mode
+                - durability
+                - admitted
+                - admission_time
+        ExecutionRecordingChunk:
+            type: object
+            properties:
+                data:
+                    type: string
+                    description: Base64-encoded plaintext recording data
+                    example:
+                        - 81
+                        - 117
+                        - 105
+                        - 100
+                        - 101
+                        - 109
+                        - 32
+                        - 114
+                        - 101
+                        - 99
+                        - 117
+                        - 115
+                        - 97
+                        - 110
+                        - 100
+                        - 97
+                        - 101
+                        - 32
+                        - 99
+                        - 111
+                        - 110
+                        - 115
+                        - 101
+                        - 99
+                        - 116
+                        - 101
+                        - 116
+                        - 117
+                        - 114
+                        - 32
+                        - 101
+                        - 97
+                        - 114
+                        - 117
+                        - 109
+                        - 46
+                    format: binary
+                index:
+                    type: integer
+                    description: Chunk index starting at 0
+                    example: 0
+                    format: int64
+            description: Verified, decrypted recording chunk; sensitive playback content
+            example:
+                data:
+                    - 69
+                    - 116
+                    - 32
+                    - 105
+                    - 110
+                    - 118
+                    - 101
+                    - 110
+                    - 116
+                    - 111
+                    - 114
+                    - 101
+                    - 32
+                    - 118
+                    - 111
+                    - 108
+                    - 117
+                    - 112
+                    - 116
+                    - 97
+                    - 116
+                    - 101
+                    - 115
+                    - 32
+                    - 101
+                    - 115
+                    - 116
+                    - 46
+                index: 0
+            required:
+                - index
+                - data
+        ExecutionRecordingManifest:
+            type: object
+            properties:
+                chunks:
+                    type: integer
+                    example: 17227931992147521631
+                    format: int64
+                plaintext_bytes:
+                    type: integer
+                    example: 6555779515064629604
+                    format: int64
+                recording_id:
+                    type: string
+                    example: In sint officiis.
+                verified:
+                    type: boolean
+                    example: true
+            example:
+                chunks: 2864269588544866722
+                plaintext_bytes: 1057926031717364155
+                recording_id: Possimus unde.
+                verified: true
+            required:
+                - recording_id
+                - chunks
+                - plaintext_bytes
+                - verified
+        ExecutionStatus:
+            type: object
+            properties:
+                allow_elevated:
+                    type: boolean
+                    description: Whether elevated execution is allowed by policy
+                    example: false
+                durable:
+                    type: boolean
+                    description: Metadata and recordings are durable (not ephemeral)
+                    example: false
+                enabled:
+                    type: boolean
+                    description: Whether VM execution is enabled by policy
+                    example: false
+                issuer_ready:
+                    type: boolean
+                    description: Opt-in management issuer prerequisites and initial bootstrap sync are ready; not a guest execution capability
+                    example: false
+                storage_available:
+                    type: boolean
+                    description: Store is Ready and can admit work
+                    example: false
+                storage_mode:
+                    type: string
+                    description: 'Storage mode: disabled|ephemeral|external|bundled'
+                    example: disabled
+                    enum:
+                        - disabled
+                        - ephemeral
+                        - external
+                        - bundled
+            description: Execution management status
+            example:
+                allow_elevated: false
+                durable: false
+                enabled: false
+                issuer_ready: false
+                storage_available: false
+                storage_mode: disabled
+            required:
+                - enabled
+                - allow_elevated
+                - storage_mode
+                - durable
+                - storage_available
+                - issuer_ready
         Image:
             type: object
             properties:
@@ -3754,7 +4672,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Vero quis.
+                        example: Quas tempora quis voluptates.
                     description: Default command-line args injected at workspace creation
                     example:
                         - --bind-addr
@@ -3843,20 +4761,20 @@ components:
                           url: https://hub.docker.com/r/codercom/code-server
                 memory_limit:
                     type: string
-                    example: Hic voluptates harum atque in voluptas voluptatem.
+                    example: Et ipsum doloribus.
                 memory_request:
                     type: string
-                    example: Magni et distinctio doloremque placeat ut.
+                    example: Beatae qui.
                 name:
                     type: string
                     description: Display name
                     example: Code Server (VS Code)
                 persistent_root_disk:
                     type: boolean
-                    example: true
+                    example: false
                 persistent_root_disk_size:
                     type: string
-                    example: Sint porro eum facilis eveniet quo.
+                    example: Ea nulla quibusdam et distinctio.
                 privileged:
                     type: boolean
                     description: Run container in privileged mode
@@ -3873,7 +4791,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Est in voluptates voluptatem nobis ut.
+                        example: Optio aut inventore quibusdam quisquam.
                     description: Tags for filtering/searching images
                     example:
                         - development
@@ -3881,12 +4799,12 @@ components:
                 vm_profile:
                     type: string
                     description: Controller-supported guest profile
-                    example: Est et dolorem voluptatem quia in.
+                    example: Dolor quia.
                 workspace_types:
                     type: array
                     items:
                         type: string
-                        example: Magnam explicabo explicabo ea et minus sunt.
+                        example: Ut fuga rem accusantium tempora laboriosam.
                     description: Workspace types this image supports (container, vm, scratch). Empty means container-only
                     example:
                         - container
@@ -3923,11 +4841,11 @@ components:
                       url: https://github.com/coder/code-server
                     - title: Docker Hub
                       url: https://hub.docker.com/r/codercom/code-server
-                memory_limit: At iure voluptatibus.
-                memory_request: Asperiores corrupti.
+                memory_limit: Ut libero commodi.
+                memory_request: A animi voluptatem assumenda ut vitae.
                 name: Code Server (VS Code)
                 persistent_root_disk: true
-                persistent_root_disk_size: Non omnis aut voluptatibus adipisci dolorum.
+                persistent_root_disk_size: Corporis qui.
                 privileged: false
                 proxy_config:
                     custom_request_headers:
@@ -3947,7 +4865,7 @@ components:
                 tags:
                     - development
                     - vscode
-                vm_profile: Atque beatae beatae velit reprehenderit consequatur ut.
+                vm_profile: Voluptas expedita rerum quos.
                 workspace_types:
                     - container
             required:
@@ -4016,17 +4934,17 @@ components:
                         x-tenant: workspaces
                     additionalProperties:
                         type: string
-                        example: Autem amet.
+                        example: Consequatur quidem ea ipsum.
                 inject_base_tag:
                     type: boolean
                     description: Inject a <base> tag into HTML responses to fix relative path resolution
                     default: false
-                    example: true
+                    example: false
                 needs_noop_sw:
                     type: boolean
                     description: Serve a no-op ServiceWorker at /sw.js to prevent SW registration errors
                     default: false
-                    example: false
+                    example: true
                 preserve_path_prefix:
                     type: boolean
                     description: Forward the full proxy path (including /proxy/{ns}/{name}) to the pod instead of stripping it. Required for apps configured with a base URL matching the proxy prefix.
@@ -4036,17 +4954,17 @@ components:
                     type: boolean
                     description: Rewrite requests with absolute paths that escape the proxy prefix using Referer header
                     default: false
-                    example: true
+                    example: false
                 tls_insecure:
                     type: boolean
                     description: Connect to backend over HTTPS with skip-verify (for self-signed certs)
                     default: false
-                    example: false
+                    example: true
                 websocket_paths:
                     type: array
                     items:
                         type: string
-                        example: Dolor est adipisci aut.
+                        example: Exercitationem consequuntur impedit.
                     description: Paths that use WebSocket (informational, all paths support WS transparently)
                     example:
                         - /websockify
@@ -4054,11 +4972,11 @@ components:
             example:
                 custom_request_headers:
                     x-tenant: workspaces
-                inject_base_tag: false
-                needs_noop_sw: false
+                inject_base_tag: true
+                needs_noop_sw: true
                 preserve_path_prefix: true
-                rewrite_host_absolute_paths: false
-                tls_insecure: false
+                rewrite_host_absolute_paths: true
+                tls_insecure: true
                 websocket_paths:
                     - /websockify
         ImageRemoteDesktop:
@@ -4077,7 +4995,7 @@ components:
                 protocol:
                     type: string
                     description: 'Protocol name: "selkies" (Linux in-guest agent) or "agent" (cross-platform kw-agent)'
-                    example: agent
+                    example: selkies
                     enum:
                         - selkies
                         - agent
@@ -4105,7 +5023,7 @@ components:
                     type: string
                     description: Initial role. Defaults to observer
                     default: observer
-                    example: observer
+                    example: controller
                     enum:
                         - observer
                         - controller
@@ -4113,7 +5031,7 @@ components:
             example:
                 name: my-workspace
                 namespace: workspaces
-                role: observer
+                role: controller
             required:
                 - name
         JoinDisplayPayload2:
@@ -4301,25 +5219,25 @@ components:
                 import_cert_config_map_name:
                     type: string
                     description: Same-namespace registry CA ConfigMap
-                    example: Cumque eius et.
+                    example: Sed cumque laudantium voluptas dignissimos repellendus optio.
                 import_secret_name:
                     type: string
                     description: Same-namespace CDI accessKeyId/secretKey Secret
-                    example: Quasi maiores provident ea.
+                    example: Occaecati officiis quia.
                 root_disk_size:
                     type: string
                     description: Persistent Windows root capacity, at least 80Gi
-                    example: Sit vel debitis.
+                    example: Eum consectetur.
                 storage_class_name:
                     type: string
                     description: Persistent root StorageClass; empty uses cluster default
-                    example: Est et fugit et assumenda eligendi consequuntur.
+                    example: Quo facere voluptatem deleniti quod.
             description: Namespaced Windows root import settings; credentials remain in Kubernetes Secrets
             example:
-                import_cert_config_map_name: Rerum asperiores sed delectus velit totam mollitia.
-                import_secret_name: Sit sunt accusamus totam excepturi odit.
-                root_disk_size: Temporibus quisquam reprehenderit maiores architecto.
-                storage_class_name: Tempore omnis.
+                import_cert_config_map_name: Aut itaque a occaecati enim est eum.
+                import_secret_name: Labore ipsum recusandae qui unde.
+                root_disk_size: Ex eaque voluptatem corporis dolor.
+                storage_class_name: Non omnis fuga necessitatibus sit tempore necessitatibus.
         Volume:
             type: object
             properties:
@@ -4339,7 +5257,7 @@ components:
                         workspace: my-workspace
                     additionalProperties:
                         type: string
-                        example: Et voluptas quis eum esse quo voluptatem.
+                        example: Necessitatibus eveniet perspiciatis quod vero nobis.
                 name:
                     type: string
                     description: PVC name
@@ -4364,7 +5282,7 @@ components:
                     type: string
                     description: 'Volume type: pvc or vm-disk'
                     default: pvc
-                    example: pvc
+                    example: vm-disk
                     enum:
                         - pvc
                         - vm-disk
@@ -4380,7 +5298,7 @@ components:
                 phase: Bound
                 size: 10Gi
                 storage_class: standard
-                type: vm-disk
+                type: pvc
             required:
                 - name
                 - namespace
@@ -4509,7 +5427,7 @@ components:
                 vm_profile:
                     type: string
                     description: Resolved guest profile; windows11-amd64-v1 uses display-only native provisioning
-                    example: Sit ut at non est voluptas et.
+                    example: Nihil in voluptate.
                 volume_mounts:
                     type: array
                     items:
@@ -4540,7 +5458,7 @@ components:
                 name: my-workspace
                 namespace: workspaces
                 port: 8080
-                provisioned: true
+                provisioned: false
                 ready_replicas: 1
                 remote_desktop:
                     path: /
@@ -4548,7 +5466,7 @@ components:
                     protocol: selkies
                 stopped: false
                 type: container
-                vm_profile: Suscipit sequi iusto excepturi itaque.
+                vm_profile: Dignissimos accusamus quia sunt a qui iusto.
                 volume_mounts:
                     - mount_path: /home/coder
                       name: my-workspace-data
@@ -4654,18 +5572,18 @@ components:
             properties:
                 cache_control:
                     type: string
-                    example: Similique aut alias velit.
+                    example: Officia soluta voluptatem autem qui cumque.
                 password:
                     type: string
-                    example: Vero alias deleniti deleniti quas nihil sed.
+                    example: Molestiae voluptatem odit.
                 username:
                     type: string
-                    example: Inventore libero iusto quos est.
+                    example: Ut enim dolore voluptates vel sunt sed.
             description: Per-workspace initial Windows account, visible only to namespace editors/admins
             example:
-                cache_control: Odio qui rerum molestias quo est est.
-                password: Recusandae autem voluptate odio.
-                username: Odio et perspiciatis at.
+                cache_control: Dolorum quia repudiandae iste vel sunt eveniet.
+                password: Ipsa libero eos atque.
+                username: Voluptatibus tempore quia quae aliquid quibusdam eum.
             required:
                 - username
                 - password
@@ -4675,17 +5593,19 @@ components:
             properties:
                 password:
                     type: string
-                    example: Et modi et autem dolorum.
+                    example: Quam sed qui autem ducimus alias perspiciatis.
                 username:
                     type: string
-                    example: Sunt voluptas praesentium officiis.
+                    example: Voluptatibus aut.
             example:
-                password: Quaerat sit.
-                username: Repellendus recusandae accusantium ea molestiae.
+                password: Saepe alias rerum sed omnis natus.
+                username: Fugiat necessitatibus.
             required:
                 - username
                 - password
 tags:
+    - name: executions
+      description: Scoped execution management status, history and protected recording replay
     - name: workspaces
       description: Workspace management service
     - name: volumes
