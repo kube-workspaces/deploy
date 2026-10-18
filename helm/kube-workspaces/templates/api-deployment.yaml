@@ -84,6 +84,12 @@ spec:
               value: "https://{{ .Values.api.externalHost }}/auth/callback"
             {{- end }}
             {{- end }}
+            {{- if .Values.execution.qgaPilot.enabled }}
+            - name: KW_EXECUTION_QGA_ENABLED
+              value: "true"
+            - name: KW_MANAGEMENT_GRANT_KEY_FILE
+              value: /etc/kube-workspaces/qga-grant-signing/key
+            {{- end }}
           livenessProbe:
             httpGet:
               path: /healthz
@@ -107,6 +113,11 @@ spec:
               mountPath: /etc/kube-workspaces/execution-storage-ca
               readOnly: true
             {{- end }}
+            {{- end }}
+            {{- if .Values.execution.qgaPilot.enabled }}
+            - name: qga-grant-signing
+              mountPath: /etc/kube-workspaces/qga-grant-signing
+              readOnly: true
             {{- end }}
             - name: kube-api-access
               mountPath: /var/run/secrets/kubernetes.io/serviceaccount
@@ -132,6 +143,15 @@ spec:
               - key: ca.crt
                 path: ca.crt
         {{- end }}
+        {{- end }}
+        {{- if .Values.execution.qgaPilot.enabled }}
+        - name: qga-grant-signing
+          secret:
+            secretName: {{ .Values.execution.qgaPilot.signingKey.existingSecret | quote }}
+            defaultMode: 0440
+            items:
+              - key: {{ .Values.execution.qgaPilot.signingKey.key | quote }}
+                path: key
         {{- end }}
         - name: kube-api-access
           projected:

@@ -115,6 +115,11 @@ render_case auth-local-and-oidc \
 render_case execution-ephemeral -f examples/execution-storage/ephemeral.yaml
 render_case execution-external -f examples/execution-storage/external.yaml
 render_case execution-bundled -f examples/execution-storage/bundled.yaml
+render_case execution-qga-pilot \
+  --set auth.enabled=true \
+  --set execution.enabled=true \
+  --set execution.qgaPilot.enabled=true \
+  --set execution.qgaPilot.signingKey.existingSecret=qga-signing
 render_case dex --set dex.enabled=true
 render_case ingress --set ingress.enabled=true
 render_case ingress-traefik \

@@ -19,6 +19,12 @@ ephemeral
 
 {{- define "kube-workspaces.execution.validate" -}}
 {{- $mode := include "kube-workspaces.execution.storageMode" . -}}
+{{- if .Values.execution.qgaPilot.enabled -}}
+{{- if eq $mode "disabled" -}}
+{{- fail "execution.qgaPilot.enabled requires execution.enabled=true" -}}
+{{- end -}}
+{{- $_ := required "execution.qgaPilot.enabled requires execution.qgaPilot.signingKey.existingSecret" .Values.execution.qgaPilot.signingKey.existingSecret -}}
+{{- end -}}
 {{- if ne $mode "disabled" -}}
 {{- if not .Values.auth.enabled -}}
 {{- fail "execution requires auth.enabled=true" -}}

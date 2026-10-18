@@ -63,6 +63,19 @@ execution:
     retention:
       recordings: 720h
       metadata: 8760h
+  # Opt-in QGA pod-exec pilot transport behind POST /v1/executions/start:
+  # synchronous, bounded Windows SYSTEM commands over Kubernetes-authenticated
+  # pod exec into the current KubeVirt launcher's QEMU guest agent. Disabled
+  # by default and never a fallback from a failed mTLS management connection;
+  # the dedicated mTLS transport remains the follow-up. Enabling requires
+  # execution.enabled and a mounted PKCS#8 Ed25519 signing-key Secret (no
+  # inline or generated key). The matching public key must be staged to each
+  # pilot guest's management-grant key file.
+  qgaPilot:
+    enabled: false
+    signingKey:
+      existingSecret: ""
+      key: key
 
 # Upstream subchart settings, consumed only when execution.storage.bundled.enabled.
 # Supply existing Secrets: avoid credentials in values and render-time random

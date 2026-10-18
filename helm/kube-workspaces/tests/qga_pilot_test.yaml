@@ -1,0 +1,79 @@
+# Unit tests for the opt-in QGA pod-exec pilot transport wiring.
+#
+# The pilot is disabled by default and must never render its env or signing-key
+# volume implicitly; enabling it requires execution infrastructure and an
+# operator-supplied Secret (no inline or generated key material).
+suite: execution qga pilot
+templates:
+  - api-deployment.yaml
+tests:
+  - it: renders no QGA pilot configuration by default
+    documentSelector:
+      path: kind
+      value: Deployment
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_QGA_ENABLED
+          any: true
+      - notContains:
+          path: spec.template.spec.volumes
+          content:
+            name: qga-grant-signing
+          any: true
+
+  - it: wires the opt-in env and signing-key volume when enabled
+    set:
+      auth.enabled: true
+      execution.enabled: true
+      execution.qgaPilot.enabled: true
+      execution.qgaPilot.signingKey.existingSecret: qga-signing
+      execution.qgaPilot.signingKey.key: signing-key
+    documentSelector:
+      path: kind
+      value: Deployment
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_QGA_ENABLED
+            value: "true"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_MANAGEMENT_GRANT_KEY_FILE
+            value: /etc/kube-workspaces/qga-grant-signing/key
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: qga-grant-signing
+            mountPath: /etc/kube-workspaces/qga-grant-signing
+            readOnly: true
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: qga-grant-signing
+            secret:
+              secretName: "qga-signing"
+              defaultMode: 288
+              items:
+                - key: "signing-key"
+                  path: key
+
+  - it: forbids the pilot without execution infrastructure
+    set:
+      execution.qgaPilot.enabled: true
+      execution.qgaPilot.signingKey.existingSecret: qga-signing
+    asserts:
+      - failedTemplate:
+          errorMessage: execution.qgaPilot.enabled requires execution.enabled=true
+
+  - it: forbids the pilot without an operator-supplied signing key Secret
+    set:
+      auth.enabled: true
+      execution.enabled: true
+      execution.qgaPilot.enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: execution.qgaPilot.enabled requires execution.qgaPilot.signingKey.existingSecret
