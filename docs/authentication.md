@@ -411,6 +411,10 @@ kubectl get secret kw-user-admin-at-local-local-auth \
   -n kube-workspaces-system -o jsonpath='{.data.password}' | base64 -d
 ```
 
+Log in with email **`admin@local`** (the default) and the retrieved password.
+If you customized `auth.localAuth.bootstrapAdmin.email`, use that email instead.
+You will be prompted to change the password on first login.
+
 The plaintext `password` key only exists until the admin changes their
 password for the first time (they are required to on first login) — after
 that, only the bcrypt `passwordHash` key remains, and `get-admin-password`
