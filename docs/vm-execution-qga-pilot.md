@@ -38,7 +38,7 @@ Three prerequisites, all operator-controlled:
    public key must be staged to each pilot guest (see below). Generate with:
 
    ```sh
-   openssl genpkey -algorithm Ed25519 -outform PEM -o qga-signing.pem
+   openssl genpkey -algorithm Ed25519 -out qga-signing.pem
    kubectl -n <namespace> create secret generic qga-grant-signing \
      --from-file=key=qga-signing.pem
    rm qga-signing.pem
@@ -48,10 +48,16 @@ Three prerequisites, all operator-controlled:
    `management-exec` subcommand, installed in the pilot VM image, plus the
    management-grant key file at
    `C:\ProgramData\workspace-agent\management-grant-keys.json` containing the
-   base64url-encoded public key:
+   base64url-encoded **raw 32-byte** public key (strip the 12-byte Ed25519
+   SPKI prefix from the DER export):
+
+   ```sh
+   openssl pkey -in qga-signing.pem -pubout -outform DER 2>/dev/null \
+     | tail -c 32 | basenc --base64url | tr -d '='
+   ```
 
    ```json
-   { "version": 1, "keys": ["<base64url RawURL 32-byte public key>"] }
+   { "version": 1, "keys": ["<43-char base64url string>"] }
    ```
 
 Helm values:
