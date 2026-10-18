@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # List open pull requests across the organisation, including all result pages.
 # Requires: gh (GitHub CLI) authenticated to the org.
-# Usage: bash scripts/list-merge-requests.sh [ORG]
+# Usage: bash scripts/list-pull-requests.sh [ORG]
 
 set -euo pipefail
 
