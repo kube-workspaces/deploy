@@ -6,7 +6,7 @@
 	port-forward-frontend port-forward-api \
 	port-forward-proxy helm-install helm-upgrade helm-template lint-helm \
 	sync-helm-crds check-helm-crds sync-images check-images \
-	generate-godoc show show-latest-releases show-ci-status list-issues \
+	generate-godoc show show-latest-releases show-ci-status list-issues list-merge-requests \
 	test-tools test-lint test-smoke test-e2e test-all test-dump \
 	kind-up kind-down \
 	test-deploy-kustomize test-deploy-helm test-deploy-helm-oci \
@@ -182,6 +182,9 @@ show-ci-status: ## Show recent GitHub Actions status across kube-workspaces repo
 
 list-issues: ## List open issues for every kube-workspaces repo with issues enabled
 	@bash scripts/list-issues.sh
+
+list-merge-requests: ## List open pull requests for every kube-workspaces repo
+	@bash scripts/list-merge-requests.sh
 
 # ---------------------------------------------------------------------------
 # Cluster operations
