@@ -49,6 +49,18 @@ spec:
           spec:
             description: PlatformConfigSpec defines the desired state of PlatformConfig.
             properties:
+              agentUpgrades:
+                description: |-
+                  AgentUpgrades configures the administrator-only durable agent-upgrade
+                  admission surface. Absent/false keeps agent upgrades disabled.
+                properties:
+                  enabled:
+                    description: |-
+                      Enabled admits administrator-only durable upgrade attempts when storage,
+                      eligibility and reservation prerequisites are healthy.
+                      Absent/false disables agent upgrades entirely.
+                    type: boolean
+                type: object
               form:
                 description: Form configures workspace creation form behavior including
                   field locking.
