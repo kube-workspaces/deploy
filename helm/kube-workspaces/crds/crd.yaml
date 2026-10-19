@@ -50,6 +50,18 @@ spec:
               WorkspaceSpec defines the desired state of Workspace.
               Modelled closely on Kubeflow Notebook spec - wraps a full PodSpec.
             properties:
+              executionRevocationEpoch:
+                default: 0
+                description: |-
+                  ExecutionRevocationEpoch requests a minimum execution epoch. The request
+                  itself is monotonic so a pending revocation cannot be undone before the
+                  controller acknowledges it in status. It never supplies authority.
+                format: int64
+                minimum: 0
+                type: integer
+                x-kubernetes-validations:
+                - message: Execution revocation request cannot decrease
+                  rule: self >= oldSelf
               template:
                 description: Template describes the pod that will be created for the
                   workspace.
@@ -8256,6 +8268,32 @@ spec:
                         type: string
                     type: object
                 type: object
+              managementExecution:
+                description: |-
+                  ManagementExecution is controller-owned execution authority, never derived
+                  from a tenant-supplied generation or epoch. Restrict status writes to the
+                  controller. Missing/stale state denies management admission.
+                properties:
+                  revocationEpoch:
+                    description: |-
+                      RevocationEpoch never decreases during this Workspace's lifetime, including
+                      VM recreation. Increasing it invalidates old grants and enrollment material.
+                    format: int64
+                    minimum: 0
+                    type: integer
+                    x-kubernetes-validations:
+                    - message: Execution revocation epoch cannot decrease
+                      rule: self >= oldSelf
+                  vmUID:
+                    description: VMUID changes on root reset/recreation, not ordinary
+                      VMI reboot.
+                    maxLength: 128
+                    minLength: 1
+                    type: string
+                required:
+                - revocationEpoch
+                - vmUID
+                type: object
               readyReplicas:
                 description: ReadyReplicas is the number of Pods created by the StatefulSet
                   controller that have a Ready Condition.
@@ -8266,6 +8304,9 @@ spec:
             - containerState
             - readyReplicas
             type: object
+            x-kubernetes-validations:
+            - message: Management execution identity cannot be removed
+              rule: '!has(oldSelf.managementExecution) || has(self.managementExecution)'
         type: object
     served: true
     storage: true
