@@ -2,8 +2,8 @@ apiVersion: v2
 name: kube-workspaces
 description: A Helm chart for deploying kube-workspaces (controller, API, proxy and frontend)
 type: application
-version: 0.6.39
-appVersion: "0.9.0"
+version: 0.6.40
+appVersion: "0.10.0"
 
 dependencies:
   - name: dex
