@@ -1,0 +1,79 @@
+suite: proxy device authentication permissions
+templates:
+  - templates/proxy-deployment.yaml
+tests:
+  - it: grants device registration access for a custom authenticated installation
+    release:
+      namespace: custom-install
+    set:
+      auth.enabled: true
+    asserts:
+      - containsDocument:
+          kind: Role
+          apiVersion: rbac.authorization.k8s.io/v1
+          name: RELEASE-NAME-kube-workspaces-proxy-devices
+          namespace: kube-workspaces-system
+          any: true
+      - containsDocument:
+          kind: RoleBinding
+          apiVersion: rbac.authorization.k8s.io/v1
+          name: RELEASE-NAME-kube-workspaces-proxy-devices
+          namespace: kube-workspaces-system
+          any: true
+      - documentSelector:
+          path: kind
+          value: Role
+          matchMany: true
+        equal:
+          path: rules[0]
+          value:
+            apiGroups: [""]
+            resources: [secrets]
+            verbs: [get]
+      - documentSelector:
+          path: kind
+          value: RoleBinding
+          matchMany: true
+        equal:
+          path: subjects
+          value:
+            - kind: ServiceAccount
+              name: RELEASE-NAME-kube-workspaces-proxy
+              namespace: custom-install
+  - it: omits the extra Role and RoleBinding when authentication is disabled
+    release:
+      namespace: custom-install
+    set:
+      auth.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 7 # Deployment, Service, SA, ClusterRole/Binding, release Role/Binding
+      - documentSelector:
+          path: kind
+          value: Role
+        equal:
+          path: metadata.name
+          value: RELEASE-NAME-kube-workspaces-proxy-secrets
+      - documentSelector:
+          path: kind
+          value: RoleBinding
+        equal:
+          path: metadata.name
+          value: RELEASE-NAME-kube-workspaces-proxy-secrets
+  - it: reuses release namespace permissions in the default installation
+    release:
+      namespace: kube-workspaces-system
+    set:
+      auth.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 7
+      - documentSelector:
+          path: kind
+          value: Role
+        equal:
+          path: rules[0]
+          value:
+            apiGroups: [""]
+            resources: [secrets]
+            verbs: [get]

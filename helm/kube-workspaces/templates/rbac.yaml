@@ -160,10 +160,9 @@ subjects:
     name: {{ include "kube-workspaces.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 ---
-# When local auth is enabled, password Secrets may live in a separate system
-# namespace (kube-workspaces-system) that is not the release namespace. Grant
-# the same write access there so the API and controller can manage them.
-{{- if and .Values.auth.enabled .Values.auth.localAuth .Values.auth.localAuth.enabled }}
+# Authentication state, identity claims and local passwords use the fixed system
+# namespace, including OIDC-only installations in a custom release namespace.
+{{- if .Values.auth.enabled }}
 {{- $systemNs := "kube-workspaces-system" }}
 {{- if ne $systemNs .Release.Namespace }}
 apiVersion: rbac.authorization.k8s.io/v1

@@ -48,7 +48,7 @@ subjects:
     name: kube-workspaces-proxy
     namespace: kube-workspaces-system
 ---
-# Role for reading Secrets in kube-workspaces-system (signing key)
+# Role for reading Secrets in kube-workspaces-system (signing key and device registrations)
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:

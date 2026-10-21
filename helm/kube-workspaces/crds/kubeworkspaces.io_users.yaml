@@ -124,6 +124,39 @@ spec:
                   type: object
                 maxItems: 100
                 type: array
+              externalIdentities:
+                description: |-
+                  ExternalIdentities lists explicitly linked, verified external identities.
+                  Local-only accounts omit this list. Adding a binding preserves the User UID,
+                  personal namespace and existing authorization grants.
+                items:
+                  description: |-
+                    ExternalIdentityBinding associates a verified external identity with this User.
+                    Email equality is not proof of ownership. API-managed bindings also reserve an
+                    atomic issuer/subject claim before they can be used for authentication.
+                  properties:
+                    issuer:
+                      description: Issuer is the exact OIDC issuer URL, without case
+                        or slash normalization.
+                      maxLength: 2048
+                      minLength: 1
+                      type: string
+                    subject:
+                      description: Subject is the provider's stable, case-sensitive
+                        subject identifier.
+                      maxLength: 255
+                      minLength: 1
+                      type: string
+                  required:
+                  - issuer
+                  - subject
+                  type: object
+                maxItems: 20
+                type: array
+                x-kubernetes-list-map-keys:
+                - issuer
+                - subject
+                x-kubernetes-list-type: map
               groups:
                 description: Groups are the groups this user belongs to.
                 items:

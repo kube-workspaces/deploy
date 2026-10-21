@@ -27,7 +27,8 @@ to an API with fail-closed configuration handling. Chart adoption is a separate
 operator-coordinated change.
 
 Authenticated users need a current, enabled User CR; OIDC auto-provisioning must
-succeed or the account must already exist. Role and namespace changes apply to
+succeed or the external identity must be explicitly bound to an existing account.
+Role and namespace changes apply to
 subsequent API requests rather than waiting for old token claims to expire.
 New credentials bind to the User UID; agent-backed execution requires these
 bound credentials and will require a fresh sign-in for legacy sessions.
@@ -57,6 +58,64 @@ that are not in this trusted browser list.
 - For OIDC: an OIDC provider configured with a client ID and secret, and the
   API reachable at a stable URL for the OIDC callback
 - For local auth: nothing extra — see [Option 5](#option-5-local-authentication) below
+
+## Using local and OIDC login for the same account
+
+Local passwords and OIDC bindings are independent methods on one User. Adding a
+method retains the User's name, UID, personal namespace, workspaces and grants.
+OIDC identity is the exact **issuer URL and subject**, not an email address.
+An equal email, including a verified email, never silently adopts an existing
+account. An unbound identity whose email collides with an existing account is
+rejected and requires explicit linking.
+
+An administrator can link their own existing account:
+
+1. Sign in to the account you want to retain, using its local password or an
+   existing UID-bound administrator session. Change a temporary password first.
+2. Enable/configure the OIDC provider under **Admin → Authentication**, keeping
+   local passwords enabled if you want both methods available.
+3. Open **Admin → Users** and select **Link my OIDC identity**.
+4. Authenticate to the configured OIDC provider in the same browser. Keep the
+   initiating platform session until the callback completes.
+5. The Users page displays **OIDC linked**. Subsequent OIDC and local logins use
+   the original account, even if the provider's email later changes.
+
+The linking transaction expires after five minutes and is single-use. The API
+rechecks the same administrator session and User UID at callback; demotion,
+disablement or account replacement prevents linking. It verifies the provider's
+signature/JWKS, issuer, audience/authorized party, expiry and nonce and uses S256
+PKCE. Linking other people's accounts and unlink/revocation management are not
+part of this initial self-link workflow.
+
+### Upgrade and migration ordering
+
+Install the updated User CRD with server-side apply **before** deploying the API
+that persists `spec.externalIdentities`. Helm upgrades do not automatically
+upgrade files in the chart's `crds/` directory. Both the User binding and the
+API's atomic identity-claim Secret must exist; manually adding a User field alone
+does not make an identity usable.
+
+The read-only administrator endpoint `GET /admin/auth-identities/inventory`
+reports duplicate/case-variant emails, legacy slug collisions, shared/missing/
+orphan password Secrets, malformed/duplicate bindings and incomplete claims. It
+returns names/references, never password hashes or plaintext passwords. Review
+this inventory before adopting legacy identities; this release does not perform
+automatic legacy-email migration. Existing OIDC-only accounts without bindings
+need a controlled linking/adoption workflow; an email match will no longer log
+them in. Retain a usable local administrator for the transition.
+
+Identity reservations bind to a User UID and survive account deletion. A failed
+second write leaves an inert reservation that the same account can resume;
+recreating a User or reusing its email does not transfer the reservation. Back up
+Users, authentication Secrets and signing keys together. Rolling back the API to
+an email-based version also rolls back the binding enforcement; retain the
+additive CRD fields and do not use that rollback as an identity migration.
+
+Authentication state, identity claims, device registrations and local passwords
+use `kube-workspaces-system`, including installations in another release
+namespace. Ensure that namespace exists and adopt the chart's authenticated
+cross-namespace RBAC (`auth.enabled: true`) before using these flows. Enabling
+authentication solely through the UI does not install missing chart RBAC.
 
 ---
 

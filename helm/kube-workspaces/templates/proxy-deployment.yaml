@@ -171,7 +171,7 @@ subjects:
     name: {{ include "kube-workspaces.fullname" . }}-proxy
     namespace: {{ .Release.Namespace }}
 ---
-# Role for reading Secrets (signing key) in the release namespace
+# Role for reading Secrets (signing key and device registrations) in the release namespace
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -203,3 +203,37 @@ subjects:
   - kind: ServiceAccount
     name: {{ include "kube-workspaces.fullname" . }}-proxy
     namespace: {{ .Release.Namespace }}
+{{- if and .Values.auth.enabled (ne .Release.Namespace "kube-workspaces-system") }}
+---
+# Device credentials use the API's fixed storage namespace, even when session
+# signing keys belong to a custom release namespace. Only point reads are needed.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "kube-workspaces.fullname" . }}-proxy-devices
+  namespace: kube-workspaces-system
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+    app.kubernetes.io/component: proxy
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "kube-workspaces.fullname" . }}-proxy-devices
+  namespace: kube-workspaces-system
+  labels:
+    {{- include "kube-workspaces.labels" . | nindent 4 }}
+    app.kubernetes.io/component: proxy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "kube-workspaces.fullname" . }}-proxy-devices
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "kube-workspaces.fullname" . }}-proxy
+    namespace: {{ .Release.Namespace }}
+{{- end }}

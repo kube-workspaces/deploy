@@ -33,7 +33,7 @@ tests:
       value: Role
     set:
       # Override namespace so both Roles have distinct namespaces in this test
-      auth.localAuth.enabled: false
+      auth.enabled: false
     asserts:
       - equal:
           path: metadata.name
@@ -56,7 +56,7 @@ tests:
       path: kind
       value: RoleBinding
     set:
-      auth.localAuth.enabled: false
+      auth.enabled: false
     asserts:
       - equal:
           path: metadata.name
@@ -135,9 +135,25 @@ tests:
           path: rules[0].verbs
           content: update
 
-  - it: does not render cross-namespace Role when local auth is disabled
+  - it: does not render cross-namespace Role when authentication is disabled
     set:
-      auth.localAuth.enabled: false
+      auth.enabled: false
     asserts:
       - hasDocuments:
           count: 5  # SA + ClusterRole + ClusterRoleBinding + Role(release-ns) + RoleBinding(release-ns)
+  - it: grants OIDC-only installations access to identity and single-use state Secrets
+    set:
+      auth.localAuth.enabled: false
+    asserts:
+      - containsDocument:
+          kind: Role
+          apiVersion: rbac.authorization.k8s.io/v1
+          name: RELEASE-NAME-kube-workspaces-local-auth-secrets
+          namespace: kube-workspaces-system
+          any: true
+      - containsDocument:
+          kind: RoleBinding
+          apiVersion: rbac.authorization.k8s.io/v1
+          name: RELEASE-NAME-kube-workspaces-local-auth-secrets
+          namespace: kube-workspaces-system
+          any: true
