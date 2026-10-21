@@ -87,6 +87,46 @@ signature/JWKS, issuer, audience/authorized party, expiry and nonce and uses S25
 PKCE. Linking other people's accounts and unlink/revocation management are not
 part of this initial self-link workflow.
 
+### Adopting an existing unbound OIDC-only account
+
+An administrator can explicitly authorize adoption without giving the user a
+temporary local password or changing their role:
+
+1. Sign in with a UID-bound administrator session, completing any required
+   password change first.
+2. Open **Admin → Users** and select **Authorize OIDC adoption** on the existing,
+   enabled account with no local password or external identity binding.
+3. Share the generated invitation securely with that account's owner. It is
+   single-use and expires five minutes after authorization, including the time
+   spent signing in to the provider. Merely opening its landing page does not
+   consume it.
+4. The owner opens the invitation, selects **Continue to identity provider**,
+   and signs in with the approved account email. The provider must supply that
+   email as verified; a different or unverified email is rejected.
+5. After linking, sign in through ordinary SSO. Linking itself does not replace
+   an existing browser session. Refresh the Users page to see **OIDC linked**.
+
+Approval is bound to the exact existing User UID, email, provider and client.
+The API rechecks the approving administrator's current session/authority and
+target account before starting and completing the provider round trip. Disabled,
+replaced, renamed-email, already-bound or newly local-enabled targets are
+rejected. Duplicate/case-variant account emails require operator resolution.
+Issuer/subject is learned only from the verified OIDC token, not from invitation
+input or an email-only login. Existing roles, grants, namespaces and workspaces
+are preserved. General delegated linking for local/dual-method accounts and
+unlinking remain separate lifecycle work.
+
+The HTTP contract is `POST /auth/oidc/adoptions` with JSON
+`{"userName":"existing-user"}` and header
+`X-KW-Link-Intent: adopt-legacy-identity`, authenticated as the administrator.
+It returns a relative `adoptionURL`, approved `email` and Unix `expiresAt`.
+Use the returned invitation in the browser; do not manually edit User bindings.
+
+Native-token and browser-session handoff codes also revalidate the current
+account and credential at redemption, not only when issued. A failed redemption
+consumes the code. Password-reset/method-specific session revocation requires
+the subsequent session-provenance work.
+
 ### Upgrade and migration ordering
 
 Install the updated User CRD with server-side apply **before** deploying the API
@@ -101,8 +141,8 @@ orphan password Secrets, malformed/duplicate bindings and incomplete claims. It
 returns names/references, never password hashes or plaintext passwords. Review
 this inventory before adopting legacy identities; this release does not perform
 automatic legacy-email migration. Existing OIDC-only accounts without bindings
-need a controlled linking/adoption workflow; an email match will no longer log
-them in. Retain a usable local administrator for the transition.
+can use the controlled adoption workflow above; an email match alone will no
+longer log them in. Retain a usable local administrator for the transition.
 
 Identity reservations bind to a User UID and survive account deletion. A failed
 second write leaves an inert reservation that the same account can resume;
