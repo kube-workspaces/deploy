@@ -38,3 +38,33 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Common pod nodeSelector
+*/}}
+{{- define "kube-workspaces.nodeSelector" -}}
+{{- if .Values.nodeSelector }}
+nodeSelector:
+  {{- toYaml .Values.nodeSelector | nindent 2 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Common pod affinity
+*/}}
+{{- define "kube-workspaces.affinity" -}}
+{{- if .Values.affinity }}
+affinity:
+  {{- toYaml .Values.affinity | nindent 2 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Common pod tolerations
+*/}}
+{{- define "kube-workspaces.tolerations" -}}
+{{- if .Values.tolerations }}
+tolerations:
+  {{- toYaml .Values.tolerations | nindent 2 }}
+{{- end }}
+{{- end }}
