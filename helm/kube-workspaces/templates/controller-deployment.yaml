@@ -18,6 +18,9 @@ spec:
         app.kubernetes.io/component: controller
     spec:
       serviceAccountName: {{ include "kube-workspaces.serviceAccountName" . }}
+      {{- include "kube-workspaces.nodeSelector" . | nindent 6 }}
+      {{- include "kube-workspaces.tolerations" . | nindent 6 }}
+      {{- include "kube-workspaces.affinity" . | nindent 6 }}
       # The legacy auto-mounted token is replaced with an explicit projected one:
       # it is short-lived and auto-rotated rather than long-lived, and the mount
       # is intentional and auditable rather than implicit. See docs/security.md.

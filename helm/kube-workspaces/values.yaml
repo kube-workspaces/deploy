@@ -458,3 +458,10 @@ dex:
   #         clientID: <github-oauth-app-client-id>
   #         clientSecret: <github-oauth-app-client-secret>
   #         redirectURI: "https://dex.example.com/callback"
+
+# Node selector for all kube-workspaces control plane components
+nodeSelector: {}
+# Tolerations for all kube-workspaces control plane components
+tolerations: []
+# Affinity for all kube-workspaces control plane components
+affinity: {}

@@ -32,6 +32,9 @@ spec:
       # needs no API access. Use a dedicated ServiceAccount with no RBAC bindings
       # instead of inheriting 'default', and do not mount a token.
       serviceAccountName: {{ include "kube-workspaces.fullname" . }}-frontend
+      {{- include "kube-workspaces.nodeSelector" . | nindent 6 }}
+      {{- include "kube-workspaces.tolerations" . | nindent 6 }}
+      {{- include "kube-workspaces.affinity" . | nindent 6 }}
       automountServiceAccountToken: false
       containers:
         - name: frontend
