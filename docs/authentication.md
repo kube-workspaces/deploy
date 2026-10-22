@@ -718,19 +718,48 @@ kubectl patch user <name> --subresource=status --type=merge \
 
 The plaintext password is removed from the Secret as soon as the admin changes
 it for the first time — this is expected. If the admin has forgotten their
-password, reset it as another admin via the admin API/UI, or, if no other
-admin account exists, delete the `User` and its password Secret to let the
-controller re-create the bootstrap admin:
+password, sign in through a bound OIDC identity or use another administrator to
+select **Admin → Users → Reset password**. The equivalent administrator API is
+`POST /admin/users/{name}/reset-password`.
 
-```bash
-kubectl delete user admin-at-local
-kubectl delete secret kw-user-admin-at-local-local-auth -n kube-workspaces-system
-```
+**Preserve the existing User.** Deleting it invokes cleanup of its personal
+namespace and changes its UID; recreating the same name/email does not recover
+workspace ownership or external identity reservations.
 
-The controller re-reconciles the `AuthConfig` on its periodic 5-minute
-recheck (or immediately if you touch the CR, e.g.
-`kubectl annotate authconfig default kubectl.kubernetes.io/restartedAt="$(date +%s)" --overwrite`),
-recreating both the `User` and its password Secret.
+If no administrator can sign in, a privileged Kubernetes operator can recover
+the existing local credential in place:
+
+1. Identify the exact `users.kubeworkspaces.io` object, its UID and its
+   `spec.localAuth.passwordSecretRef` (name and hash key). Confirm local login
+   is enabled in AuthConfig and on the intended administrator account.
+2. Verify the referenced Secret in `kube-workspaces-system` belongs only to that
+   account. Review other Users' credential references first; do not reset a
+   shared/colliding Secret as if it were uniquely owned.
+3. Replace only the referenced bcrypt password hash with a hash for a new
+   password (bcrypt cost 12; password at least 12 characters with uppercase,
+   lowercase, digit and symbol). Remove any stale plaintext `password` entry.
+   Use a local password prompt and pipe the patch through stdin; do not put the
+   password in command arguments or committed manifests.
+4. Set `spec.localAuth.mustChangePassword: true` on that same User. Clear any
+   failed-login lockout in its status, as described above. Retain its role,
+   namespace access, external identities, UID and personal namespace.
+5. Sign in locally and change the temporary password. Recheck account access
+   and keep a usable recovery administrator independent of the provider.
+
+Password reset currently changes the login credential but does not invalidate
+previously issued sessions. Revoke registered devices explicitly when needed;
+method-specific session revocation is tracked separately. Resetting passwords
+must not require deleting a User or its namespace.
+
+### Disabling an account and Kubernetes grants
+
+The API and proxy reject disabled accounts on subsequent authenticated requests.
+The User controller also removes that account's controller-managed personal and
+shared namespace RoleBindings and rechecks every 30 seconds while disabled.
+It retains the User, namespace, quotas, workspaces and desired access settings;
+reenabling restores managed grants from the current configuration. Operator-owned
+or other users' RoleBindings are not removed. Established streams and separately
+managed Kubernetes access need their own revocation policy.
 
 ### Password change returns HTTP 500 "failed to update password"
 
