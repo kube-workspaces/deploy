@@ -220,6 +220,10 @@ spec:
     package_update: true
     packages:
     - task-xfce-desktop
+    # Keep the password prompt on Selkies' captured X display. light-locker
+    # switches to a separate LightDM greeter/VT, leaving DISPLAY=:0 black
+    # and sending remote input to the inactive user session instead.
+    - xfce4-screensaver
     - qemu-guest-agent
     - curl
     - ca-certificates
@@ -230,6 +234,20 @@ spec:
     # then the guest reboots into it (power_state).
     - linux-image-amd64
     write_files:
+    # The VM has no physical monitor to save power on. Keep the virtual
+    # output enabled; the in-session screensaver still blanks and locks.
+    # Defer until after packages so the power-manager package is installed.
+    - path: /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml
+      defer: true
+      permissions: "0644"
+      content: |
+        <?xml version="1.0" encoding="UTF-8"?>
+        <channel name="xfce4-power-manager" version="1.0">
+          <property name="xfce4-power-manager" type="empty">
+            <property name="power-button-action" type="uint" value="3"/>
+            <property name="dpms-enabled" type="bool" value="false"/>
+          </property>
+        </channel>
     # Autologin the default user straight into an XFCE session.
     - path: /etc/lightdm/lightdm.conf.d/50-autologin.conf
       permissions: "0644"
@@ -357,6 +375,10 @@ spec:
         [Install]
         WantedBy=multi-user.target
     runcmd:
+    # The desktop task recommends light-locker. Replace it, rather than
+    # disabling screen locking: xfce4-screensaver locks within the session
+    # that Selkies captures and injects input into.
+    - DEBIAN_FRONTEND=noninteractive apt-get -y purge light-locker
     - systemctl set-default graphical.target
     - curl --fail --location --retry 3 -o /tmp/selkies.deb https://github.com/selkies-project/selkies/releases/download/2.0.0rc0/selkies-2.0.0rc0-trixie-amd64.deb
     - printf 'ca42bc605fcfd0e396886a88a3d2844ef976e0cf43ff8d97e90432c3a340c0b9  /tmp/selkies.deb' | sha256sum --check
@@ -381,7 +403,8 @@ spec:
   memoryRequest: 5Gi
   videoDevice: virtio
   # Intel HDA sound card (ich9) enables guest audio over QEMU's VNC audio
-  # channel (Tier 0 audio playback in the desktop client). ich9/intel-hda is
+  # channel (Tier 0 audio playback in the web client; the desktop client only
+  # detects the device). ich9/intel-hda is
   # available on all QEMU builds (AC97 may be compiled out), and Debian ships
   # snd-hda-intel with generic analog playback. The guest runs an audio server
   # (ALSA/pulse/pipewire) configured to output to the HDA device.
@@ -411,6 +434,7 @@ spec:
   homepageURL: https://kasmweb.com
   icon: https://cdn.simpleicons.org/linuxserver/DA3B8A
   image: linuxserver/kasm:1.19.0
+  defaultImagePullPolicy: Always
   imageHomepageURL: https://hub.docker.com/r/linuxserver/kasm
   privileged: true
   defaultSharedMemory: true

@@ -289,6 +289,10 @@ spec:
     package_update: true
     packages:
     - task-xfce-desktop
+    # Keep the password prompt on Selkies' captured X display. light-locker
+    # switches to a separate LightDM greeter/VT, leaving DISPLAY=:0 black
+    # and sending remote input to the inactive user session instead.
+    - xfce4-screensaver
     - qemu-guest-agent
     - curl
     - ca-certificates
@@ -299,6 +303,20 @@ spec:
     # then the guest reboots into it (power_state).
     - linux-image-amd64
     write_files:
+    # The VM has no physical monitor to save power on. Keep the virtual
+    # output enabled; the in-session screensaver still blanks and locks.
+    # Defer until after packages so the power-manager package is installed.
+    - path: /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml
+      defer: true
+      permissions: "0644"
+      content: |
+        <?xml version="1.0" encoding="UTF-8"?>
+        <channel name="xfce4-power-manager" version="1.0">
+          <property name="xfce4-power-manager" type="empty">
+            <property name="power-button-action" type="uint" value="3"/>
+            <property name="dpms-enabled" type="bool" value="false"/>
+          </property>
+        </channel>
     # Autologin the default user straight into an XFCE session.
     - path: /etc/lightdm/lightdm.conf.d/50-autologin.conf
       permissions: "0644"
@@ -426,6 +444,10 @@ spec:
         [Install]
         WantedBy=multi-user.target
     runcmd:
+    # The desktop task recommends light-locker. Replace it, rather than
+    # disabling screen locking: xfce4-screensaver locks within the session
+    # that Selkies captures and injects input into.
+    - DEBIAN_FRONTEND=noninteractive apt-get -y purge light-locker
     - systemctl set-default graphical.target
     - curl --fail --location --retry 3 -o /tmp/selkies.deb https://github.com/selkies-project/selkies/releases/download/2.0.0rc0/selkies-2.0.0rc0-trixie-amd64.deb
     - printf 'ca42bc605fcfd0e396886a88a3d2844ef976e0cf43ff8d97e90432c3a340c0b9  /tmp/selkies.deb' | sha256sum --check
@@ -450,7 +472,8 @@ spec:
   memoryRequest: 5Gi
   videoDevice: virtio
   # Intel HDA sound card (ich9) enables guest audio over QEMU's VNC audio
-  # channel (Tier 0 audio playback in the desktop client). ich9/intel-hda is
+  # channel (Tier 0 audio playback in the web client; the desktop client only
+  # detects the device). ich9/intel-hda is
   # available on all QEMU builds (AC97 may be compiled out), and Debian ships
   # snd-hda-intel with generic analog playback. The guest runs an audio server
   # (ALSA/pulse/pipewire) configured to output to the HDA device.
@@ -481,6 +504,7 @@ spec:
   homepageURL: https://github.com/kasmtech/workspaces-images
   icon: https://upload.wikimedia.org/wikipedia/en/5/57/Doom_cover_art.jpg
   image: kasmweb/doom:1.19.0-rolling-daily
+  defaultImagePullPolicy: Always
   imageHomepageURL: https://hub.docker.com/r/kasmweb/doom
   proxyConfig:
     needsNoopSW: true
@@ -596,6 +620,55 @@ spec:
   sourceURL: https://github.com/linuxserver/docker-webtop
   defaultUser: abc
   defaultHomedir: /config
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: freebsd-vm
+spec:
+  displayName: FreeBSD 15.1 VM
+  description: FreeBSD 15.1-RELEASE amd64 virtual machine using the official
+    UFS cloud image with nuageinit (NoCloud). Connect via SSH or the serial console. Requires KubeVirt;
+    FreeBSD cannot run as a native container on Linux nodes.
+  category: VM
+  tags:
+  - vm
+  - freebsd
+  - bsd
+  - cloud-init
+  defaultPort: 22
+  homepageURL: https://www.freebsd.org
+  image: flaccid/containerdisk-freebsd@sha256:ade6d7265d8f0e683572e5d46f4d3598416d7d6cbf6f4521410b06e5e3b6e0ac
+  imageHomepageURL: https://hub.docker.com/r/flaccid/containerdisk-freebsd
+  sourceURL: https://github.com/kube-workspaces/image-catalog/tree/main/freebsd
+  defaultUser: freebsd
+  defaultPassword: freebsd
+  defaultHomedir: /home/freebsd
+  defaultShell: /bin/sh
+  defaultCloudInit: true
+  defaultUserData: |
+    #cloud-config
+    users:
+    - default
+    ssh_pwauth: true
+    write_files:
+    - path: /etc/rc.conf.d/firstboot_pkg_upgrade
+      content: |
+        firstboot_pkg_upgrade_enable="NO"
+    chpasswd:
+      expire: false
+      users:
+      - name: freebsd
+        password: freebsd
+        type: text
+    runcmd:
+    - sysrc sshd_enable=YES
+  memoryLimit: 2Gi
+  memoryRequest: 2304Mi
+  persistentRootDisk: true
+  persistentRootDiskSize: 10Gi
+  workspaceTypes:
+  - vm
 ---
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
@@ -790,6 +863,7 @@ spec:
   homepageURL: https://kasmweb.com
   icon: https://cdn.simpleicons.org/linuxserver/DA3B8A
   image: linuxserver/kasm:1.19.0
+  defaultImagePullPolicy: Always
   imageHomepageURL: https://hub.docker.com/r/linuxserver/kasm
   privileged: true
   defaultSharedMemory: true
@@ -925,6 +999,45 @@ spec:
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
 metadata:
+  name: ms-windows-11-vm
+spec:
+  displayName: Windows 11 VM (self-built)
+  description: Windows 11 Pro/Enterprise (amd64) as a sealed, generalised KubeVirt
+    root built by the operator from an official ISO. This template ships with a
+    placeholder image reference — build your own image with the BUILD-GUIDE package
+    stage and replace spec.image with your private OCI digest before use. Persistent
+    root disk, native Sysprep bootstrap and controller-managed initial credentials;
+    display-only (no mounts, env, shared memory or GPU). Requires KubeVirt, CDI and
+    a Windows 11-eligible amd64 worker.
+  category: VM
+  tags:
+  - vm
+  - windows
+  defaultPort: 3389
+  homepageURL: https://www.microsoft.com/software-download/windows11
+  # Placeholder only — not a pullable image. Replace with your own digest-pinned
+  # reference produced by the BUILD-GUIDE "package" stage, e.g.
+  # registry.example.com/windows11@sha256:<digest>.
+  image: registry.example.invalid/windows11@sha256:0000000000000000000000000000000000000000000000000000000000000000
+  sourceURL: https://github.com/kube-workspaces/image-catalog/tree/main/windows11
+  memoryLimit: 8Gi
+  memoryRequest: 8Gi
+  persistentRootDisk: true
+  persistentRootDiskSize: 80Gi
+  proxyConfig:
+    agentPort: 44787
+  remoteDesktop:
+    path: /
+    port: 44787
+    protocol: agent
+  soundDevice: ich9
+  vmProfile: windows11-amd64-v1
+  workspaceTypes:
+  - vm
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
   name: obsidian
 spec:
   defaultPath: /
@@ -1017,6 +1130,7 @@ spec:
   homepageURL: https://github.com/linuxserver/docker-rdesktop
   icon: https://cdn.simpleicons.org/ubuntu/E95420
   image: linuxserver/rdesktop:ubuntu-xfce
+  defaultImagePullPolicy: Always
   imageHomepageURL: https://hub.docker.com/r/linuxserver/rdesktop
   defaultSharedMemory: true
   proxyConfig:
@@ -1056,6 +1170,46 @@ spec:
   defaultUID: 1000
   proxyConfig:
     rewriteHostAbsolutePaths: true
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: signal-desktop
+spec:
+  defaultPath: /
+  defaultPort: 6080
+  description: Signal Private Messenger on Debian, accessible through noVNC.
+    Link with Signal on your phone. Attach a volume at /home/signal to retain
+    your linked-device identity and messages across container replacements.
+  category: Productivity
+  tags:
+  - messaging
+  - privacy
+  - debian
+  - vnc
+  displayName: Signal Private Messenger
+  homepageURL: https://signal.org
+  icon: https://cdn.simpleicons.org/signal/3A76F0
+  image: flaccid/signal-desktop:latest
+  imageHomepageURL: https://hub.docker.com/r/flaccid/signal-desktop
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/flaccid/container-signal-desktop
+  defaultUser: signal
+  defaultHomedir: /home/signal
+  defaultShell: /bin/bash
+  defaultUID: 1000
+  defaultSharedMemory: true
+  defaultInitContainers:
+  - name: volume-permissions
+    image: busybox:1.37
+    command:
+    - sh
+    - -c
+    - if [ -d /home/signal ]; then chown -R {{uid}}:{{uid}} /home/signal; fi
 ---
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
@@ -1259,6 +1413,7 @@ spec:
   homepageURL: https://github.com/linuxserver/docker-webtop
   icon: https://cdn.simpleicons.org/alpinelinux/0D597F
   image: linuxserver/webtop:alpine-kde
+  defaultImagePullPolicy: Always
   imageHomepageURL: https://hub.docker.com/r/linuxserver/webtop
   defaultSharedMemory: true
   proxyConfig:
@@ -1292,6 +1447,7 @@ spec:
   homepageURL: https://github.com/linuxserver/docker-webtop
   icon: https://cdn.simpleicons.org/archlinux/1793D1
   image: linuxserver/webtop:arch-kde
+  defaultImagePullPolicy: Always
   imageHomepageURL: https://hub.docker.com/r/linuxserver/webtop
   defaultSharedMemory: true
   proxyConfig:
@@ -1325,6 +1481,7 @@ spec:
   homepageURL: https://github.com/linuxserver/docker-webtop
   icon: https://cdn.simpleicons.org/ubuntu/E95420
   image: linuxserver/webtop:ubuntu-xfce
+  defaultImagePullPolicy: Always
   imageHomepageURL: https://hub.docker.com/r/linuxserver/webtop
   defaultSharedMemory: true
   proxyConfig:
