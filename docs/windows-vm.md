@@ -351,3 +351,13 @@ make test-lint
 Versioned references:
 [KubeVirt 1.9 GA gates](https://github.com/kubevirt/kubevirt/blob/v1.9.0/pkg/virt-config/featuregate/inactive.go),
 [backend PVC selection/ownership](https://github.com/kubevirt/kubevirt/blob/v1.9.0/pkg/storage/backend-storage/backend-storage.go).
+
+The chart vendors **KubeVirt 1.9.1**. For PCI GPU passthrough on hosts without
+`CONFIG_IOMMUFD`/VFIO cdev support (including Debian 13's 6.12 kernel), use
+1.9.1 or a later release carrying
+[the VFIO cdev fallback fix](https://github.com/kubevirt/kubevirt/pull/18905).
+KubeVirt 1.9.0 can advertise a PCI resource but fail to create the launcher with
+`lstat /dev/vfio/devices/vfio0: no such file or directory`, even with the
+IOMMUFD feature gate disabled. Device advertisement alone is not guest attachment
+proof; verify a real launcher/guest and keep the host PF on its intended driver
+when passing an SR-IOV VF.
