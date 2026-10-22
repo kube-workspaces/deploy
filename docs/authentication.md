@@ -84,8 +84,13 @@ The linking transaction expires after five minutes and is single-use. The API
 rechecks the same administrator session and User UID at callback; demotion,
 disablement or account replacement prevents linking. It verifies the provider's
 signature/JWKS, issuer, audience/authorized party, expiry and nonce and uses S256
-PKCE. Linking other people's accounts and unlink/revocation management are not
-part of this initial self-link workflow.
+PKCE. The separate adoption workflow below covers existing unbound OIDC-only
+accounts. Administrators can remove a binding using **Unlink OIDC** on its User
+row. Removal requires another usable, enabled login method, retains the identity
+reservation's ownership, and revokes credentials derived from the removed binding.
+Relinking the same identity does not reactivate old sessions or device tokens.
+Unlinking your current session's method requires signing in again through a
+remaining method.
 
 ### Adopting an existing unbound OIDC-only account
 
@@ -113,8 +118,8 @@ replaced, renamed-email, already-bound or newly local-enabled targets are
 rejected. Duplicate/case-variant account emails require operator resolution.
 Issuer/subject is learned only from the verified OIDC token, not from invitation
 input or an email-only login. Existing roles, grants, namespaces and workspaces
-are preserved. General delegated linking for local/dual-method accounts and
-unlinking remain separate lifecycle work.
+are preserved. General delegated linking for local/dual-method accounts remains
+separate work.
 
 The HTTP contract is `POST /auth/oidc/adoptions` with JSON
 `{"userName":"existing-user"}` and header
@@ -124,8 +129,59 @@ Use the returned invitation in the browser; do not manually edit User bindings.
 
 Native-token and browser-session handoff codes also revalidate the current
 account and credential at redemption, not only when issued. A failed redemption
-consumes the code. Password-reset/method-specific session revocation requires
-the subsequent session-provenance work.
+consumes the code. They preserve the login method and credential revision, so a
+password reset or identity unlink also invalidates pending grants from that
+method.
+
+### Method-aware sessions, reset and upgrade behavior
+
+Session and device credentials identify their login method (`local` or `oidc`),
+User UID and credential revision. OIDC credentials also bind to an exact
+issuer/subject and its durable reservation. API and proxy validate current
+credential state on each new request without contacting the identity provider.
+
+- Local password reset/change invalidates previously issued local sessions,
+  device tokens and pending handoff grants. A password change replaces the
+  caller's local session; browser replacements stay in an HttpOnly cookie, and
+  Bearer-only callers receive the replacement `token` in the JSON response.
+- Password changes made from an OIDC session preserve that OIDC session while
+  invalidating the account's old local credentials.
+- A temporary local password restricts local sessions to identity inspection,
+  password change and sign-out. Workspace/admin access, proxy requests and new
+  device/browser grants are denied until the password has been changed. A valid
+  OIDC session is not restricted solely because the account also has a temporary
+  local password. The native client opens its password form before workspace
+  access; CLI login refuses to persist a restricted credential.
+- Unlinking rotates the retained reservation revision before removing the User
+  binding. If persistence fails, existing credentials from that binding may be
+  revoked even though removal failed; refresh account state before retrying.
+  Other methods and the User UID/namespace remain intact.
+- `/auth/config` advertises configured methods and enables native OIDC only when
+  the provider is configured. `/auth/me` reports `authMethod`,
+  `localPasswordEnabled`, `oidcLinked`, `canChangePassword` and the current
+  session's `mustChangePassword`. Clients must use these account/session fields
+  instead of treating an installation with OIDC as if every session used SSO.
+
+**Upgrade requires fresh sign-in:** credentials issued before method provenance
+was introduced cannot be safely classified and are rejected, including old
+device tokens. Users and their workspace resources are retained; this is a
+credential transition, not account migration. Recreate any pending linking or
+adoption transaction after signing in again.
+
+Coordinate API/proxy rollout and deploy the updated web/native clients. Both
+server components must enforce this contract before relying on method-specific
+revocation; old versions do not enforce these claims and may discard provenance
+when minting devices. Existing identity reservations need no destructive
+migration: an older reservation's UID supplies its initial revision. New
+reservations and unlink operations use explicit random revisions. Hash/revision
+and temporary-password policy replacements are written atomically in the
+password Secret, with the User flag also able to tighten restrictions.
+
+These checks apply to new requests and stream handshakes. Established
+WebSocket/stream termination is not yet guaranteed by the server; end the
+connection or restart the relevant component when immediate stream termination
+is required. Rolling back to older API/proxy code also rolls back these
+enforcement rules; do not describe a rollback as preserving revocation behavior.
 
 ### Upgrade and migration ordering
 
@@ -736,8 +792,8 @@ the existing local credential in place:
    account. Review other Users' credential references first; do not reset a
    shared/colliding Secret as if it were uniquely owned.
 3. Replace only the referenced bcrypt password hash with a hash for a new
-   password (bcrypt cost 12; password at least 12 characters with uppercase,
-   lowercase, digit and symbol). Remove any stale plaintext `password` entry.
+   password (bcrypt cost 12; password at least 12 characters). Remove any stale
+   plaintext `password` entry.
    Use a local password prompt and pipe the patch through stdin; do not put the
    password in command arguments or committed manifests.
 4. Set `spec.localAuth.mustChangePassword: true` on that same User. Clear any
@@ -746,10 +802,12 @@ the existing local credential in place:
 5. Sign in locally and change the temporary password. Recheck account access
    and keep a usable recovery administrator independent of the provider.
 
-Password reset currently changes the login credential but does not invalidate
-previously issued sessions. Revoke registered devices explicitly when needed;
-method-specific session revocation is tracked separately. Resetting passwords
-must not require deleting a User or its namespace.
+Changing the referenced password hash invalidates local-derived credentials on
+subsequent API/proxy requests, while preserving independent OIDC sessions.
+Registered device entries may remain listed, but their old local credentials
+are no longer usable. Resetting passwords must not require deleting a User or
+its namespace. Established connections require the stream handling described
+above.
 
 ### Disabling an account and Kubernetes grants
 
