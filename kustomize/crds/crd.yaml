@@ -8441,6 +8441,20 @@ spec:
                 description: DefaultHomedir is the default home directory for the
                   default user.
                 type: string
+              defaultImagePullPolicy:
+                description: |-
+                  DefaultImagePullPolicy is the image pull policy used by workspace containers
+                  created from this image (Always, IfNotPresent, Never). Images published under
+                  a mutable tag (e.g. "latest") should set Always so restarted workspaces pick
+                  up new releases; digest-pinned images are better served by IfNotPresent.
+                  Empty leaves the field unset on the container so Kubernetes applies its own
+                  default (Always for :latest or untagged references, IfNotPresent otherwise).
+                  A workspace may still override this per workspace.
+                enum:
+                - Always
+                - IfNotPresent
+                - Never
+                type: string
               defaultInitContainers:
                 description: |-
                   DefaultInitContainers are init containers injected into workspace pods at creation time.
