@@ -45,6 +45,26 @@ record a no-go and its prerequisite. Only then start the agent product project.
 
 ### Native Windows diagnostic
 
+For a bounded **actual draw/readback** comparison after driver qualification,
+build the separate off-screen probe:
+
+```sh
+x86_64-w64-mingw32-g++ -std=c++17 -O2 -Wall -Wextra -Werror -static \
+  scripts/windows-d3d11-render-probe.cpp -o windows-d3d11-render-probe.exe \
+  -ld3d11 -ldxgi -ld3dcompiler -lole32 -luuid
+```
+
+Run `windows-d3d11-render-probe.exe VENDOR_HEX DEVICE_HEX SECONDS_1_TO_10`
+under an external 60-second process watchdog. It explicitly selects a matching
+non-software PCI adapter, refuses fallback, and compares the same 1920×1080
+pixel-shader workload against WARP. Three warmup frames are excluded. Every
+sample draws a fullscreen triangle, synchronizes via staging readback and checks
+nonuniform opaque content; no pixels are saved. JSON identifies each actual
+adapter/LUID and reports completed frames, wall-time p50/p95 and throughput.
+Readback/synchronization is included, so these are **not application, capture or
+streaming FPS**, GPU timestamp measurements or an encode proof. Session 0 is
+adequate for this off-screen workload, but interactive capture remains separate.
+
 `scripts/windows-premium-probe.cpp` uses inbox Windows APIs, without a media
 runtime install. Build with MinGW-w64 (or a reviewed equivalent Windows toolchain):
 
