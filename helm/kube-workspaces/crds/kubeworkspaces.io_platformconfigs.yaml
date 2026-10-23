@@ -121,6 +121,79 @@ spec:
                       prerequisites are healthy. Absent/false disables execution even for admins.
                     type: boolean
                 type: object
+              vmGPUProfiles:
+                description: |-
+                  VMGPUProfiles declares versioned render-only Windows GPU choices.
+                  An absent/empty list permits only software Windows profiles.
+                items:
+                  description: |-
+                    VMGPUProfile is an operator-declared, versioned render-only VM GPU contract.
+                    Use a new ID for hardware/driver changes; existing workspace snapshots must
+                    not be silently rewritten when platform configuration changes.
+                  properties:
+                    count:
+                      description: Count is one device allocation. Multi-device Windows
+                        profiles are not qualified.
+                      format: int32
+                      maximum: 1
+                      minimum: 1
+                      type: integer
+                    displayName:
+                      description: DisplayName is an operator-facing label, not a
+                        support certification.
+                      maxLength: 128
+                      minLength: 1
+                      type: string
+                    experimental:
+                      description: Experimental labels a research profile without
+                        claiming vendor/product support.
+                      type: boolean
+                    guestDriverVersion:
+                      description: |-
+                        GuestDriverVersion identifies the separately provisioned Windows driver.
+                        This field does not install a driver or assert that the guest is using it.
+                      maxLength: 128
+                      minLength: 1
+                      type: string
+                    id:
+                      description: ID names this exact version of the profile.
+                      maxLength: 63
+                      pattern: ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$
+                      type: string
+                    kind:
+                      description: Kind selects the KubeVirt PCI or mediated-device
+                        allowlist.
+                      enum:
+                      - pci
+                      - mediated
+                      type: string
+                    nodeSelector:
+                      additionalProperties:
+                        type: string
+                      description: NodeSelector restricts the certified worker selected
+                        for the Windows root.
+                      minProperties: 1
+                      type: object
+                    resourceName:
+                      description: ResourceName is the exact device-plugin extended
+                        resource, not a /gpu heuristic.
+                      maxLength: 253
+                      type: string
+                  required:
+                  - count
+                  - displayName
+                  - experimental
+                  - guestDriverVersion
+                  - id
+                  - kind
+                  - nodeSelector
+                  - resourceName
+                  type: object
+                maxItems: 32
+                type: array
+                x-kubernetes-list-map-keys:
+                - id
+                x-kubernetes-list-type: map
             type: object
           status:
             description: PlatformConfigStatus defines the observed state of PlatformConfig.

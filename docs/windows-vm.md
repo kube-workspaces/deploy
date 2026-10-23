@@ -361,3 +361,77 @@ KubeVirt 1.9.0 can advertise a PCI resource but fail to create the launcher with
 IOMMUFD feature gate disabled. Device advertisement alone is not guest attachment
 proof; verify a real launcher/guest and keep the host PF on its intended driver
 when passing an SR-IOV VF.
+
+## Experimental render-only GPU profiles
+
+Chart **0.6.45** adds the typed Workspace/PlatformConfig GPU schema. Adopt the
+CRDs before declaring a profile or requesting a GPU. The controller, API and
+browser must also include the matching implementation; chart adoption alone
+does not install a Windows driver or make GPU streaming ready.
+
+An operator can declare a **versioned** profile in `PlatformConfig/default`:
+
+```yaml
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: PlatformConfig
+metadata:
+  name: default
+spec:
+  vmGPUProfiles:
+    - id: intel-sriov-experimental-v1
+      displayName: Intel graphics VF (experimental)
+      resourceName: intel.com/graphics-vf
+      kind: pci
+      count: 1
+      nodeSelector:
+        example.com/windows-gpu: qualified
+      guestDriverVersion: "32.0.101.6452"
+      experimental: true
+```
+
+Apply a partial configuration with server-side apply and a dedicated field
+manager to preserve independently managed maintenance/auth/execution settings.
+Use actual qualified device resources, node labels and guest driver versions.
+The Windows workspace still requires an explicit certified worker hostname;
+that worker must match the GPU profile, be Ready/schedulable and advertise the
+resource. The resource must appear in the matching KubeVirt PCI or mediated
+allowlist. `count: 1` is the initial supported allocation shape. Device capacity
+and namespace quotas remain enforced by Kubernetes scheduling/admission; the
+profile list is not a promise that a free device is available.
+
+Discovery: `GET /v1/vm-gpu-profiles`. Create a Windows workspace with
+`vm_options.gpu_profile` set to the approved ID. Generic container GPU quantities
+remain rejected for Windows. The resolved snapshot is returned as
+`vm_gpu_profile`; it is requested configuration, **not observed driver, rendering,
+capture or encoder readiness**. Browser create/detail pages expose these choices.
+
+For an existing workspace, Stop it and wait until the KubeVirt VM is halted and
+its VMI has disappeared, then call:
+
+```http
+PUT /v1/workspaces/my-windows/gpu-profile?namespace=my-workspaces
+Content-Type: application/json
+
+{"profile_id":"intel-sriov-experimental-v1"}
+```
+
+Namespace editor/admin access is required. The API uses the Workspace resource
+version to reject concurrent lifecycle changes, and the controller independently
+guards actual VM/VMI state before changing hardware. No Reset or root import is
+performed: root, EFI/TPM, provisioning generation and initial credentials remain.
+Start the workspace normally after applying the choice. A Start racing ahead of
+reconciliation can apply the change only if the previous VM is actually halted
+and no old VMI exists. The emulated VGA and IDD are retained; the GPU is a
+secondary **render-only** adapter, with an exact extended-resource allocation.
+
+Install/verify the matching signed guest driver separately using a qualified
+post-clone flow or private image. To remove the GPU, Stop/wait again and submit
+`{"profile_id":""}`, then Start. Software rollback does not require the old
+profile registry/device to be available. Do not edit an existing profile ID to
+represent different hardware/driver requirements: declare a new versioned ID and
+explicitly switch while stopped. Existing snapshots are not silently rewritten.
+
+Before claiming accelerated Tier 1 support, separately prove an interactive GPU
+application on the IDD output, captured frames in native/browser viewers, device
+loss/resize/restart behavior and hardware encoder activation or honest software
+fallback. Off-screen D3D device/rendering proof alone does not establish those.
