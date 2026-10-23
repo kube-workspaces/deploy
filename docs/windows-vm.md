@@ -435,3 +435,42 @@ Before claiming accelerated Tier 1 support, separately prove an interactive GPU
 application on the IDD output, captured frames in native/browser viewers, device
 loss/resize/restart behavior and hardware encoder activation or honest software
 fallback. Off-screen D3D device/rendering proof alone does not establish those.
+
+### Reusable console diagnostics
+
+`scripts/windows-console-probe.py` transfers a local diagnostic executable over
+QGA, verifies SHA256 and runs it as the already logged-in local console user
+through a temporary limited-user scheduled task. It uses Kubernetes/launcher
+authorization, requires no guest password, and removes its task, binary and
+output files after the run. It does not log in or replace the installed agent.
+An internal task deadline bounds normal execution; as with any GPU diagnostic,
+an unresponsive kernel/driver still requires operator recovery.
+
+For output-selection inventory, build the workspace-agent
+`kw-platform` example `capture-check`, then run:
+
+```sh
+python3 scripts/windows-console-probe.py \
+  --namespace workspaces --vm windows-desktop \
+  /path/to/capture-check.exe
+```
+
+For an animated hardware-output proof, build the bounded probe with MinGW:
+
+```sh
+x86_64-w64-mingw32-g++ -std=c++17 -O2 -Wall -Wextra -Werror -static \
+  scripts/windows-d3d11-output-probe.cpp -o /tmp/windows-d3d11-output-probe.exe \
+  -ld3d11 -ld3dcompiler -ldxgi -lgdi32 -luser32 -lole32 -luuid
+python3 scripts/windows-console-probe.py \
+  --namespace workspaces --vm windows-desktop \
+  /tmp/windows-d3d11-output-probe.exe -- '\\.\DISPLAY2'
+```
+
+Choose the actual output name from the inventory, not the example number.
+The probe shows an always-on-top diagnostic window on that output for ten
+seconds, draws alternating colours using its non-software D3D11 adapter, then
+checks those colours in DXGI desktop-duplication readback. It changes no display
+modes or input state and saves no pixels. Exit 0 requires both colours to be
+observed repeatedly. Presented draws alone, or one static capture frame, are
+not acceptance. These tools test selection/render/capture independently of
+encoder, transport, viewer, audio and real-application performance acceptance.
