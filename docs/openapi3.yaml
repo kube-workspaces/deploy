@@ -37,8 +37,8 @@ paths:
                   schema:
                     type: string
                     description: Filter by namespace
-                    example: Cum recusandae atque et fugiat.
-                  example: Quia aut.
+                    example: Voluptatem rerum praesentium.
+                  example: Illum non qui fugiat illo.
                 - name: workspace_name
                   in: query
                   description: Filter by workspace name
@@ -46,8 +46,8 @@ paths:
                   schema:
                     type: string
                     description: Filter by workspace name
-                    example: Eaque veritatis et exercitationem.
-                  example: Illum explicabo excepturi distinctio consequatur impedit nemo.
+                    example: Autem odit dicta quas.
+                  example: Et eligendi qui sed.
                 - name: actor_id
                   in: query
                   description: Filter by actor
@@ -55,8 +55,8 @@ paths:
                   schema:
                     type: string
                     description: Filter by actor
-                    example: Facere libero corporis nulla.
-                  example: Accusamus repellat.
+                    example: Et nemo aut id omnis est sapiente.
+                  example: Provident dolor.
                 - name: since
                   in: query
                   description: RFC3339 lower bound
@@ -64,9 +64,9 @@ paths:
                   schema:
                     type: string
                     description: RFC3339 lower bound
-                    example: "1970-10-31T20:21:12Z"
+                    example: "2003-09-01T23:04:19Z"
                     format: date-time
-                  example: "2000-08-28T02:04:21Z"
+                  example: "1985-01-05T22:31:06Z"
                 - name: limit
                   in: query
                   description: Max results
@@ -75,11 +75,11 @@ paths:
                     type: integer
                     description: Max results
                     default: 100
-                    example: 864
+                    example: 961
                     format: int64
                     minimum: 1
                     maximum: 1000
-                  example: 785
+                  example: 553
             responses:
                 "200":
                     description: OK response.
@@ -96,7 +96,7 @@ paths:
                                       deny_reason: ""
                                       durability: none
                                       elevated: false
-                                      end_time: "1994-11-29T20:16:33Z"
+                                      end_time: "1987-08-15T19:11:15Z"
                                       execution_id: exec_9f82
                                       exit_code: 0
                                       grant_version: "1.0"
@@ -106,7 +106,7 @@ paths:
                                       os_identity: root
                                       recording_id: rec_9f82
                                       recording_lost: false
-                                      start_time: "1974-12-05T19:40:29Z"
+                                      start_time: "2014-04-20T05:40:54Z"
                                       state: succeeded
                                       termination: graceful
                                       workspace_generation: 3
@@ -118,7 +118,7 @@ paths:
                                       deny_reason: ""
                                       durability: none
                                       elevated: false
-                                      end_time: "1994-11-29T20:16:33Z"
+                                      end_time: "1987-08-15T19:11:15Z"
                                       execution_id: exec_9f82
                                       exit_code: 0
                                       grant_version: "1.0"
@@ -128,51 +128,7 @@ paths:
                                       os_identity: root
                                       recording_id: rec_9f82
                                       recording_lost: false
-                                      start_time: "1974-12-05T19:40:29Z"
-                                      state: succeeded
-                                      termination: graceful
-                                      workspace_generation: 3
-                                      workspace_name: vm-1
-                                      workspace_uid: abc123
-                                    - actor_id: user@example.com
-                                      admission_time: "2026-10-17T00:00:00Z"
-                                      admitted: true
-                                      deny_reason: ""
-                                      durability: none
-                                      elevated: false
-                                      end_time: "1994-11-29T20:16:33Z"
-                                      execution_id: exec_9f82
-                                      exit_code: 0
-                                      grant_version: "1.0"
-                                      mode: ephemeral
-                                      namespace: team-a
-                                      operation: shell
-                                      os_identity: root
-                                      recording_id: rec_9f82
-                                      recording_lost: false
-                                      start_time: "1974-12-05T19:40:29Z"
-                                      state: succeeded
-                                      termination: graceful
-                                      workspace_generation: 3
-                                      workspace_name: vm-1
-                                      workspace_uid: abc123
-                                    - actor_id: user@example.com
-                                      admission_time: "2026-10-17T00:00:00Z"
-                                      admitted: true
-                                      deny_reason: ""
-                                      durability: none
-                                      elevated: false
-                                      end_time: "1994-11-29T20:16:33Z"
-                                      execution_id: exec_9f82
-                                      exit_code: 0
-                                      grant_version: "1.0"
-                                      mode: ephemeral
-                                      namespace: team-a
-                                      operation: shell
-                                      os_identity: root
-                                      recording_id: rec_9f82
-                                      recording_lost: false
-                                      start_time: "1974-12-05T19:40:29Z"
+                                      start_time: "2014-04-20T05:40:54Z"
                                       state: succeeded
                                       termination: graceful
                                       workspace_generation: 3
@@ -185,7 +141,7 @@ paths:
                                   deny_reason: ""
                                   durability: none
                                   elevated: false
-                                  end_time: "1994-11-29T20:16:33Z"
+                                  end_time: "1987-08-15T19:11:15Z"
                                   execution_id: exec_9f82
                                   exit_code: 0
                                   grant_version: "1.0"
@@ -195,7 +151,7 @@ paths:
                                   os_identity: root
                                   recording_id: rec_9f82
                                   recording_lost: false
-                                  start_time: "1974-12-05T19:40:29Z"
+                                  start_time: "2014-04-20T05:40:54Z"
                                   state: succeeded
                                   termination: graceful
                                   workspace_generation: 3
@@ -207,7 +163,7 @@ paths:
                                   deny_reason: ""
                                   durability: none
                                   elevated: false
-                                  end_time: "1994-11-29T20:16:33Z"
+                                  end_time: "1987-08-15T19:11:15Z"
                                   execution_id: exec_9f82
                                   exit_code: 0
                                   grant_version: "1.0"
@@ -217,7 +173,51 @@ paths:
                                   os_identity: root
                                   recording_id: rec_9f82
                                   recording_lost: false
-                                  start_time: "1974-12-05T19:40:29Z"
+                                  start_time: "2014-04-20T05:40:54Z"
+                                  state: succeeded
+                                  termination: graceful
+                                  workspace_generation: 3
+                                  workspace_name: vm-1
+                                  workspace_uid: abc123
+                                - actor_id: user@example.com
+                                  admission_time: "2026-10-17T00:00:00Z"
+                                  admitted: true
+                                  deny_reason: ""
+                                  durability: none
+                                  elevated: false
+                                  end_time: "1987-08-15T19:11:15Z"
+                                  execution_id: exec_9f82
+                                  exit_code: 0
+                                  grant_version: "1.0"
+                                  mode: ephemeral
+                                  namespace: team-a
+                                  operation: shell
+                                  os_identity: root
+                                  recording_id: rec_9f82
+                                  recording_lost: false
+                                  start_time: "2014-04-20T05:40:54Z"
+                                  state: succeeded
+                                  termination: graceful
+                                  workspace_generation: 3
+                                  workspace_name: vm-1
+                                  workspace_uid: abc123
+                                - actor_id: user@example.com
+                                  admission_time: "2026-10-17T00:00:00Z"
+                                  admitted: true
+                                  deny_reason: ""
+                                  durability: none
+                                  elevated: false
+                                  end_time: "1987-08-15T19:11:15Z"
+                                  execution_id: exec_9f82
+                                  exit_code: 0
+                                  grant_version: "1.0"
+                                  mode: ephemeral
+                                  namespace: team-a
+                                  operation: shell
+                                  os_identity: root
+                                  recording_id: rec_9f82
+                                  recording_lost: false
+                                  start_time: "2014-04-20T05:40:54Z"
                                   state: succeeded
                                   termination: graceful
                                   workspace_generation: 3
@@ -229,40 +229,40 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Quo nesciunt est est explicabo.
-                            example: Distinctio est vel nihil aut occaecati.
+                                example: Consequuntur exercitationem eligendi.
+                            example: Est ipsum quasi.
                 "401":
                     description: 'unauthorized: Unauthorized response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Rerum et amet consequatur est odit non.
-                            example: Nobis totam adipisci soluta reiciendis.
+                                example: Totam itaque nam asperiores quos et quibusdam.
+                            example: Et et.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Ut incidunt sunt asperiores.
-                            example: Dolorum amet.
+                                example: Autem repudiandae nostrum doloribus ipsam laborum.
+                            example: Aspernatur in molestiae.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Provident recusandae.
-                            example: Fugiat pariatur doloremque.
+                                example: Esse id occaecati.
+                            example: Quia provident facilis.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Fugiat eveniet.
-                            example: Deserunt temporibus ab laudantium aliquid.
+                                example: In quae reiciendis doloremque voluptatem ex.
+                            example: Est accusamus.
     /v1/executions/{execution_id}:
         get:
             tags:
@@ -294,7 +294,7 @@ paths:
                                 deny_reason: ""
                                 durability: none
                                 elevated: false
-                                end_time: "1990-07-17T05:32:18Z"
+                                end_time: "2014-10-03T07:40:32Z"
                                 execution_id: exec_9f82
                                 exit_code: 0
                                 grant_version: "1.0"
@@ -304,7 +304,7 @@ paths:
                                 os_identity: root
                                 recording_id: rec_9f82
                                 recording_lost: false
-                                start_time: "2011-12-29T10:03:55Z"
+                                start_time: "1980-05-02T21:34:14Z"
                                 state: succeeded
                                 termination: graceful
                                 workspace_generation: 3
@@ -316,40 +316,40 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Alias expedita aut illo ullam quia.
-                            example: Sunt in optio enim autem ut.
+                                example: Nobis provident saepe quod.
+                            example: Aut nostrum.
                 "401":
                     description: 'unauthorized: Unauthorized response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Consequatur eos sunt facilis possimus cupiditate adipisci.
-                            example: Dolore velit libero quibusdam consequatur animi dolore.
+                                example: In aut perferendis.
+                            example: Temporibus ab est ex sint.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Et velit ab natus consequatur aut sit.
-                            example: Aut nam qui iusto hic.
+                                example: Ipsum cupiditate laboriosam enim similique eos.
+                            example: Aut beatae corporis eos.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Asperiores molestias occaecati dolor.
-                            example: Suscipit sed consequuntur velit soluta voluptas quaerat.
+                                example: Ipsum error facere.
+                            example: Aspernatur inventore.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Eos eveniet nesciunt possimus doloribus.
-                            example: Perferendis ut dolor id.
+                                example: Sed id consequatur exercitationem.
+                            example: Et facilis.
     /v1/executions/{execution_id}/recording:
         get:
             tags:
@@ -363,8 +363,8 @@ paths:
                   required: true
                   schema:
                     type: string
-                    example: Minus distinctio qui.
-                  example: Aliquid et et.
+                    example: Sed autem corporis voluptatem tempora delectus.
+                  example: Totam saepe voluptate est est.
             responses:
                 "200":
                     description: OK response.
@@ -373,50 +373,50 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ExecutionRecordingManifest'
                             example:
-                                chunks: 8424688984786026506
-                                plaintext_bytes: 1713810940006498849
-                                recording_id: Consequatur autem.
-                                verified: true
+                                chunks: 13830001857856785423
+                                plaintext_bytes: 887411091697333093
+                                recording_id: Officiis est reprehenderit consectetur et.
+                                verified: false
                 "400":
                     description: 'invalid: Bad Request response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Aut voluptas eveniet molestias.
-                            example: Quia provident facilis.
+                                example: Et reprehenderit voluptates.
+                            example: Fugit ut sit minima nostrum et.
                 "401":
                     description: 'unauthorized: Unauthorized response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Debitis distinctio ducimus.
-                            example: Aspernatur in molestiae.
+                                example: Nisi rem et rerum.
+                            example: Quis accusamus.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Quos sunt dolorum blanditiis fuga.
-                            example: Est accusamus.
+                                example: Minima officia natus in commodi et.
+                            example: Incidunt eius.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Qui nihil illum aut quos ea.
-                            example: Eum eos illo rerum et.
+                                example: Iste neque voluptate omnis consequatur ut corrupti.
+                            example: Maxime qui tenetur delectus numquam velit.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Eius voluptatibus.
-                            example: Est ipsum quasi.
+                                example: Quam consequatur aspernatur.
+                            example: Consequatur aut aut facere in ex ullam.
     /v1/executions/{execution_id}/recording/chunks/{index}:
         get:
             tags:
@@ -430,16 +430,16 @@ paths:
                   required: true
                   schema:
                     type: string
-                    example: Laudantium aut dolor.
-                  example: Eveniet unde aliquid ad.
+                    example: Dolores debitis commodi nesciunt.
+                  example: Harum repellendus voluptas nisi rerum dolorem.
                 - name: index
                   in: path
                   required: true
                   schema:
                     type: integer
-                    example: 13926015707419871942
+                    example: 621255966065025051
                     format: int64
-                  example: 17837082285978465902
+                  example: 13020221545387346611
             responses:
                 "200":
                     description: OK response.
@@ -449,33 +449,53 @@ paths:
                                 $ref: '#/components/schemas/ExecutionRecordingChunk'
                             example:
                                 data:
-                                    - 68
+                                    - 79
+                                    - 109
+                                    - 110
+                                    - 105
+                                    - 115
+                                    - 32
+                                    - 118
+                                    - 111
+                                    - 108
+                                    - 117
+                                    - 112
+                                    - 116
+                                    - 97
+                                    - 116
+                                    - 101
+                                    - 109
+                                    - 32
+                                    - 100
                                     - 111
                                     - 108
                                     - 111
                                     - 114
                                     - 101
-                                    - 109
                                     - 32
+                                    - 114
                                     - 101
-                                    - 120
+                                    - 112
+                                    - 114
+                                    - 101
+                                    - 104
+                                    - 101
+                                    - 110
+                                    - 100
                                     - 101
                                     - 114
-                                    - 99
                                     - 105
                                     - 116
-                                    - 97
-                                    - 116
-                                    - 105
-                                    - 111
-                                    - 110
-                                    - 101
-                                    - 109
                                     - 32
-                                    - 101
-                                    - 110
-                                    - 105
                                     - 109
+                                    - 111
+                                    - 108
+                                    - 101
+                                    - 115
+                                    - 116
+                                    - 105
+                                    - 97
+                                    - 115
                                     - 46
                                 index: 0
                 "400":
@@ -484,40 +504,40 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Quia ducimus provident id.
-                            example: Maxime consequatur tempora nihil odio.
+                                example: Similique facere vel nemo facilis.
+                            example: Autem eum ea eius sunt.
                 "401":
                     description: 'unauthorized: Unauthorized response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Aut sequi quisquam voluptatem illo.
-                            example: Cupiditate omnis non.
+                                example: Fugit sit.
+                            example: Est debitis aut sed molestiae ut.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Consequatur autem repellendus qui impedit voluptas.
-                            example: Dolorem fugiat et voluptatem similique.
+                                example: Illo et et et aliquam qui.
+                            example: Eum nobis eos fuga sint.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Officiis officia nobis minus.
-                            example: Et voluptatem voluptas.
+                                example: Dolorem et exercitationem.
+                            example: Qui eos sed placeat ut minus sapiente.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Qui repellendus dolores quod eligendi soluta repellendus.
-                            example: Soluta est et.
+                                example: Libero eos.
+                            example: Commodi alias minima libero omnis et non.
     /v1/executions/start:
         post:
             tags:
@@ -533,11 +553,11 @@ paths:
                             $ref: '#/components/schemas/StartRequestBody'
                         example:
                             args:
-                                - Provident vel dignissimos quibusdam iure eos.
-                                - Ut dolore.
-                                - Laboriosam rerum facere aut.
+                                - Quas ut reiciendis minus odio quas facilis.
+                                - Doloribus aut facilis et.
+                                - In quaerat culpa non vitae.
                             cwd: C:\Temp
-                            deadline_seconds: 11
+                            deadline_seconds: 4
                             executable: C:\Windows\System32\cmd.exe
                             namespace: team-a
                             workspace_name: vm-1
@@ -561,68 +581,82 @@ paths:
                                 recording_id: rec_9f82
                                 state: succeeded
                                 stderr:
-                                    - 83
-                                    - 101
-                                    - 113
-                                    - 117
-                                    - 105
-                                    - 32
+                                    - 69
                                     - 115
+                                    - 116
+                                    - 32
+                                    - 101
+                                    - 116
+                                    - 32
+                                    - 97
+                                    - 117
+                                    - 116
+                                    - 101
+                                    - 109
+                                    - 32
+                                    - 105
+                                    - 115
+                                    - 116
+                                    - 101
+                                    - 32
+                                    - 97
+                                    - 114
+                                    - 99
+                                    - 104
                                     - 105
                                     - 116
+                                    - 101
+                                    - 99
+                                    - 116
+                                    - 111
                                     - 46
                                 stdout:
-                                    - 82
-                                    - 101
-                                    - 112
-                                    - 101
+                                    - 68
+                                    - 111
                                     - 108
-                                    - 108
-                                    - 97
-                                    - 116
+                                    - 111
+                                    - 114
+                                    - 101
+                                    - 115
                                     - 32
+                                    - 111
+                                    - 102
+                                    - 102
+                                    - 105
+                                    - 99
+                                    - 105
+                                    - 97
+                                    - 32
+                                    - 99
+                                    - 117
                                     - 109
-                                    - 97
-                                    - 103
-                                    - 110
-                                    - 105
-                                    - 32
-                                    - 97
-                                    - 108
-                                    - 105
                                     - 113
                                     - 117
+                                    - 101
+                                    - 32
                                     - 97
-                                    - 109
-                                    - 32
-                                    - 101
-                                    - 111
-                                    - 115
-                                    - 32
-                                    - 100
-                                    - 111
-                                    - 108
-                                    - 111
-                                    - 114
-                                    - 101
-                                    - 115
-                                    - 32
-                                    - 118
-                                    - 111
-                                    - 108
                                     - 117
-                                    - 112
                                     - 116
-                                    - 97
-                                    - 116
-                                    - 101
-                                    - 109
                                     - 32
-                                    - 100
-                                    - 111
+                                    - 101
+                                    - 116
+                                    - 32
+                                    - 110
+                                    - 117
                                     - 108
-                                    - 111
+                                    - 108
+                                    - 97
+                                    - 32
                                     - 114
+                                    - 101
+                                    - 99
+                                    - 117
+                                    - 115
+                                    - 97
+                                    - 110
+                                    - 100
+                                    - 97
+                                    - 101
                                     - 46
                                 truncated: false
                                 workspace_name: vm-1
@@ -633,40 +667,40 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Molestiae recusandae aliquam molestiae.
-                            example: Ipsum sed.
+                                example: Quibusdam voluptas.
+                            example: Qui alias sit provident et.
                 "401":
                     description: 'unauthorized: Unauthorized response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Provident magni quia quo.
-                            example: Suscipit harum fuga.
+                                example: Omnis esse veritatis ullam repellat.
+                            example: Atque ut nihil aliquam debitis blanditiis.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Quia iste molestias qui.
-                            example: Minus voluptas rerum.
+                                example: Ab repellat temporibus.
+                            example: Voluptatibus sit dolores eaque.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Sint dolorum illum quia.
-                            example: Non architecto minima sunt recusandae est.
+                                example: Est a.
+                            example: Unde reiciendis commodi porro magni aut.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Nihil eum et distinctio quia.
-                            example: Hic et tenetur.
+                                example: Qui officiis.
+                            example: Soluta ullam.
     /v1/executions/status:
         get:
             tags:
@@ -694,40 +728,40 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Tempora qui.
-                            example: Provident laborum alias.
+                                example: Ipsum in maiores occaecati.
+                            example: Quasi similique tempore.
                 "401":
                     description: 'unauthorized: Unauthorized response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Sint molestiae.
-                            example: Natus quod.
+                                example: Dolorem iure sed cumque.
+                            example: Veritatis aut ea consectetur qui atque.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Quia odit quod temporibus sed cumque.
-                            example: Facilis et provident explicabo.
+                                example: Explicabo ut autem.
+                            example: Veritatis repellat temporibus earum quia rerum.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Voluptatem rem repudiandae et iusto.
-                            example: Perspiciatis accusantium et.
+                                example: Velit sunt.
+                            example: Eveniet natus distinctio est.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Quas laborum alias expedita.
-                            example: Itaque dolores enim ducimus.
+                                example: Architecto praesentium aut cupiditate.
+                            example: Numquam ex sed.
     /v1/images:
         get:
             tags:
@@ -777,18 +811,18 @@ paths:
                                           url: https://github.com/coder/code-server
                                         - title: Docker Hub
                                           url: https://hub.docker.com/r/codercom/code-server
-                                      memory_limit: Itaque qui repudiandae sunt voluptatem ullam praesentium.
-                                      memory_request: Ab corporis quam dicta nam id.
+                                      memory_limit: Adipisci minus est itaque ut doloremque.
+                                      memory_request: Quo enim repellendus repellat odio odit.
                                       name: Code Server (VS Code)
-                                      persistent_root_disk: false
-                                      persistent_root_disk_size: Odio occaecati deleniti ut qui quidem.
+                                      persistent_root_disk: true
+                                      persistent_root_disk_size: Dolores non.
                                       privileged: false
                                       proxy_config:
                                         custom_request_headers:
                                             x-tenant: workspaces
                                         inject_base_tag: false
-                                        needs_noop_sw: false
-                                        preserve_path_prefix: true
+                                        needs_noop_sw: true
+                                        preserve_path_prefix: false
                                         rewrite_host_absolute_paths: true
                                         tls_insecure: false
                                         websocket_paths:
@@ -801,7 +835,7 @@ paths:
                                       tags:
                                         - development
                                         - vscode
-                                      vm_profile: Sit et vitae ut eum sapiente.
+                                      vm_profile: Praesentium non ab corporis quam dicta nam.
                                       workspace_types:
                                         - container
                                     - category: IDE
@@ -836,18 +870,18 @@ paths:
                                           url: https://github.com/coder/code-server
                                         - title: Docker Hub
                                           url: https://hub.docker.com/r/codercom/code-server
-                                      memory_limit: Itaque qui repudiandae sunt voluptatem ullam praesentium.
-                                      memory_request: Ab corporis quam dicta nam id.
+                                      memory_limit: Adipisci minus est itaque ut doloremque.
+                                      memory_request: Quo enim repellendus repellat odio odit.
                                       name: Code Server (VS Code)
-                                      persistent_root_disk: false
-                                      persistent_root_disk_size: Odio occaecati deleniti ut qui quidem.
+                                      persistent_root_disk: true
+                                      persistent_root_disk_size: Dolores non.
                                       privileged: false
                                       proxy_config:
                                         custom_request_headers:
                                             x-tenant: workspaces
                                         inject_base_tag: false
-                                        needs_noop_sw: false
-                                        preserve_path_prefix: true
+                                        needs_noop_sw: true
+                                        preserve_path_prefix: false
                                         rewrite_host_absolute_paths: true
                                         tls_insecure: false
                                         websocket_paths:
@@ -860,7 +894,125 @@ paths:
                                       tags:
                                         - development
                                         - vscode
-                                      vm_profile: Sit et vitae ut eum sapiente.
+                                      vm_profile: Praesentium non ab corporis quam dicta nam.
+                                      workspace_types:
+                                        - container
+                                    - category: IDE
+                                      cr_name: code-server
+                                      default_args:
+                                        - --bind-addr
+                                        - 0.0.0.0:8080
+                                      default_cloud_init: false
+                                      default_credentials:
+                                        password: changeme
+                                        username: coder
+                                      default_env:
+                                        - name: PASSWORD
+                                          value: changeme
+                                      default_homedir: /home/coder
+                                      default_image_pull_policy: Always
+                                      default_password: changeme
+                                      default_path: /
+                                      default_port: 8080
+                                      default_shared_memory: false
+                                      default_shell: /bin/bash
+                                      default_uid: 1000
+                                      default_user: coder
+                                      default_user_data: ""
+                                      description: Code editor in the browser
+                                      homepage_url: https://github.com/coder/code-server
+                                      icon: code
+                                      image: codercom/code-server:latest
+                                      image_homepage_url: https://hub.docker.com/r/codercom/code-server
+                                      links:
+                                        - title: GitHub
+                                          url: https://github.com/coder/code-server
+                                        - title: Docker Hub
+                                          url: https://hub.docker.com/r/codercom/code-server
+                                      memory_limit: Adipisci minus est itaque ut doloremque.
+                                      memory_request: Quo enim repellendus repellat odio odit.
+                                      name: Code Server (VS Code)
+                                      persistent_root_disk: true
+                                      persistent_root_disk_size: Dolores non.
+                                      privileged: false
+                                      proxy_config:
+                                        custom_request_headers:
+                                            x-tenant: workspaces
+                                        inject_base_tag: false
+                                        needs_noop_sw: true
+                                        preserve_path_prefix: false
+                                        rewrite_host_absolute_paths: true
+                                        tls_insecure: false
+                                        websocket_paths:
+                                            - /websockify
+                                      remote_desktop:
+                                        path: /
+                                        port: 8080
+                                        protocol: agent
+                                      source_url: https://github.com/coder/code-server
+                                      tags:
+                                        - development
+                                        - vscode
+                                      vm_profile: Praesentium non ab corporis quam dicta nam.
+                                      workspace_types:
+                                        - container
+                                    - category: IDE
+                                      cr_name: code-server
+                                      default_args:
+                                        - --bind-addr
+                                        - 0.0.0.0:8080
+                                      default_cloud_init: false
+                                      default_credentials:
+                                        password: changeme
+                                        username: coder
+                                      default_env:
+                                        - name: PASSWORD
+                                          value: changeme
+                                      default_homedir: /home/coder
+                                      default_image_pull_policy: Always
+                                      default_password: changeme
+                                      default_path: /
+                                      default_port: 8080
+                                      default_shared_memory: false
+                                      default_shell: /bin/bash
+                                      default_uid: 1000
+                                      default_user: coder
+                                      default_user_data: ""
+                                      description: Code editor in the browser
+                                      homepage_url: https://github.com/coder/code-server
+                                      icon: code
+                                      image: codercom/code-server:latest
+                                      image_homepage_url: https://hub.docker.com/r/codercom/code-server
+                                      links:
+                                        - title: GitHub
+                                          url: https://github.com/coder/code-server
+                                        - title: Docker Hub
+                                          url: https://hub.docker.com/r/codercom/code-server
+                                      memory_limit: Adipisci minus est itaque ut doloremque.
+                                      memory_request: Quo enim repellendus repellat odio odit.
+                                      name: Code Server (VS Code)
+                                      persistent_root_disk: true
+                                      persistent_root_disk_size: Dolores non.
+                                      privileged: false
+                                      proxy_config:
+                                        custom_request_headers:
+                                            x-tenant: workspaces
+                                        inject_base_tag: false
+                                        needs_noop_sw: true
+                                        preserve_path_prefix: false
+                                        rewrite_host_absolute_paths: true
+                                        tls_insecure: false
+                                        websocket_paths:
+                                            - /websockify
+                                      remote_desktop:
+                                        path: /
+                                        port: 8080
+                                        protocol: agent
+                                      source_url: https://github.com/coder/code-server
+                                      tags:
+                                        - development
+                                        - vscode
+                                      vm_profile: Praesentium non ab corporis quam dicta nam.
                                       workspace_types:
                                         - container
                             example:
@@ -896,18 +1048,18 @@ paths:
                                       url: https://github.com/coder/code-server
                                     - title: Docker Hub
                                       url: https://hub.docker.com/r/codercom/code-server
-                                  memory_limit: Itaque qui repudiandae sunt voluptatem ullam praesentium.
-                                  memory_request: Ab corporis quam dicta nam id.
+                                  memory_limit: Adipisci minus est itaque ut doloremque.
+                                  memory_request: Quo enim repellendus repellat odio odit.
                                   name: Code Server (VS Code)
-                                  persistent_root_disk: false
-                                  persistent_root_disk_size: Odio occaecati deleniti ut qui quidem.
+                                  persistent_root_disk: true
+                                  persistent_root_disk_size: Dolores non.
                                   privileged: false
                                   proxy_config:
                                     custom_request_headers:
                                         x-tenant: workspaces
                                     inject_base_tag: false
-                                    needs_noop_sw: false
-                                    preserve_path_prefix: true
+                                    needs_noop_sw: true
+                                    preserve_path_prefix: false
                                     rewrite_host_absolute_paths: true
                                     tls_insecure: false
                                     websocket_paths:
@@ -920,7 +1072,7 @@ paths:
                                   tags:
                                     - development
                                     - vscode
-                                  vm_profile: Sit et vitae ut eum sapiente.
+                                  vm_profile: Praesentium non ab corporis quam dicta nam.
                                   workspace_types:
                                     - container
                                 - category: IDE
@@ -955,18 +1107,18 @@ paths:
                                       url: https://github.com/coder/code-server
                                     - title: Docker Hub
                                       url: https://hub.docker.com/r/codercom/code-server
-                                  memory_limit: Itaque qui repudiandae sunt voluptatem ullam praesentium.
-                                  memory_request: Ab corporis quam dicta nam id.
+                                  memory_limit: Adipisci minus est itaque ut doloremque.
+                                  memory_request: Quo enim repellendus repellat odio odit.
                                   name: Code Server (VS Code)
-                                  persistent_root_disk: false
-                                  persistent_root_disk_size: Odio occaecati deleniti ut qui quidem.
+                                  persistent_root_disk: true
+                                  persistent_root_disk_size: Dolores non.
                                   privileged: false
                                   proxy_config:
                                     custom_request_headers:
                                         x-tenant: workspaces
                                     inject_base_tag: false
-                                    needs_noop_sw: false
-                                    preserve_path_prefix: true
+                                    needs_noop_sw: true
+                                    preserve_path_prefix: false
                                     rewrite_host_absolute_paths: true
                                     tls_insecure: false
                                     websocket_paths:
@@ -979,7 +1131,7 @@ paths:
                                   tags:
                                     - development
                                     - vscode
-                                  vm_profile: Sit et vitae ut eum sapiente.
+                                  vm_profile: Praesentium non ab corporis quam dicta nam.
                                   workspace_types:
                                     - container
                                 - category: IDE
@@ -1014,18 +1166,18 @@ paths:
                                       url: https://github.com/coder/code-server
                                     - title: Docker Hub
                                       url: https://hub.docker.com/r/codercom/code-server
-                                  memory_limit: Itaque qui repudiandae sunt voluptatem ullam praesentium.
-                                  memory_request: Ab corporis quam dicta nam id.
+                                  memory_limit: Adipisci minus est itaque ut doloremque.
+                                  memory_request: Quo enim repellendus repellat odio odit.
                                   name: Code Server (VS Code)
-                                  persistent_root_disk: false
-                                  persistent_root_disk_size: Odio occaecati deleniti ut qui quidem.
+                                  persistent_root_disk: true
+                                  persistent_root_disk_size: Dolores non.
                                   privileged: false
                                   proxy_config:
                                     custom_request_headers:
                                         x-tenant: workspaces
                                     inject_base_tag: false
-                                    needs_noop_sw: false
-                                    preserve_path_prefix: true
+                                    needs_noop_sw: true
+                                    preserve_path_prefix: false
                                     rewrite_host_absolute_paths: true
                                     tls_insecure: false
                                     websocket_paths:
@@ -1038,7 +1190,7 @@ paths:
                                   tags:
                                     - development
                                     - vscode
-                                  vm_profile: Sit et vitae ut eum sapiente.
+                                  vm_profile: Praesentium non ab corporis quam dicta nam.
                                   workspace_types:
                                     - container
         post:
@@ -1085,26 +1237,26 @@ paths:
                                   url: https://github.com/coder/code-server
                                 - title: Docker Hub
                                   url: https://hub.docker.com/r/codercom/code-server
-                            memory_limit: Et odit iste deleniti.
-                            memory_request: Illo dignissimos.
+                            memory_limit: Qui non.
+                            memory_request: Et quis quis voluptatem.
                             name: Code Server (VS Code)
                             persistent_root_disk: false
-                            persistent_root_disk_size: Voluptatem excepturi at necessitatibus optio amet.
+                            persistent_root_disk_size: Et molestiae nisi molestias autem itaque.
                             privileged: false
                             proxy_config:
                                 custom_request_headers:
                                     x-tenant: workspaces
                                 inject_base_tag: true
-                                needs_noop_sw: false
-                                preserve_path_prefix: false
+                                needs_noop_sw: true
+                                preserve_path_prefix: true
                                 rewrite_host_absolute_paths: true
-                                tls_insecure: false
+                                tls_insecure: true
                                 websocket_paths:
                                     - /websockify
                             remote_desktop:
                                 path: /
                                 port: 8080
-                                protocol: agent
+                                protocol: selkies
                             source_url: https://github.com/coder/code-server
                             tags:
                                 - development
@@ -1152,18 +1304,18 @@ paths:
                                       url: https://github.com/coder/code-server
                                     - title: Docker Hub
                                       url: https://hub.docker.com/r/codercom/code-server
-                                memory_limit: Sit minima nostrum et est maxime qui.
-                                memory_request: Delectus numquam velit quis dolores.
+                                memory_limit: Quisquam quia quis aut.
+                                memory_request: Sit facilis sed sed.
                                 name: Code Server (VS Code)
                                 persistent_root_disk: true
-                                persistent_root_disk_size: Ullam eos fugit.
+                                persistent_root_disk_size: Esse qui molestias rerum.
                                 privileged: false
                                 proxy_config:
                                     custom_request_headers:
                                         x-tenant: workspaces
                                     inject_base_tag: false
                                     needs_noop_sw: true
-                                    preserve_path_prefix: true
+                                    preserve_path_prefix: false
                                     rewrite_host_absolute_paths: true
                                     tls_insecure: false
                                     websocket_paths:
@@ -1171,12 +1323,12 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: agent
+                                    protocol: selkies
                                 source_url: https://github.com/coder/code-server
                                 tags:
                                     - development
                                     - vscode
-                                vm_profile: Aut facere.
+                                vm_profile: Rerum voluptatem excepturi est amet.
                                 workspace_types:
                                     - container
                 "400":
@@ -1234,6 +1386,9 @@ paths:
                                 - created_at: "2025-01-02T15:04:05Z"
                                   name: workspaces
                                   phase: Active
+                                - created_at: "2025-01-02T15:04:05Z"
+                                  name: workspaces
+                                  phase: Active
     /v1/sshkeys:
         get:
             tags:
@@ -1261,18 +1416,6 @@ paths:
                                 items:
                                     $ref: '#/components/schemas/Sshkey'
                                 example:
-                                    - created_at: "2025-01-02T15:04:05Z"
-                                      fingerprint: SHA256:aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789
-                                      key_name: Laptop 2025
-                                      name: laptop-2025
-                                      namespace: chris-at-fordham-id-au
-                                      public_key: ssh-rsa AAAAB3Nza... user@example.com
-                                    - created_at: "2025-01-02T15:04:05Z"
-                                      fingerprint: SHA256:aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789
-                                      key_name: Laptop 2025
-                                      name: laptop-2025
-                                      namespace: chris-at-fordham-id-au
-                                      public_key: ssh-rsa AAAAB3Nza... user@example.com
                                     - created_at: "2025-01-02T15:04:05Z"
                                       fingerprint: SHA256:aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789
                                       key_name: Laptop 2025
@@ -1446,65 +1589,78 @@ paths:
                                 items:
                                     $ref: '#/components/schemas/VMGPUProfile'
                                 example:
-                                    - count: 3464132514380386718
-                                      display_name: Libero et dolorem quos.
-                                      experimental: false
-                                      guest_driver_version: Occaecati nobis voluptas quis rerum molestiae sed.
-                                      id: Voluptatem aperiam.
+                                    - count: 8612329101573868537
+                                      display_name: Voluptate corrupti delectus.
+                                      experimental: true
+                                      guest_driver_version: Et ut aut blanditiis enim.
+                                      id: Voluptas quis rerum molestiae sed qui distinctio.
                                       kind: pci
                                       node_selector:
-                                        Ab consequatur voluptatem a id.: Voluptatem consequatur reiciendis qui voluptates laudantium iusto.
-                                        Odio rerum distinctio vero veritatis.: Voluptatem asperiores.
-                                      resource_name: Rem voluptates vel eum rem error tempore.
-                                    - count: 3464132514380386718
-                                      display_name: Libero et dolorem quos.
-                                      experimental: false
-                                      guest_driver_version: Occaecati nobis voluptas quis rerum molestiae sed.
-                                      id: Voluptatem aperiam.
+                                        Officiis excepturi necessitatibus aut.: Praesentium temporibus eveniet est rerum.
+                                      resource_name: Est officia aperiam tenetur molestiae et.
+                                    - count: 8612329101573868537
+                                      display_name: Voluptate corrupti delectus.
+                                      experimental: true
+                                      guest_driver_version: Et ut aut blanditiis enim.
+                                      id: Voluptas quis rerum molestiae sed qui distinctio.
                                       kind: pci
                                       node_selector:
-                                        Ab consequatur voluptatem a id.: Voluptatem consequatur reiciendis qui voluptates laudantium iusto.
-                                        Odio rerum distinctio vero veritatis.: Voluptatem asperiores.
-                                      resource_name: Rem voluptates vel eum rem error tempore.
+                                        Officiis excepturi necessitatibus aut.: Praesentium temporibus eveniet est rerum.
+                                      resource_name: Est officia aperiam tenetur molestiae et.
+                                    - count: 8612329101573868537
+                                      display_name: Voluptate corrupti delectus.
+                                      experimental: true
+                                      guest_driver_version: Et ut aut blanditiis enim.
+                                      id: Voluptas quis rerum molestiae sed qui distinctio.
+                                      kind: pci
+                                      node_selector:
+                                        Officiis excepturi necessitatibus aut.: Praesentium temporibus eveniet est rerum.
+                                      resource_name: Est officia aperiam tenetur molestiae et.
+                                    - count: 8612329101573868537
+                                      display_name: Voluptate corrupti delectus.
+                                      experimental: true
+                                      guest_driver_version: Et ut aut blanditiis enim.
+                                      id: Voluptas quis rerum molestiae sed qui distinctio.
+                                      kind: pci
+                                      node_selector:
+                                        Officiis excepturi necessitatibus aut.: Praesentium temporibus eveniet est rerum.
+                                      resource_name: Est officia aperiam tenetur molestiae et.
                             example:
-                                - count: 3464132514380386718
-                                  display_name: Libero et dolorem quos.
-                                  experimental: false
-                                  guest_driver_version: Occaecati nobis voluptas quis rerum molestiae sed.
-                                  id: Voluptatem aperiam.
+                                - count: 8612329101573868537
+                                  display_name: Voluptate corrupti delectus.
+                                  experimental: true
+                                  guest_driver_version: Et ut aut blanditiis enim.
+                                  id: Voluptas quis rerum molestiae sed qui distinctio.
                                   kind: pci
                                   node_selector:
-                                    Ab consequatur voluptatem a id.: Voluptatem consequatur reiciendis qui voluptates laudantium iusto.
-                                    Odio rerum distinctio vero veritatis.: Voluptatem asperiores.
-                                  resource_name: Rem voluptates vel eum rem error tempore.
-                                - count: 3464132514380386718
-                                  display_name: Libero et dolorem quos.
-                                  experimental: false
-                                  guest_driver_version: Occaecati nobis voluptas quis rerum molestiae sed.
-                                  id: Voluptatem aperiam.
+                                    Officiis excepturi necessitatibus aut.: Praesentium temporibus eveniet est rerum.
+                                  resource_name: Est officia aperiam tenetur molestiae et.
+                                - count: 8612329101573868537
+                                  display_name: Voluptate corrupti delectus.
+                                  experimental: true
+                                  guest_driver_version: Et ut aut blanditiis enim.
+                                  id: Voluptas quis rerum molestiae sed qui distinctio.
                                   kind: pci
                                   node_selector:
-                                    Ab consequatur voluptatem a id.: Voluptatem consequatur reiciendis qui voluptates laudantium iusto.
-                                    Odio rerum distinctio vero veritatis.: Voluptatem asperiores.
-                                  resource_name: Rem voluptates vel eum rem error tempore.
-                                - count: 3464132514380386718
-                                  display_name: Libero et dolorem quos.
-                                  experimental: false
-                                  guest_driver_version: Occaecati nobis voluptas quis rerum molestiae sed.
-                                  id: Voluptatem aperiam.
+                                    Officiis excepturi necessitatibus aut.: Praesentium temporibus eveniet est rerum.
+                                  resource_name: Est officia aperiam tenetur molestiae et.
+                                - count: 8612329101573868537
+                                  display_name: Voluptate corrupti delectus.
+                                  experimental: true
+                                  guest_driver_version: Et ut aut blanditiis enim.
+                                  id: Voluptas quis rerum molestiae sed qui distinctio.
                                   kind: pci
                                   node_selector:
-                                    Ab consequatur voluptatem a id.: Voluptatem consequatur reiciendis qui voluptates laudantium iusto.
-                                    Odio rerum distinctio vero veritatis.: Voluptatem asperiores.
-                                  resource_name: Rem voluptates vel eum rem error tempore.
+                                    Officiis excepturi necessitatibus aut.: Praesentium temporibus eveniet est rerum.
+                                  resource_name: Est officia aperiam tenetur molestiae et.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Fugit occaecati consequatur quibusdam aut.
-                            example: Consectetur accusantium vitae iure quam quos.
+                                example: Qui vel sit reiciendis.
+                            example: Repellat iste tenetur eum facere.
     /v1/volumes:
         get:
             tags:
@@ -1543,7 +1699,7 @@ paths:
                                       phase: Bound
                                       size: 10Gi
                                       storage_class: standard
-                                      type: pvc
+                                      type: vm-disk
                                     - access_mode: ReadWriteOnce
                                       created_at: "2025-01-02T15:04:05Z"
                                       labels:
@@ -1554,18 +1710,7 @@ paths:
                                       phase: Bound
                                       size: 10Gi
                                       storage_class: standard
-                                      type: pvc
-                                    - access_mode: ReadWriteOnce
-                                      created_at: "2025-01-02T15:04:05Z"
-                                      labels:
-                                        managed-by: kube-workspaces
-                                        workspace: my-workspace
-                                      name: my-workspace-data
-                                      namespace: workspaces
-                                      phase: Bound
-                                      size: 10Gi
-                                      storage_class: standard
-                                      type: pvc
+                                      type: vm-disk
                             example:
                                 - access_mode: ReadWriteOnce
                                   created_at: "2025-01-02T15:04:05Z"
@@ -1577,7 +1722,7 @@ paths:
                                   phase: Bound
                                   size: 10Gi
                                   storage_class: standard
-                                  type: pvc
+                                  type: vm-disk
                                 - access_mode: ReadWriteOnce
                                   created_at: "2025-01-02T15:04:05Z"
                                   labels:
@@ -1588,7 +1733,7 @@ paths:
                                   phase: Bound
                                   size: 10Gi
                                   storage_class: standard
-                                  type: pvc
+                                  type: vm-disk
         post:
             tags:
                 - volumes
@@ -1607,7 +1752,7 @@ paths:
                             namespace: workspaces
                             size: 10Gi
                             storage_class: standard
-                            type: vm-disk
+                            type: pvc
             responses:
                 "201":
                     description: Created response.
@@ -1626,7 +1771,7 @@ paths:
                                 phase: Bound
                                 size: 10Gi
                                 storage_class: standard
-                                type: pvc
+                                type: vm-disk
                 "400":
                     description: 'invalid: Bad Request response.'
                     content:
@@ -1762,92 +1907,6 @@ paths:
                                 items:
                                     $ref: '#/components/schemas/Workspace'
                                 example:
-                                    - conditions:
-                                        - last_transition_time: "2025-01-02T15:04:05Z"
-                                          message: StatefulSet my-workspace is available
-                                          reason: MinimumReplicasAvailable
-                                          status: "True"
-                                          type: Ready
-                                      container_state:
-                                        message: Container started successfully
-                                        reason: Started
-                                        started_at: "2025-01-02T15:04:05Z"
-                                        state: running
-                                      cpu_limit: "1"
-                                      cpu_request: 500m
-                                      created_at: "2025-01-02T15:04:05Z"
-                                      image: codercom/code-server:latest
-                                      memory_limit: 2Gi
-                                      memory_request: 512Mi
-                                      name: my-workspace
-                                      namespace: workspaces
-                                      port: 8080
-                                      provisioned: true
-                                      ready_replicas: 1
-                                      remote_desktop:
-                                        path: /
-                                        port: 8080
-                                        protocol: agent
-                                      stopped: false
-                                      type: container
-                                      vm_gpu_profile:
-                                        count: 8415295335791754653
-                                        display_name: Et impedit dicta quo et perferendis qui.
-                                        experimental: false
-                                        guest_driver_version: Vero quis.
-                                        id: Esse consequatur.
-                                        kind: pci
-                                        node_selector:
-                                            Sapiente sit ut at.: Est voluptas et voluptates et.
-                                            Sequi iusto excepturi itaque officiis et est.: Voluptates voluptatem nobis ut.
-                                        resource_name: Dolor et voluptas quis eum.
-                                      vm_profile: Facilis eveniet quo tempore hic voluptates harum.
-                                      volume_mounts:
-                                        - mount_path: /home/coder
-                                          name: my-workspace-data
-                                    - conditions:
-                                        - last_transition_time: "2025-01-02T15:04:05Z"
-                                          message: StatefulSet my-workspace is available
-                                          reason: MinimumReplicasAvailable
-                                          status: "True"
-                                          type: Ready
-                                      container_state:
-                                        message: Container started successfully
-                                        reason: Started
-                                        started_at: "2025-01-02T15:04:05Z"
-                                        state: running
-                                      cpu_limit: "1"
-                                      cpu_request: 500m
-                                      created_at: "2025-01-02T15:04:05Z"
-                                      image: codercom/code-server:latest
-                                      memory_limit: 2Gi
-                                      memory_request: 512Mi
-                                      name: my-workspace
-                                      namespace: workspaces
-                                      port: 8080
-                                      provisioned: true
-                                      ready_replicas: 1
-                                      remote_desktop:
-                                        path: /
-                                        port: 8080
-                                        protocol: agent
-                                      stopped: false
-                                      type: container
-                                      vm_gpu_profile:
-                                        count: 8415295335791754653
-                                        display_name: Et impedit dicta quo et perferendis qui.
-                                        experimental: false
-                                        guest_driver_version: Vero quis.
-                                        id: Esse consequatur.
-                                        kind: pci
-                                        node_selector:
-                                            Sapiente sit ut at.: Est voluptas et voluptates et.
-                                            Sequi iusto excepturi itaque officiis et est.: Voluptates voluptatem nobis ut.
-                                        resource_name: Dolor et voluptas quis eum.
-                                      vm_profile: Facilis eveniet quo tempore hic voluptates harum.
-                                      volume_mounts:
-                                        - mount_path: /home/coder
-                                          name: my-workspace-data
                                     - conditions:
                                         - last_transition_time: "2025-01-02T15:04:05Z"
                                           message: StatefulSet my-workspace is available
@@ -2078,6 +2137,15 @@ paths:
                             $ref: '#/components/schemas/CreateWorkspacePayload'
                         example:
                             container:
+                                args:
+                                    - Dolor eius qui dolor et.
+                                    - Aperiam illum labore numquam et aliquam.
+                                    - Sint dolore molestiae.
+                                command:
+                                    - Rerum recusandae ea sed voluptatem.
+                                    - At necessitatibus optio amet tempore et.
+                                    - Iste deleniti aliquid illo dignissimos hic iure.
+                                    - Deserunt mollitia ut nihil consequatur accusantium est.
                                 cpu_limit: "2"
                                 cpu_request: 500m
                                 gpu_request: "1"
@@ -2103,11 +2171,11 @@ paths:
                                   value: "true"
                             type: container
                             vm_options:
-                                gpu_profile: g7k
-                                import_cert_config_map_name: Culpa exercitationem corrupti saepe laboriosam ducimus possimus.
-                                import_secret_name: Rem ut a odit blanditiis doloremque.
-                                root_disk_size: Nemo at ullam reiciendis nam id.
-                                storage_class_name: Illo et vero natus voluptas.
+                                gpu_profile: hmy
+                                import_cert_config_map_name: Quo excepturi quidem nihil occaecati animi.
+                                import_secret_name: Modi omnis minus quia.
+                                root_disk_size: Dolorem tempore quas officia blanditiis.
+                                storage_class_name: Id exercitationem voluptas nesciunt atque.
                             volume_mounts:
                                 - mount_path: /home/coder
                                   name: my-workspace-data
@@ -2144,21 +2212,21 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: agent
+                                    protocol: selkies
                                 stopped: false
                                 type: container
                                 vm_gpu_profile:
-                                    count: 6716878457214357736
-                                    display_name: Non placeat enim illum.
+                                    count: 8231397701516657535
+                                    display_name: Accusantium placeat iusto reprehenderit sit vero eligendi.
                                     experimental: true
-                                    guest_driver_version: Accusantium placeat iusto reprehenderit sit vero eligendi.
-                                    id: Ad ab.
-                                    kind: pci
+                                    guest_driver_version: Magni qui.
+                                    id: A occaecati fugit consequatur enim.
+                                    kind: mediated
                                     node_selector:
-                                        Qui earum iure dolores sit inventore.: Molestias quasi et ut optio.
-                                        Quibusdam rerum eaque praesentium dolor et.: A occaecati fugit consequatur enim.
-                                    resource_name: Odio beatae.
-                                vm_profile: Eius soluta ullam culpa qui.
+                                        Doloribus eveniet.: Assumenda in impedit libero pariatur soluta qui.
+                                        Illum tenetur omnis qui iste.: Maxime rem cupiditate.
+                                    resource_name: Velit et fugiat velit quia accusantium.
+                                vm_profile: Architecto voluptas.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -2275,21 +2343,21 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: agent
+                                    protocol: selkies
                                 stopped: false
                                 type: container
                                 vm_gpu_profile:
-                                    count: 6716878457214357736
-                                    display_name: Non placeat enim illum.
+                                    count: 8231397701516657535
+                                    display_name: Accusantium placeat iusto reprehenderit sit vero eligendi.
                                     experimental: true
-                                    guest_driver_version: Accusantium placeat iusto reprehenderit sit vero eligendi.
-                                    id: Ad ab.
-                                    kind: pci
+                                    guest_driver_version: Magni qui.
+                                    id: A occaecati fugit consequatur enim.
+                                    kind: mediated
                                     node_selector:
-                                        Qui earum iure dolores sit inventore.: Molestias quasi et ut optio.
-                                        Quibusdam rerum eaque praesentium dolor et.: A occaecati fugit consequatur enim.
-                                    resource_name: Odio beatae.
-                                vm_profile: Nihil aliquam debitis blanditiis eum voluptatibus sit.
+                                        Doloribus eveniet.: Assumenda in impedit libero pariatur soluta qui.
+                                        Illum tenetur omnis qui iste.: Maxime rem cupiditate.
+                                    resource_name: Velit et fugiat velit quia accusantium.
+                                vm_profile: Nesciunt eligendi vitae tenetur.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -2355,29 +2423,29 @@ paths:
                                 admitted_at: "2026-10-19T00:00:00Z"
                                 allow_reboot: false
                                 attempt_id: upg_9f82c1a0b3d4e5f60718293a
-                                awaiting_reboot_at: "2012-06-28T13:44:12Z"
+                                awaiting_reboot_at: "1972-08-23T17:22:06Z"
                                 cancel_requested: false
                                 error_code: ""
                                 execution_id: exec_9f82
                                 expected_installed_inventory_sha256: 810151abf0615815b24e01967ec665e0eb583500f1eb5fa456361935b22b183b
-                                installing_at: "2010-01-17T03:27:45Z"
+                                installing_at: "1994-07-10T11:33:56Z"
                                 journal_sequence: 0
                                 namespace: team-a
-                                predecessor_manifest_sha256: c0cc9727c7e3fa2c77c9974848c48a8b8c058c9b4ee42291d2efc20f29132c03
+                                predecessor_manifest_sha256: b1e63080cc67a46df2717090561513edff52f7b1a7f85cb59b7d8621256faa8a
                                 predecessor_target_id: windows11-amd64-v1
-                                prepared_at: "2006-12-12T15:05:36Z"
+                                prepared_at: "1985-10-10T01:37:07Z"
                                 recording_id: rec_9f82
                                 recording_url: /v1/executions/exec_9f82/recording
-                                rollback_requested_at: "2005-04-14T11:31:11Z"
-                                rolling_back_at: "2009-02-16T09:32:42Z"
-                                staging_at: "1980-06-16T11:38:04Z"
+                                rollback_requested_at: "2009-09-16T17:08:31Z"
+                                rolling_back_at: "2007-11-09T23:25:04Z"
+                                staging_at: "1982-04-30T23:07:30Z"
                                 state: admitted
                                 status_url: /v1/workspaces/vm-1/agent-upgrades/upg_9f82c1a0b3d4e5f60718293a?namespace=team-a
                                 target_id: windows11-amd64-v2
                                 target_manifest_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-                                terminal_at: "2005-11-10T15:43:22Z"
-                                updated_at: "2007-01-23T21:51:55Z"
-                                verifying_at: "1976-08-29T11:33:17Z"
+                                terminal_at: "2001-10-26T02:21:07Z"
+                                updated_at: "1977-05-14T20:12:02Z"
+                                verifying_at: "1976-07-20T21:56:03Z"
                                 vm_uid: 0d3f9a7e-6b1c-4f2a-9e8d-1a2b3c4d5e6f
                                 workspace_name: vm-1
                                 workspace_uid: abc123
@@ -2387,48 +2455,48 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Officia ut molestiae eaque optio nisi aut.
-                            example: Consequatur rerum dolorem est id.
+                                example: Et dignissimos illum provident magni.
+                            example: Molestias corrupti.
                 "401":
                     description: 'unauthorized: Unauthorized response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Aspernatur laudantium amet ut.
-                            example: Quam quis odit nobis nihil labore molestiae.
+                                example: Optio quibusdam eos voluptatem sint non aperiam.
+                            example: Et dolores quaerat nostrum.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Eos et ipsa atque.
-                            example: Quia illum.
+                                example: Non in eveniet quia.
+                            example: Harum ex itaque aut consectetur assumenda eveniet.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Atque tenetur consequuntur recusandae quia eum.
-                            example: Sunt laudantium ipsa nobis.
+                                example: Quo laborum quia iste molestias.
+                            example: Autem dolorum vel sint quidem facere.
                 "409":
                     description: 'conflict: Conflict response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Dolore ducimus eos eveniet non.
-                            example: Velit maiores facilis.
+                                example: Quia nihil eum et distinctio quia.
+                            example: Suscipit reprehenderit eum doloribus totam.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Temporibus laborum ut et accusamus soluta.
-                            example: Ipsa vitae esse velit.
+                                example: Molestiae recusandae aliquam molestiae.
+                            example: Illo exercitationem voluptatem animi est.
     /v1/workspaces/{name}/agent-upgrades/{attempt_id}:
         get:
             tags:
@@ -2443,23 +2511,23 @@ paths:
                   schema:
                     type: string
                     default: workspaces
-                    example: Ducimus et sed distinctio.
-                  example: Aut aut repellat ex id at cum.
+                    example: Error molestiae et esse sapiente et esse.
+                  example: Sed id placeat.
                 - name: name
                   in: path
                   required: true
                   schema:
                     type: string
-                    example: Dolorum modi et voluptas cupiditate quis.
-                  example: Fugit voluptatum perferendis fuga est aut delectus.
+                    example: Sit ut necessitatibus quis unde et.
+                  example: Accusantium qui enim voluptatem animi perferendis ipsa.
                 - name: attempt_id
                   in: path
                   required: true
                   schema:
                     type: string
-                    example: upg_d465669cd04534a32cc5fc7b
+                    example: upg_2755f28964ef9f81007ebcb4
                     pattern: ^upg_[0-9a-f]{24}$
-                  example: upg_ff4977d860efd5801baf0050
+                  example: upg_513909cdb12477804f9cffcb
             responses:
                 "200":
                     description: OK response.
@@ -2472,29 +2540,29 @@ paths:
                                 admitted_at: "2026-10-19T00:00:00Z"
                                 allow_reboot: false
                                 attempt_id: upg_9f82c1a0b3d4e5f60718293a
-                                awaiting_reboot_at: "1984-12-19T07:38:12Z"
+                                awaiting_reboot_at: "2013-05-09T20:19:58Z"
                                 cancel_requested: false
                                 error_code: ""
                                 execution_id: exec_9f82
                                 expected_installed_inventory_sha256: 810151abf0615815b24e01967ec665e0eb583500f1eb5fa456361935b22b183b
-                                installing_at: "1974-05-03T19:29:26Z"
+                                installing_at: "1991-01-13T20:31:23Z"
                                 journal_sequence: 0
                                 namespace: team-a
-                                predecessor_manifest_sha256: 6013be0839028464c2e03158aeb127465b51f68c4a52dcc3db47f63079301a76
+                                predecessor_manifest_sha256: f52c86b3d417da22de89132d9261a07aad66c77d73337ad45b017ea691992137
                                 predecessor_target_id: windows11-amd64-v1
-                                prepared_at: "2004-11-30T01:46:12Z"
+                                prepared_at: "1978-06-25T23:20:57Z"
                                 recording_id: rec_9f82
                                 recording_url: /v1/executions/exec_9f82/recording
-                                rollback_requested_at: "2015-11-01T11:03:38Z"
-                                rolling_back_at: "1998-11-10T01:21:15Z"
-                                staging_at: "2002-07-29T07:46:58Z"
+                                rollback_requested_at: "1981-09-01T07:07:15Z"
+                                rolling_back_at: "1993-09-25T18:37:49Z"
+                                staging_at: "1982-09-23T13:11:55Z"
                                 state: admitted
                                 status_url: /v1/workspaces/vm-1/agent-upgrades/upg_9f82c1a0b3d4e5f60718293a?namespace=team-a
                                 target_id: windows11-amd64-v2
                                 target_manifest_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-                                terminal_at: "1975-10-29T15:29:08Z"
-                                updated_at: "1974-01-17T05:40:55Z"
-                                verifying_at: "1981-03-18T19:13:42Z"
+                                terminal_at: "2002-11-23T04:22:32Z"
+                                updated_at: "2012-10-13T01:57:07Z"
+                                verifying_at: "2001-10-18T23:25:20Z"
                                 vm_uid: 0d3f9a7e-6b1c-4f2a-9e8d-1a2b3c4d5e6f
                                 workspace_name: vm-1
                                 workspace_uid: abc123
@@ -2504,48 +2572,48 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Minus commodi repudiandae necessitatibus veniam iure.
-                            example: Sequi id accusantium voluptatum pariatur id doloremque.
+                                example: Quos sunt dolorum blanditiis fuga.
+                            example: Eveniet esse nihil occaecati expedita quia et.
                 "401":
                     description: 'unauthorized: Unauthorized response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Minima et quisquam quia vel.
-                            example: Recusandae libero quibusdam ducimus iste fugiat soluta.
+                                example: Sint dolorum illum quia.
+                            example: Qui et non.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Doloremque amet.
-                            example: Dolores modi dolor architecto sunt.
+                                example: Debitis distinctio ducimus.
+                            example: Suscipit dolor vel.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Sit iusto unde nulla.
-                            example: Id iusto vero sed modi eaque.
+                                example: Eius voluptatibus.
+                            example: Eum in omnis.
                 "409":
                     description: 'conflict: Conflict response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Saepe sed dolor rem culpa quia tenetur.
-                            example: Nihil nostrum omnis mollitia modi non illum.
+                                example: Aut voluptas eveniet molestias.
+                            example: Quae distinctio quos facere eos sint est.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Porro hic.
-                            example: Praesentium dolor qui.
+                                example: Qui nihil illum aut quos ea.
+                            example: Est eius sunt.
     /v1/workspaces/{name}/agent-upgrades/{attempt_id}/cancel:
         post:
             tags:
@@ -2560,23 +2628,23 @@ paths:
                   schema:
                     type: string
                     default: workspaces
-                    example: Laboriosam dolorem reprehenderit.
-                  example: Porro non ab ad corrupti consequuntur in.
+                    example: Excepturi nulla.
+                  example: Qui odit.
                 - name: name
                   in: path
                   required: true
                   schema:
                     type: string
-                    example: Molestiae in.
-                  example: Provident repudiandae voluptatum repellat dolor laboriosam.
+                    example: Quasi numquam qui dolorum laboriosam.
+                  example: Quae nihil delectus.
                 - name: attempt_id
                   in: path
                   required: true
                   schema:
                     type: string
-                    example: upg_528f729060f3c71517f73ef6
+                    example: upg_33138df74c764a095808bcce
                     pattern: ^upg_[0-9a-f]{24}$
-                  example: upg_1577c6486d952fa56821eefe
+                  example: upg_2838cc6715be2b1a2882b948
             responses:
                 "200":
                     description: OK response.
@@ -2589,29 +2657,29 @@ paths:
                                 admitted_at: "2026-10-19T00:00:00Z"
                                 allow_reboot: false
                                 attempt_id: upg_9f82c1a0b3d4e5f60718293a
-                                awaiting_reboot_at: "2005-09-05T07:37:55Z"
+                                awaiting_reboot_at: "1995-06-10T07:28:55Z"
                                 cancel_requested: false
                                 error_code: ""
                                 execution_id: exec_9f82
                                 expected_installed_inventory_sha256: 810151abf0615815b24e01967ec665e0eb583500f1eb5fa456361935b22b183b
-                                installing_at: "1988-07-30T09:29:44Z"
+                                installing_at: "1973-11-15T19:39:07Z"
                                 journal_sequence: 0
                                 namespace: team-a
-                                predecessor_manifest_sha256: 80d517933c24734db9a9e636f5a3d0890d9f965737484ff28e58759a640936a3
+                                predecessor_manifest_sha256: da198725ff3ef745298212b1ecdc6efea347b0ebd023fde12364f8f02eea3fc8
                                 predecessor_target_id: windows11-amd64-v1
-                                prepared_at: "2004-04-03T09:57:56Z"
+                                prepared_at: "1977-07-01T23:59:15Z"
                                 recording_id: rec_9f82
                                 recording_url: /v1/executions/exec_9f82/recording
-                                rollback_requested_at: "2001-08-26T10:30:36Z"
-                                rolling_back_at: "1992-12-31T23:03:07Z"
-                                staging_at: "2002-04-15T00:12:55Z"
+                                rollback_requested_at: "1995-05-01T12:02:31Z"
+                                rolling_back_at: "1986-06-17T17:18:34Z"
+                                staging_at: "1991-08-30T00:19:14Z"
                                 state: admitted
                                 status_url: /v1/workspaces/vm-1/agent-upgrades/upg_9f82c1a0b3d4e5f60718293a?namespace=team-a
                                 target_id: windows11-amd64-v2
                                 target_manifest_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-                                terminal_at: "1975-12-02T21:18:16Z"
-                                updated_at: "1982-10-24T05:13:04Z"
-                                verifying_at: "2009-01-05T05:21:16Z"
+                                terminal_at: "1978-01-29T20:14:25Z"
+                                updated_at: "1994-11-03T14:02:07Z"
+                                verifying_at: "1984-11-18T00:14:24Z"
                                 vm_uid: 0d3f9a7e-6b1c-4f2a-9e8d-1a2b3c4d5e6f
                                 workspace_name: vm-1
                                 workspace_uid: abc123
@@ -2621,48 +2689,48 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Velit voluptas sed soluta.
-                            example: Modi maxime.
+                                example: Qui repellendus dolores quod eligendi soluta repellendus.
+                            example: Esse quia ducimus.
                 "401":
                     description: 'unauthorized: Unauthorized response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Fuga incidunt earum iste consequuntur voluptas et.
-                            example: Aut ullam voluptate deleniti quia.
+                                example: Aut sequi quisquam voluptatem illo.
+                            example: Pariatur assumenda.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: A illo quis officia.
-                            example: Quo eum non totam omnis aut odit.
+                                example: Consequatur autem repellendus qui impedit voluptas.
+                            example: Error et dolore impedit.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Dolor ab voluptatem.
-                            example: Iusto sint et nobis at commodi iusto.
+                                example: Quia ducimus provident id.
+                            example: Blanditiis animi.
                 "409":
                     description: 'conflict: Conflict response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Inventore esse tempore numquam ut.
-                            example: Laudantium ad dolores.
+                                example: Officiis officia nobis minus.
+                            example: Vel aut rerum est possimus mollitia sit.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Sed quia consectetur voluptatem quaerat.
-                            example: Fuga aut et.
+                                example: Nam fugit occaecati consequatur quibusdam.
+                            example: Dolor dolorum reiciendis facilis.
     /v1/workspaces/{name}/agent-upgrades/{attempt_id}/rollback:
         post:
             tags:
@@ -2677,23 +2745,23 @@ paths:
                   schema:
                     type: string
                     default: workspaces
-                    example: Atque dolorem quisquam.
-                  example: At odit.
+                    example: Harum velit ut esse.
+                  example: Voluptatem consequatur.
                 - name: name
                   in: path
                   required: true
                   schema:
                     type: string
-                    example: Recusandae natus maxime.
-                  example: Saepe tenetur.
+                    example: Ut quod quis veritatis ad distinctio.
+                  example: Aut sequi deserunt repudiandae repellat necessitatibus enim.
                 - name: attempt_id
                   in: path
                   required: true
                   schema:
                     type: string
-                    example: upg_7cf06ab2670c365167850219
+                    example: upg_442635edd02af040ece192ce
                     pattern: ^upg_[0-9a-f]{24}$
-                  example: upg_c7279fdcc2b3c2d852c7f8e9
+                  example: upg_f760d87d6625240d911886ce
             responses:
                 "202":
                     description: Accepted response.
@@ -2706,29 +2774,29 @@ paths:
                                 admitted_at: "2026-10-19T00:00:00Z"
                                 allow_reboot: false
                                 attempt_id: upg_9f82c1a0b3d4e5f60718293a
-                                awaiting_reboot_at: "1986-01-04T11:57:59Z"
+                                awaiting_reboot_at: "1993-08-26T16:01:21Z"
                                 cancel_requested: false
                                 error_code: ""
                                 execution_id: exec_9f82
                                 expected_installed_inventory_sha256: 810151abf0615815b24e01967ec665e0eb583500f1eb5fa456361935b22b183b
-                                installing_at: "1984-11-08T11:51:12Z"
+                                installing_at: "1990-03-22T02:32:29Z"
                                 journal_sequence: 0
                                 namespace: team-a
-                                predecessor_manifest_sha256: 3723c8ace9ae8dd51139018d9a92ad35db1157e7f350a3a6ac34b106f8f7113d
+                                predecessor_manifest_sha256: fa8ec2c9a7e0f5b050383f69e92bbec467085a82e63940a3ffb7ac9b51c9c078
                                 predecessor_target_id: windows11-amd64-v1
-                                prepared_at: "1978-08-01T13:07:02Z"
+                                prepared_at: "2007-07-24T22:17:37Z"
                                 recording_id: rec_9f82
                                 recording_url: /v1/executions/exec_9f82/recording
-                                rollback_requested_at: "1988-12-27T07:53:41Z"
-                                rolling_back_at: "1979-06-07T08:39:17Z"
-                                staging_at: "1999-07-16T03:55:11Z"
+                                rollback_requested_at: "1984-10-04T03:46:29Z"
+                                rolling_back_at: "2001-02-15T19:34:56Z"
+                                staging_at: "2001-10-18T11:24:02Z"
                                 state: admitted
                                 status_url: /v1/workspaces/vm-1/agent-upgrades/upg_9f82c1a0b3d4e5f60718293a?namespace=team-a
                                 target_id: windows11-amd64-v2
                                 target_manifest_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-                                terminal_at: "1970-05-09T21:35:05Z"
-                                updated_at: "2004-06-01T18:36:00Z"
-                                verifying_at: "1990-12-26T11:42:18Z"
+                                terminal_at: "2009-05-03T03:10:29Z"
+                                updated_at: "2000-08-28T02:04:21Z"
+                                verifying_at: "1986-05-09T04:07:59Z"
                                 vm_uid: 0d3f9a7e-6b1c-4f2a-9e8d-1a2b3c4d5e6f
                                 workspace_name: vm-1
                                 workspace_uid: abc123
@@ -2738,48 +2806,48 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Aperiam rerum tenetur praesentium tempore.
-                            example: Unde est labore quis numquam.
+                                example: Modi dolores quaerat.
+                            example: Temporibus ab laudantium aliquid exercitationem.
                 "401":
                     description: 'unauthorized: Unauthorized response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Et pariatur reprehenderit fugiat ipsa impedit.
-                            example: Iure dolores aut qui veritatis qui.
+                                example: Delectus omnis voluptas velit officia.
+                            example: Suscipit nesciunt autem rem nobis.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Placeat omnis.
-                            example: Et repellat aut vero doloribus mollitia sunt.
+                                example: Inventore architecto vero ratione autem saepe.
+                            example: Adipisci soluta reiciendis dicta dolorum amet occaecati.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Ullam deleniti ipsam quaerat.
-                            example: Veritatis quasi minus.
+                                example: Quisquam quis.
+                            example: Est vel nihil aut occaecati quia fugiat.
                 "409":
                     description: 'conflict: Conflict response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Eius quae neque.
-                            example: Delectus vel quam dolor.
+                                example: Sed placeat quas doloribus.
+                            example: Doloremque sapiente aut.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Officiis minima quidem consectetur.
-                            example: Nesciunt sed.
+                                example: Totam consectetur.
+                            example: Unde ipsam amet velit optio aut.
     /v1/workspaces/{name}/agent-upgrades/availability:
         get:
             tags:
@@ -2794,15 +2862,15 @@ paths:
                   schema:
                     type: string
                     default: workspaces
-                    example: Enim similique.
-                  example: Error sed id.
+                    example: Sequi nulla rerum.
+                  example: Laudantium totam corporis.
                 - name: name
                   in: path
                   required: true
                   schema:
                     type: string
-                    example: Exercitationem in nobis provident saepe.
-                  example: Mollitia ipsum error facere rerum voluptatem.
+                    example: Nobis esse at magnam.
+                  example: Iusto laboriosam aut temporibus distinctio aut est.
             responses:
                 "200":
                     description: OK response.
@@ -2825,48 +2893,48 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Accusantium et impedit ut voluptatem voluptas et.
-                            example: Qui natus et.
+                                example: Sed optio voluptas aut eveniet.
+                            example: Unde amet rerum sunt exercitationem ea.
                 "401":
                     description: 'unauthorized: Unauthorized response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Recusandae voluptas.
-                            example: Assumenda expedita hic veritatis possimus dignissimos.
+                                example: Quae asperiores molestias occaecati dolor.
+                            example: Dignissimos placeat consequatur dolorum ratione dolor voluptatibus.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Et amet dolorem.
-                            example: Expedita cupiditate omnis provident.
+                                example: Fugit voluptas recusandae itaque accusantium.
+                            example: Tempore esse.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Minus repellendus.
-                            example: Quod delectus ipsam.
+                                example: Itaque qui quia quia placeat non temporibus.
+                            example: Doloremque ut cumque.
                 "409":
                     description: 'conflict: Conflict response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Error ratione.
-                            example: Non nihil libero quasi minus.
+                                example: Quaerat molestiae porro quasi.
+                            example: Ipsam fuga quis ut cupiditate temporibus.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Consequatur sunt animi aliquam et ea.
-                            example: Deserunt hic temporibus et perspiciatis et quod.
+                                example: Explicabo vel.
+                            example: Quam et nihil iste qui at laborum.
     /v1/workspaces/{name}/agent/attach:
         post:
             tags:
@@ -3218,26 +3286,26 @@ paths:
                                 name: my-workspace
                                 namespace: workspaces
                                 port: 8080
-                                provisioned: true
+                                provisioned: false
                                 ready_replicas: 1
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: agent
+                                    protocol: selkies
                                 stopped: false
                                 type: container
                                 vm_gpu_profile:
-                                    count: 6716878457214357736
-                                    display_name: Non placeat enim illum.
+                                    count: 8231397701516657535
+                                    display_name: Accusantium placeat iusto reprehenderit sit vero eligendi.
                                     experimental: true
-                                    guest_driver_version: Accusantium placeat iusto reprehenderit sit vero eligendi.
-                                    id: Ad ab.
-                                    kind: pci
+                                    guest_driver_version: Magni qui.
+                                    id: A occaecati fugit consequatur enim.
+                                    kind: mediated
                                     node_selector:
-                                        Qui earum iure dolores sit inventore.: Molestias quasi et ut optio.
-                                        Quibusdam rerum eaque praesentium dolor et.: A occaecati fugit consequatur enim.
-                                    resource_name: Odio beatae.
-                                vm_profile: Voluptate est est praesentium quis.
+                                        Doloribus eveniet.: Assumenda in impedit libero pariatur soluta qui.
+                                        Illum tenetur omnis qui iste.: Maxime rem cupiditate.
+                                    resource_name: Velit et fugiat velit quia accusantium.
+                                vm_profile: Recusandae blanditiis omnis at.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -3279,15 +3347,15 @@ paths:
                   schema:
                     type: string
                     default: workspaces
-                    example: Perferendis et non.
-                  example: Recusandae nihil vero dignissimos officiis dicta.
+                    example: Velit hic ex ea doloremque dolorem.
+                  example: Nemo asperiores ut ipsum.
                 - name: name
                   in: path
                   required: true
                   schema:
                     type: string
-                    example: Eius ut eaque temporibus ab est.
-                  example: Sint voluptas aut.
+                    example: Voluptas assumenda.
+                  example: Sed sed ut.
             responses:
                 "200":
                     description: OK response.
@@ -3295,39 +3363,39 @@ paths:
                         Cache-Control:
                             schema:
                                 type: string
-                                example: Corporis eos incidunt.
-                            example: Inventore autem.
+                                example: Sit fugiat quo eaque ut rerum ab.
+                            example: Est atque deserunt ea est nostrum.
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/WorkspaceInitialCredentials2'
                             example:
-                                password: Illo voluptas.
-                                username: Neque animi eligendi.
+                                password: Culpa exercitationem corrupti saepe laboriosam ducimus possimus.
+                                username: Ut a odit blanditiis doloremque.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Laborum recusandae in quae reiciendis.
-                            example: Officia cumque.
+                                example: At consequatur.
+                            example: Fuga quod quod quis.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Voluptatem ex ea consequuntur exercitationem eligendi.
-                            example: Et nulla recusandae est est et autem.
+                                example: Quo soluta.
+                            example: Nobis ipsam.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Esse id occaecati.
-                            example: Architecto illo.
+                                example: Culpa ratione reprehenderit.
+                            example: Qui ut iusto magni aut tempora.
     /v1/workspaces/{name}/display:
         get:
             tags:
@@ -3701,7 +3769,7 @@ paths:
                         schema:
                             $ref: '#/components/schemas/JoinDisplayPayload2'
                         example:
-                            role: controller
+                            role: observer
             responses:
                 "200":
                     description: OK response.
@@ -3936,15 +4004,15 @@ paths:
                   schema:
                     type: string
                     default: workspaces
-                    example: Et voluptatibus laudantium enim placeat nam sed.
-                  example: Hic in aut non.
+                    example: Veniam ducimus commodi quo magnam quia.
+                  example: Est sunt est dignissimos architecto sed.
                 - name: name
                   in: path
                   required: true
                   schema:
                     type: string
-                    example: Est praesentium laboriosam qui beatae.
-                  example: Quasi ipsum.
+                    example: Officia veniam deserunt et.
+                  example: A aut pariatur dolores.
             requestBody:
                 required: true
                 content:
@@ -3952,7 +4020,7 @@ paths:
                         schema:
                             $ref: '#/components/schemas/SetGpuProfileRequestBody'
                         example:
-                            profile_id: jsn
+                            profile_id: kdj
             responses:
                 "200":
                     description: OK response.
@@ -3986,21 +4054,21 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: agent
+                                    protocol: selkies
                                 stopped: false
                                 type: container
                                 vm_gpu_profile:
-                                    count: 6716878457214357736
-                                    display_name: Non placeat enim illum.
+                                    count: 8231397701516657535
+                                    display_name: Accusantium placeat iusto reprehenderit sit vero eligendi.
                                     experimental: true
-                                    guest_driver_version: Accusantium placeat iusto reprehenderit sit vero eligendi.
-                                    id: Ad ab.
-                                    kind: pci
+                                    guest_driver_version: Magni qui.
+                                    id: A occaecati fugit consequatur enim.
+                                    kind: mediated
                                     node_selector:
-                                        Qui earum iure dolores sit inventore.: Molestias quasi et ut optio.
-                                        Quibusdam rerum eaque praesentium dolor et.: A occaecati fugit consequatur enim.
-                                    resource_name: Odio beatae.
-                                vm_profile: Et nostrum et eos.
+                                        Doloribus eveniet.: Assumenda in impedit libero pariatur soluta qui.
+                                        Illum tenetur omnis qui iste.: Maxime rem cupiditate.
+                                    resource_name: Velit et fugiat velit quia accusantium.
+                                vm_profile: Vel aut aut beatae voluptatum.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -4010,40 +4078,40 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Placeat quas doloribus culpa.
-                            example: Vel sapiente maiores eos veritatis.
+                                example: Et molestiae dolores.
+                            example: Aliquam sed aut corporis dolor.
                 "403":
                     description: 'forbidden: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Ratione autem saepe voluptates modi.
-                            example: Illo perspiciatis cum voluptatem et.
+                                example: Adipisci ipsum repellendus eum placeat magni nostrum.
+                            example: Quas in ratione velit aut culpa cupiditate.
                 "404":
                     description: 'not_found: Not Found response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Quaerat placeat quisquam quis ullam.
-                            example: Corporis accusamus placeat quasi.
+                                example: Eos quo.
+                            example: Soluta eveniet.
                 "409":
                     description: 'conflict: Conflict response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Consectetur est dolorem iure.
-                            example: Dolore non.
+                                example: Voluptatem incidunt dicta occaecati consequatur nihil.
+                            example: Odio inventore ut voluptate blanditiis ut sint.
                 "503":
                     description: 'unavailable: Service Unavailable response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Cumque exercitationem explicabo.
-                            example: Modi inventore architecto.
+                                example: Quo adipisci sequi.
+                            example: Eos eum corrupti sunt veritatis quidem assumenda.
     /v1/workspaces/{name}/reset:
         post:
             tags:
@@ -4104,21 +4172,21 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: agent
+                                    protocol: selkies
                                 stopped: false
                                 type: container
                                 vm_gpu_profile:
-                                    count: 6716878457214357736
-                                    display_name: Non placeat enim illum.
+                                    count: 8231397701516657535
+                                    display_name: Accusantium placeat iusto reprehenderit sit vero eligendi.
                                     experimental: true
-                                    guest_driver_version: Accusantium placeat iusto reprehenderit sit vero eligendi.
-                                    id: Ad ab.
-                                    kind: pci
+                                    guest_driver_version: Magni qui.
+                                    id: A occaecati fugit consequatur enim.
+                                    kind: mediated
                                     node_selector:
-                                        Qui earum iure dolores sit inventore.: Molestias quasi et ut optio.
-                                        Quibusdam rerum eaque praesentium dolor et.: A occaecati fugit consequatur enim.
-                                    resource_name: Odio beatae.
-                                vm_profile: Corporis voluptatem tempora delectus qui.
+                                        Doloribus eveniet.: Assumenda in impedit libero pariatur soluta qui.
+                                        Illum tenetur omnis qui iste.: Maxime rem cupiditate.
+                                    resource_name: Velit et fugiat velit quia accusantium.
+                                vm_profile: Voluptates et molestias voluptatem.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -4198,21 +4266,21 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: agent
+                                    protocol: selkies
                                 stopped: false
                                 type: container
                                 vm_gpu_profile:
-                                    count: 6716878457214357736
-                                    display_name: Non placeat enim illum.
+                                    count: 8231397701516657535
+                                    display_name: Accusantium placeat iusto reprehenderit sit vero eligendi.
                                     experimental: true
-                                    guest_driver_version: Accusantium placeat iusto reprehenderit sit vero eligendi.
-                                    id: Ad ab.
-                                    kind: pci
+                                    guest_driver_version: Magni qui.
+                                    id: A occaecati fugit consequatur enim.
+                                    kind: mediated
                                     node_selector:
-                                        Qui earum iure dolores sit inventore.: Molestias quasi et ut optio.
-                                        Quibusdam rerum eaque praesentium dolor et.: A occaecati fugit consequatur enim.
-                                    resource_name: Odio beatae.
-                                vm_profile: Provident et.
+                                        Doloribus eveniet.: Assumenda in impedit libero pariatur soluta qui.
+                                        Illum tenetur omnis qui iste.: Maxime rem cupiditate.
+                                    resource_name: Velit et fugiat velit quia accusantium.
+                                vm_profile: Recusandae ipsum repudiandae omnis.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -4284,21 +4352,21 @@ paths:
                                 remote_desktop:
                                     path: /
                                     port: 8080
-                                    protocol: agent
+                                    protocol: selkies
                                 stopped: false
                                 type: container
                                 vm_gpu_profile:
-                                    count: 6716878457214357736
-                                    display_name: Non placeat enim illum.
+                                    count: 8231397701516657535
+                                    display_name: Accusantium placeat iusto reprehenderit sit vero eligendi.
                                     experimental: true
-                                    guest_driver_version: Accusantium placeat iusto reprehenderit sit vero eligendi.
-                                    id: Ad ab.
-                                    kind: pci
+                                    guest_driver_version: Magni qui.
+                                    id: A occaecati fugit consequatur enim.
+                                    kind: mediated
                                     node_selector:
-                                        Qui earum iure dolores sit inventore.: Molestias quasi et ut optio.
-                                        Quibusdam rerum eaque praesentium dolor et.: A occaecati fugit consequatur enim.
-                                    resource_name: Odio beatae.
-                                vm_profile: Reiciendis commodi porro magni aut quia.
+                                        Doloribus eveniet.: Assumenda in impedit libero pariatur soluta qui.
+                                        Illum tenetur omnis qui iste.: Maxime rem cupiditate.
+                                    resource_name: Velit et fugiat velit quia accusantium.
+                                vm_profile: Temporibus quo nam rerum deserunt quos totam.
                                 volume_mounts:
                                     - mount_path: /home/coder
                                       name: my-workspace-data
@@ -4457,7 +4525,7 @@ components:
                     pattern: ^upg_[0-9a-f]{24}$
                 awaiting_reboot_at:
                     type: string
-                    example: "1988-06-01T15:45:18Z"
+                    example: "1976-02-21T15:49:15Z"
                     format: date-time
                 cancel_requested:
                     type: boolean
@@ -4477,7 +4545,7 @@ components:
                     pattern: ^[0-9a-f]{64}$
                 installing_at:
                     type: string
-                    example: "1993-01-15T10:53:28Z"
+                    example: "2013-09-28T03:54:15Z"
                     format: date-time
                 journal_sequence:
                     type: integer
@@ -4490,7 +4558,7 @@ components:
                 predecessor_manifest_sha256:
                     type: string
                     description: Pinned rollback predecessor manifest digest
-                    example: 2bb513c8d2af4981451946f3cc761109fcc5161f2831d1f4e2d855607be7c9ba
+                    example: d346ebaa8fcacab0168ce2e23c9d127e624cfbd20a3e9f40deed5a4fcaf4ce61
                     pattern: ^[0-9a-f]{64}$
                 predecessor_target_id:
                     type: string
@@ -4498,7 +4566,7 @@ components:
                     example: windows11-amd64-v1
                 prepared_at:
                     type: string
-                    example: "1973-09-22T14:17:31Z"
+                    example: "1971-03-22T13:37:43Z"
                     format: date-time
                 recording_id:
                     type: string
@@ -4510,15 +4578,15 @@ components:
                     example: /v1/executions/exec_9f82/recording
                 rollback_requested_at:
                     type: string
-                    example: "1971-03-22T13:37:43Z"
+                    example: "1993-06-15T20:22:37Z"
                     format: date-time
                 rolling_back_at:
                     type: string
-                    example: "2013-09-28T03:54:15Z"
+                    example: "1986-06-21T16:58:57Z"
                     format: date-time
                 staging_at:
                     type: string
-                    example: "2011-10-03T08:30:43Z"
+                    example: "1988-10-05T09:28:48Z"
                     format: date-time
                 state:
                     type: string
@@ -4553,15 +4621,15 @@ components:
                     pattern: ^[0-9a-f]{64}$
                 terminal_at:
                     type: string
-                    example: "1978-08-20T22:54:15Z"
+                    example: "1980-12-30T20:08:26Z"
                     format: date-time
                 updated_at:
                     type: string
-                    example: "1985-03-08T03:21:21Z"
+                    example: "2006-11-16T08:23:29Z"
                     format: date-time
                 verifying_at:
                     type: string
-                    example: "1988-10-05T09:28:48Z"
+                    example: "1985-03-08T03:21:21Z"
                     format: date-time
                 vm_uid:
                     type: string
@@ -4579,29 +4647,29 @@ components:
                 admitted_at: "2026-10-19T00:00:00Z"
                 allow_reboot: false
                 attempt_id: upg_9f82c1a0b3d4e5f60718293a
-                awaiting_reboot_at: "1995-08-26T13:40:22Z"
+                awaiting_reboot_at: "1986-02-18T07:05:51Z"
                 cancel_requested: false
                 error_code: ""
                 execution_id: exec_9f82
                 expected_installed_inventory_sha256: 810151abf0615815b24e01967ec665e0eb583500f1eb5fa456361935b22b183b
-                installing_at: "1978-02-07T21:57:07Z"
+                installing_at: "2003-09-14T11:28:28Z"
                 journal_sequence: 0
                 namespace: team-a
-                predecessor_manifest_sha256: 41072787927682fc7563d317d006692ebe11c9c96f1c14175dc87d6e18430395
+                predecessor_manifest_sha256: f138f0ccf79eab00ef590b687a98781cea7a7cd9223e95314a4e4e4386035dd4
                 predecessor_target_id: windows11-amd64-v1
-                prepared_at: "1986-12-23T14:06:23Z"
+                prepared_at: "2008-08-21T06:53:55Z"
                 recording_id: rec_9f82
                 recording_url: /v1/executions/exec_9f82/recording
-                rollback_requested_at: "2008-08-21T06:53:55Z"
-                rolling_back_at: "1976-01-21T18:02:04Z"
-                staging_at: "1974-12-09T03:12:34Z"
+                rollback_requested_at: "1984-03-08T15:19:04Z"
+                rolling_back_at: "2014-02-25T11:35:04Z"
+                staging_at: "2002-11-02T08:44:05Z"
                 state: admitted
                 status_url: /v1/workspaces/vm-1/agent-upgrades/upg_9f82c1a0b3d4e5f60718293a?namespace=team-a
                 target_id: windows11-amd64-v2
                 target_manifest_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-                terminal_at: "1975-10-31T00:15:48Z"
-                updated_at: "1989-07-19T00:08:58Z"
-                verifying_at: "2002-11-02T08:44:05Z"
+                terminal_at: "1994-10-26T09:40:11Z"
+                updated_at: "2014-04-03T19:03:51Z"
+                verifying_at: "1989-07-19T00:08:58Z"
                 vm_uid: 0d3f9a7e-6b1c-4f2a-9e8d-1a2b3c4d5e6f
                 workspace_name: vm-1
                 workspace_uid: abc123
@@ -4904,7 +4972,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Ut id cumque id.
+                        example: Ipsum id molestiae sit voluptatibus ut fugit.
                     description: Default command-line args
                     example:
                         - --bind-addr
@@ -5002,11 +5070,11 @@ components:
                 memory_limit:
                     type: string
                     description: Guest memory default
-                    example: Soluta mollitia odio aperiam alias nisi aut.
+                    example: Labore magnam saepe neque.
                 memory_request:
                     type: string
                     description: Guest memory request default
-                    example: Aspernatur atque maxime dolorem.
+                    example: Doloribus ut ducimus dicta sapiente repellendus mollitia.
                 name:
                     type: string
                     description: Display name
@@ -5014,11 +5082,11 @@ components:
                 persistent_root_disk:
                     type: boolean
                     description: Import a per-workspace persistent root disk
-                    example: false
+                    example: true
                 persistent_root_disk_size:
                     type: string
                     description: Persistent root capacity
-                    example: Unde sapiente illum commodi nobis voluptatem.
+                    example: Incidunt accusamus dicta itaque architecto non.
                 privileged:
                     type: boolean
                     description: Run container in privileged mode
@@ -5036,7 +5104,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Et sit a.
+                        example: Et et laboriosam.
                     description: Tags for filtering/searching images
                     example:
                         - development
@@ -5051,7 +5119,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Dolor eos autem minus quis quo.
+                        example: Et necessitatibus eum itaque.
                     description: Workspace types this image supports (container, vm, scratch). Empty means container-only
                     example:
                         - container
@@ -5088,18 +5156,18 @@ components:
                       url: https://github.com/coder/code-server
                     - title: Docker Hub
                       url: https://hub.docker.com/r/codercom/code-server
-                memory_limit: Omnis ut odit ex quis.
-                memory_request: Similique labore quia eligendi.
+                memory_limit: Sequi eum est aut.
+                memory_request: Consequatur illum harum illo.
                 name: Code Server (VS Code)
-                persistent_root_disk: true
-                persistent_root_disk_size: Reiciendis ea vero voluptatem ex quas.
+                persistent_root_disk: false
+                persistent_root_disk_size: Quo et qui in facere.
                 privileged: false
                 proxy_config:
                     custom_request_headers:
                         x-tenant: workspaces
                     inject_base_tag: false
-                    needs_noop_sw: false
-                    preserve_path_prefix: true
+                    needs_noop_sw: true
+                    preserve_path_prefix: false
                     rewrite_host_absolute_paths: true
                     tls_insecure: false
                     websocket_paths:
@@ -5185,7 +5253,7 @@ components:
                     type: string
                     description: 'Volume type: container PVC or reusable CDI blank VM disk'
                     default: pvc
-                    example: pvc
+                    example: vm-disk
                     enum:
                         - pvc
                         - vm-disk
@@ -5239,7 +5307,7 @@ components:
                         nvidia.com/gpu: "true"
                     additionalProperties:
                         type: string
-                        example: Ipsam quis voluptatem.
+                        example: Quidem eaque commodi quia rerum.
                 shared_memory:
                     type: boolean
                     description: Mount /dev/shm as an emptyDir with medium=Memory (required for Chrome, ML frameworks)
@@ -5277,6 +5345,12 @@ components:
             description: Payload for creating a new workspace
             example:
                 container:
+                    args:
+                        - Est repudiandae ducimus.
+                        - Tempora occaecati ut sunt voluptas praesentium.
+                    command:
+                        - Voluptatibus quo.
+                        - Corrupti voluptas sint.
                     cpu_limit: "2"
                     cpu_request: 500m
                     gpu_request: "1"
@@ -5302,11 +5376,11 @@ components:
                       value: "true"
                 type: container
                 vm_options:
-                    gpu_profile: osm
-                    import_cert_config_map_name: Voluptas sint sed.
-                    import_secret_name: Iure voluptatibus quo asperiores.
-                    root_disk_size: Tempora occaecati ut sunt voluptas praesentium.
-                    storage_class_name: Est repudiandae ducimus.
+                    gpu_profile: fwr
+                    import_cert_config_map_name: Autem dolorum qui repellendus recusandae accusantium.
+                    import_secret_name: Dolores et modi.
+                    root_disk_size: Eum sapiente.
+                    storage_class_name: Molestiae alias quaerat sit et vitae.
                 volume_mounts:
                     - mount_path: /home/coder
                       name: my-workspace-data
@@ -5363,7 +5437,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Facere eum maxime.
+                        example: A qui.
                     description: Supported display transports
                     example:
                         - rfb
@@ -5567,6 +5641,10 @@ components:
                           id: 97f8c4b7a2
                           joined_at: "2026-09-19T15:04:05Z"
                           role: observer
+                        - connected: false
+                          id: 97f8c4b7a2
+                          joined_at: "2026-09-19T15:04:05Z"
+                          role: observer
                 participants:
                     type: integer
                     description: Total participant count (controller + observers)
@@ -5587,6 +5665,10 @@ components:
                 enabled: false
                 epoch: 8f2ac64d91
                 observers:
+                    - connected: false
+                      id: 97f8c4b7a2
+                      joined_at: "2026-09-19T15:04:05Z"
+                      role: observer
                     - connected: false
                       id: 97f8c4b7a2
                       joined_at: "2026-09-19T15:04:05Z"
@@ -5693,71 +5775,78 @@ components:
                     type: string
                     description: Standard error, truncated to the pilot output bound
                     example:
-                        - 79
-                        - 102
-                        - 102
-                        - 105
-                        - 99
-                        - 105
-                        - 105
-                        - 115
-                        - 32
-                        - 112
-                        - 114
-                        - 97
-                        - 101
-                        - 115
-                        - 101
-                        - 110
-                        - 116
-                        - 105
-                        - 117
-                        - 109
-                        - 32
-                        - 97
-                        - 99
-                        - 99
-                        - 117
-                        - 115
-                        - 97
-                        - 109
-                        - 117
-                        - 115
-                        - 32
-                        - 112
-                        - 101
-                        - 114
-                        - 102
-                        - 101
-                        - 114
-                        - 101
-                        - 110
+                        - 65
                         - 100
                         - 105
+                        - 112
+                        - 105
                         - 115
+                        - 99
+                        - 105
                         - 32
-                        - 114
                         - 101
-                        - 114
+                        - 116
+                        - 32
+                        - 101
+                        - 116
+                        - 32
+                        - 118
+                        - 101
+                        - 108
+                        - 105
+                        - 116
+                        - 32
+                        - 97
+                        - 98
+                        - 32
+                        - 110
+                        - 97
+                        - 116
                         - 117
-                        - 109
+                        - 115
                         - 46
                     format: binary
                 stdout:
                     type: string
                     description: Standard output, truncated to the pilot output bound
                     example:
-                        - 83
+                        - 81
+                        - 117
                         - 105
+                        - 115
+                        - 113
+                        - 117
+                        - 97
+                        - 109
+                        - 32
+                        - 99
+                        - 111
+                        - 110
+                        - 115
+                        - 101
+                        - 113
+                        - 117
+                        - 97
+                        - 116
+                        - 117
+                        - 114
+                        - 32
+                        - 101
+                        - 111
+                        - 115
+                        - 32
+                        - 115
+                        - 117
                         - 110
                         - 116
                         - 32
-                        - 115
-                        - 105
-                        - 116
-                        - 32
+                        - 102
                         - 97
-                        - 116
+                        - 99
+                        - 105
+                        - 108
+                        - 105
+                        - 115
                         - 32
                         - 112
                         - 111
@@ -5793,75 +5882,6 @@ components:
                 recording_id: rec_9f82
                 state: succeeded
                 stderr:
-                    - 79
-                    - 109
-                    - 110
-                    - 105
-                    - 115
-                    - 32
-                    - 100
-                    - 101
-                    - 108
-                    - 101
-                    - 110
-                    - 105
-                    - 116
-                    - 105
-                    - 32
-                    - 99
-                    - 111
-                    - 114
-                    - 114
-                    - 117
-                    - 112
-                    - 116
-                    - 105
-                    - 32
-                    - 113
-                    - 117
-                    - 111
-                    - 115
-                    - 32
-                    - 118
-                    - 111
-                    - 108
-                    - 117
-                    - 112
-                    - 116
-                    - 97
-                    - 116
-                    - 117
-                    - 109
-                    - 32
-                    - 101
-                    - 120
-                    - 101
-                    - 114
-                    - 99
-                    - 105
-                    - 116
-                    - 97
-                    - 116
-                    - 105
-                    - 111
-                    - 110
-                    - 101
-                    - 109
-                    - 32
-                    - 118
-                    - 111
-                    - 108
-                    - 117
-                    - 112
-                    - 116
-                    - 97
-                    - 116
-                    - 105
-                    - 98
-                    - 117
-                    - 115
-                    - 46
-                stdout:
                     - 68
                     - 111
                     - 108
@@ -5872,8 +5892,81 @@ components:
                     - 117
                     - 115
                     - 32
+                    - 116
+                    - 101
+                    - 109
+                    - 112
+                    - 111
+                    - 114
+                    - 105
+                    - 98
+                    - 117
+                    - 115
+                    - 32
+                    - 97
+                    - 108
+                    - 105
+                    - 97
+                    - 115
+                    - 32
+                    - 101
+                    - 120
+                    - 112
+                    - 101
+                    - 100
+                    - 105
+                    - 116
+                    - 97
+                    - 32
+                    - 97
+                    - 117
+                    - 116
+                    - 32
+                    - 105
+                    - 108
+                    - 108
+                    - 111
+                    - 32
+                    - 117
+                    - 108
+                    - 108
+                    - 97
+                    - 109
+                    - 46
+                stdout:
+                    - 65
+                    - 117
+                    - 116
+                    - 32
                     - 115
                     - 105
+                    - 116
+                    - 32
+                    - 97
+                    - 116
+                    - 113
+                    - 117
+                    - 101
+                    - 32
+                    - 101
+                    - 111
+                    - 115
+                    - 32
+                    - 101
+                    - 118
+                    - 101
+                    - 110
+                    - 105
+                    - 101
+                    - 116
+                    - 32
+                    - 110
+                    - 101
+                    - 115
+                    - 99
+                    - 105
+                    - 117
+                    - 110
                     - 116
                     - 46
                 truncated: false
@@ -5935,7 +6028,7 @@ components:
                 end_time:
                     type: string
                     description: RFC3339 timestamp
-                    example: "1992-10-25T15:54:16Z"
+                    example: "1985-11-18T19:07:08Z"
                     format: date-time
                 execution_id:
                     type: string
@@ -5979,7 +6072,7 @@ components:
                 start_time:
                     type: string
                     description: RFC3339 timestamp
-                    example: "1981-09-27T06:44:10Z"
+                    example: "2009-11-17T21:49:14Z"
                     format: date-time
                 state:
                     type: string
@@ -6016,7 +6109,7 @@ components:
                 deny_reason: ""
                 durability: none
                 elevated: false
-                end_time: "1986-10-11T09:51:30Z"
+                end_time: "1999-04-03T04:45:13Z"
                 execution_id: exec_9f82
                 exit_code: 0
                 grant_version: "1.0"
@@ -6026,7 +6119,7 @@ components:
                 os_identity: root
                 recording_id: rec_9f82
                 recording_lost: false
-                start_time: "1979-01-08T16:18:11Z"
+                start_time: "2011-10-09T04:03:52Z"
                 state: succeeded
                 termination: graceful
                 workspace_generation: 3
@@ -6049,43 +6142,19 @@ components:
                     type: string
                     description: Base64-encoded plaintext recording data
                     example:
-                        - 81
-                        - 117
-                        - 105
-                        - 115
-                        - 32
+                        - 66
                         - 101
-                        - 116
-                        - 32
                         - 97
-                        - 109
+                        - 116
+                        - 97
                         - 101
-                        - 116
-                        - 32
-                        - 102
-                        - 97
-                        - 99
-                        - 105
-                        - 108
-                        - 105
-                        - 115
                         - 32
                         - 100
                         - 111
                         - 108
                         - 111
                         - 114
-                        - 32
-                        - 110
-                        - 111
-                        - 98
-                        - 105
-                        - 115
-                        - 32
-                        - 114
                         - 101
-                        - 114
-                        - 117
                         - 109
                         - 46
                     format: binary
@@ -6097,24 +6166,44 @@ components:
             description: Verified, decrypted recording chunk; sensitive playback content
             example:
                 data:
-                    - 69
-                    - 116
-                    - 32
+                    - 65
+                    - 112
                     - 101
+                    - 114
+                    - 105
+                    - 97
+                    - 109
+                    - 32
+                    - 110
                     - 111
+                    - 98
+                    - 105
                     - 115
+                    - 32
+                    - 118
+                    - 111
+                    - 108
+                    - 117
+                    - 112
+                    - 116
+                    - 97
+                    - 116
+                    - 117
+                    - 109
                     - 32
                     - 113
                     - 117
-                    - 111
-                    - 32
-                    - 112
-                    - 111
-                    - 115
-                    - 115
                     - 105
-                    - 109
-                    - 117
+                    - 32
+                    - 98
+                    - 108
+                    - 97
+                    - 110
+                    - 100
+                    - 105
+                    - 116
+                    - 105
+                    - 105
                     - 115
                     - 46
                 index: 0
@@ -6126,23 +6215,23 @@ components:
             properties:
                 chunks:
                     type: integer
-                    example: 3556641820793444890
+                    example: 11018821447504634997
                     format: int64
                 plaintext_bytes:
                     type: integer
-                    example: 5942406856411262049
+                    example: 5463561060822797095
                     format: int64
                 recording_id:
                     type: string
-                    example: Eligendi culpa quas sunt provident facere impedit.
+                    example: Sunt natus.
                 verified:
                     type: boolean
-                    example: true
+                    example: false
             example:
-                chunks: 9105728414039389454
-                plaintext_bytes: 2343903566699577213
-                recording_id: Aut quia.
-                verified: false
+                chunks: 14239082190255037092
+                plaintext_bytes: 6123978239733854837
+                recording_id: Dolores alias reprehenderit reprehenderit.
+                verified: true
             required:
                 - recording_id
                 - chunks
@@ -6210,7 +6299,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Similique veritatis explicabo error.
+                        example: Quia mollitia quo et cum omnis soluta.
                     description: Default command-line args injected at workspace creation
                     example:
                         - --bind-addr
@@ -6303,10 +6392,10 @@ components:
                           url: https://hub.docker.com/r/codercom/code-server
                 memory_limit:
                     type: string
-                    example: Est eum non vitae.
+                    example: Possimus veritatis a.
                 memory_request:
                     type: string
-                    example: Sed debitis ratione ut sed.
+                    example: Ipsam perferendis.
                 name:
                     type: string
                     description: Display name
@@ -6316,7 +6405,7 @@ components:
                     example: true
                 persistent_root_disk_size:
                     type: string
-                    example: Quia totam rerum fuga sed odio.
+                    example: Amet provident quod accusantium error quo praesentium.
                 privileged:
                     type: boolean
                     description: Run container in privileged mode
@@ -6333,7 +6422,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Doloremque ex.
+                        example: Ea ut non repellat.
                     description: Tags for filtering/searching images
                     example:
                         - development
@@ -6341,12 +6430,12 @@ components:
                 vm_profile:
                     type: string
                     description: Controller-supported guest profile
-                    example: Vitae ut qui.
+                    example: Dolor ea et excepturi.
                 workspace_types:
                     type: array
                     items:
                         type: string
-                        example: A aliquam.
+                        example: Deserunt recusandae et repudiandae consequatur deleniti beatae.
                     description: Workspace types this image supports (container, vm, scratch). Empty means container-only
                     example:
                         - container
@@ -6384,18 +6473,18 @@ components:
                       url: https://github.com/coder/code-server
                     - title: Docker Hub
                       url: https://hub.docker.com/r/codercom/code-server
-                memory_limit: Sed aut hic molestiae qui in.
-                memory_request: Iure ullam tempora dolores accusantium.
+                memory_limit: Magni in et qui quia quae placeat.
+                memory_request: Eius perspiciatis itaque.
                 name: Code Server (VS Code)
-                persistent_root_disk: true
-                persistent_root_disk_size: Provident placeat nemo et repellat porro.
+                persistent_root_disk: false
+                persistent_root_disk_size: Est animi odit.
                 privileged: false
                 proxy_config:
                     custom_request_headers:
                         x-tenant: workspaces
                     inject_base_tag: false
-                    needs_noop_sw: false
-                    preserve_path_prefix: true
+                    needs_noop_sw: true
+                    preserve_path_prefix: false
                     rewrite_host_absolute_paths: true
                     tls_insecure: false
                     websocket_paths:
@@ -6408,7 +6497,7 @@ components:
                 tags:
                     - development
                     - vscode
-                vm_profile: Consequatur dolores fugit.
+                vm_profile: Et eum sapiente.
                 workspace_types:
                     - container
             required:
@@ -6477,17 +6566,17 @@ components:
                         x-tenant: workspaces
                     additionalProperties:
                         type: string
-                        example: A cum sit tenetur rem dignissimos laudantium.
+                        example: Dolor nisi qui est iste est.
                 inject_base_tag:
                     type: boolean
                     description: Inject a <base> tag into HTML responses to fix relative path resolution
                     default: false
-                    example: true
+                    example: false
                 needs_noop_sw:
                     type: boolean
                     description: Serve a no-op ServiceWorker at /sw.js to prevent SW registration errors
                     default: false
-                    example: false
+                    example: true
                 preserve_path_prefix:
                     type: boolean
                     description: Forward the full proxy path (including /proxy/{ns}/{name}) to the pod instead of stripping it. Required for apps configured with a base URL matching the proxy prefix.
@@ -6497,7 +6586,7 @@ components:
                     type: boolean
                     description: Rewrite requests with absolute paths that escape the proxy prefix using Referer header
                     default: false
-                    example: true
+                    example: false
                 tls_insecure:
                     type: boolean
                     description: Connect to backend over HTTPS with skip-verify (for self-signed certs)
@@ -6507,7 +6596,7 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Quibusdam velit voluptates ut reprehenderit natus quos.
+                        example: Iure optio ea.
                     description: Paths that use WebSocket (informational, all paths support WS transparently)
                     example:
                         - /websockify
@@ -6518,7 +6607,7 @@ components:
                 inject_base_tag: true
                 needs_noop_sw: true
                 preserve_path_prefix: false
-                rewrite_host_absolute_paths: false
+                rewrite_host_absolute_paths: true
                 tls_insecure: false
                 websocket_paths:
                     - /websockify
@@ -6538,7 +6627,7 @@ components:
                 protocol:
                     type: string
                     description: 'Protocol name: "selkies" (Linux in-guest agent) or "agent" (cross-platform kw-agent)'
-                    example: agent
+                    example: selkies
                     enum:
                         - selkies
                         - agent
@@ -6546,7 +6635,7 @@ components:
             example:
                 path: /
                 port: 8080
-                protocol: selkies
+                protocol: agent
             required:
                 - protocol
                 - port
@@ -6686,10 +6775,10 @@ components:
             properties:
                 profile_id:
                     type: string
-                    example: 6yx
+                    example: say
                     maxLength: 63
             example:
-                profile_id: pwe
+                profile_id: qen
             required:
                 - profile_id
         Sshkey:
@@ -6738,12 +6827,12 @@ components:
                     type: array
                     items:
                         type: string
-                        example: Fugit voluptas recusandae itaque accusantium.
+                        example: Voluptatem eos.
                     description: Arguments passed to the executable verbatim
                     example:
-                        - Optio voluptas aut eveniet.
-                        - Itaque qui quia quia placeat non temporibus.
-                        - Quaerat molestiae porro quasi.
+                        - Hic veritatis possimus.
+                        - Maxime expedita cupiditate omnis.
+                        - Voluptates qui natus et esse.
                     maxItems: 64
                 cwd:
                     type: string
@@ -6754,7 +6843,7 @@ components:
                     type: integer
                     description: Guest execution deadline in seconds
                     default: 20
-                    example: 9
+                    example: 16
                     format: int64
                     minimum: 1
                     maximum: 20
@@ -6778,11 +6867,11 @@ components:
                     maxLength: 253
             example:
                 args:
-                    - Qui optio quibusdam.
-                    - Voluptatem sint non.
-                    - Dolor non in eveniet quia non et.
+                    - Qui non.
+                    - Libero quasi minus quam deserunt.
+                    - Temporibus et perspiciatis et.
                 cwd: C:\Temp
-                deadline_seconds: 9
+                deadline_seconds: 8
                 executable: C:\Windows\System32\cmd.exe
                 namespace: team-a
                 workspace_name: vm-1
@@ -6832,20 +6921,20 @@ components:
             properties:
                 count:
                     type: integer
-                    example: 5226192139246217692
+                    example: 6263095973131203573
                     format: int64
                 display_name:
                     type: string
-                    example: Nisi sapiente natus eos sed aspernatur.
+                    example: Placeat omnis nesciunt aut.
                 experimental:
                     type: boolean
-                    example: false
+                    example: true
                 guest_driver_version:
                     type: string
-                    example: Et in vero optio.
+                    example: Ut ducimus ratione molestiae.
                 id:
                     type: string
-                    example: Delectus quia.
+                    example: Eligendi culpa quas sunt provident facere impedit.
                 kind:
                     type: string
                     example: mediated
@@ -6855,26 +6944,26 @@ components:
                 node_selector:
                     type: object
                     example:
-                        Cum quidem sunt maxime.: Rerum sed et.
-                        Similique pariatur necessitatibus.: Expedita dolor molestiae.
+                        Aliquam voluptatem ad.: Dolorum non quibusdam aliquam.
+                        Assumenda eos omnis.: Voluptas autem.
+                        Enim ut.: Sed quia.
                     additionalProperties:
                         type: string
-                        example: Assumenda dolor qui ipsa doloribus expedita expedita.
+                        example: Voluptas aut voluptas et numquam et ex.
                 resource_name:
                     type: string
-                    example: Molestias enim ut.
+                    example: Qui explicabo reprehenderit numquam et.
             description: Operator-declared render-only Windows GPU contract; driver version is required configuration, not observed guest readiness
             example:
-                count: 5942981717994704409
-                display_name: Eveniet non possimus porro dicta dolores.
-                experimental: false
-                guest_driver_version: Voluptatem libero consectetur ratione nostrum ipsam.
-                id: Error sed eum aliquid veritatis natus.
+                count: 7507469209490179575
+                display_name: Laboriosam libero eum dolores fugiat dolorem.
+                experimental: true
+                guest_driver_version: Similique dolor et veniam est asperiores.
+                id: Necessitatibus voluptatem pariatur.
                 kind: pci
                 node_selector:
-                    Eos voluptas fuga aut autem enim accusantium.: Delectus cupiditate harum.
-                    Non quo.: Molestiae est sed qui cupiditate iste eum.
-                resource_name: Ab qui omnis omnis.
+                    Ducimus facere amet impedit esse et perferendis.: Enim qui impedit nihil est suscipit.
+                resource_name: Corporis fugiat eaque cupiditate sunt.
             required:
                 - id
                 - display_name
@@ -6890,31 +6979,31 @@ components:
                 gpu_profile:
                     type: string
                     description: Versioned operator-approved VM GPU profile ID; omitted/empty keeps software graphics
-                    example: zh1
+                    example: di6
                     maxLength: 63
                 import_cert_config_map_name:
                     type: string
                     description: Same-namespace registry CA ConfigMap
-                    example: Voluptatem voluptatum aut doloremque qui.
+                    example: Soluta mollitia odio aperiam alias nisi aut.
                 import_secret_name:
                     type: string
                     description: Same-namespace CDI accessKeyId/secretKey Secret
-                    example: Et eum voluptate harum.
+                    example: Unde sapiente illum commodi nobis voluptatem.
                 root_disk_size:
                     type: string
                     description: Persistent Windows root capacity, at least 80Gi
-                    example: In distinctio nihil.
+                    example: Magnam harum.
                 storage_class_name:
                     type: string
                     description: Persistent root StorageClass; empty uses cluster default
-                    example: Exercitationem deserunt laudantium aspernatur deserunt sint.
+                    example: Aspernatur atque maxime dolorem.
             description: Namespaced Windows root import settings; credentials remain in Kubernetes Secrets
             example:
-                gpu_profile: obk
-                import_cert_config_map_name: Quia vitae saepe recusandae.
-                import_secret_name: Doloremque necessitatibus ipsa dignissimos dolores quas sed.
-                root_disk_size: Ducimus amet explicabo.
-                storage_class_name: Possimus dolorem vel quasi et optio.
+                gpu_profile: bo8
+                import_cert_config_map_name: Vitae similique labore quia.
+                import_secret_name: Quas eius omnis ut odit ex.
+                root_disk_size: Et amet facilis dolor nobis rerum distinctio.
+                storage_class_name: Enim libero ad.
         Volume:
             type: object
             properties:
@@ -6934,7 +7023,7 @@ components:
                         workspace: my-workspace
                     additionalProperties:
                         type: string
-                        example: Et aut eum.
+                        example: Rerum animi dolorem consequatur natus sequi veritatis.
                 name:
                     type: string
                     description: PVC name
@@ -6959,7 +7048,7 @@ components:
                     type: string
                     description: 'Volume type: pvc or vm-disk'
                     default: pvc
-                    example: pvc
+                    example: vm-disk
                     enum:
                         - pvc
                         - vm-disk
@@ -6975,7 +7064,7 @@ components:
                 phase: Bound
                 size: 10Gi
                 storage_class: standard
-                type: vm-disk
+                type: pvc
             required:
                 - name
                 - namespace
@@ -7105,7 +7194,7 @@ components:
                 vm_profile:
                     type: string
                     description: Resolved guest profile; windows11-amd64-v1 uses display-only native provisioning
-                    example: Atque quidem veniam perferendis perspiciatis voluptas.
+                    example: Veritatis repellat.
                 volume_mounts:
                     type: array
                     items:
@@ -7155,7 +7244,7 @@ components:
                         Sapiente sit ut at.: Est voluptas et voluptates et.
                         Sequi iusto excepturi itaque officiis et est.: Voluptates voluptatem nobis ut.
                     resource_name: Dolor et voluptas quis eum.
-                vm_profile: Neque in debitis.
+                vm_profile: Et autem.
                 volume_mounts:
                     - mount_path: /home/coder
                       name: my-workspace-data
@@ -7199,6 +7288,26 @@ components:
         WorkspaceContainer:
             type: object
             properties:
+                args:
+                    type: array
+                    items:
+                        type: string
+                        example: Quia quisquam repudiandae quia incidunt.
+                    description: Container argument override, passed verbatim
+                    example:
+                        - Dolorum et ex deleniti consequatur necessitatibus.
+                        - Laudantium aut temporibus omnis.
+                        - Ipsam quis voluptatem.
+                        - Sunt sed et.
+                command:
+                    type: array
+                    items:
+                        type: string
+                        example: Nemo ut.
+                    description: Container entrypoint override, passed verbatim
+                    example:
+                        - Ex repellendus aut esse natus.
+                        - Qui ratione dolor.
                 cpu_limit:
                     type: string
                     description: CPU limit
@@ -7244,6 +7353,15 @@ components:
                     format: int64
             description: Container specification for a workspace
             example:
+                args:
+                    - Est et sit a impedit ut id.
+                    - Id ut dolor eos autem.
+                    - Quis quo id quo.
+                command:
+                    - Quibusdam velit voluptates ut reprehenderit natus quos.
+                    - Consectetur a cum sit tenetur rem dignissimos.
+                    - Suscipit est neque.
+                    - Ut sequi.
                 cpu_limit: "2"
                 cpu_request: 500m
                 gpu_request: "1"
@@ -7261,18 +7379,18 @@ components:
             properties:
                 cache_control:
                     type: string
-                    example: Quisquam repudiandae.
+                    example: Officia fuga quisquam quasi quisquam voluptatem.
                 password:
                     type: string
-                    example: Natus quia qui ratione dolor quia.
+                    example: Delectus aliquid esse quibusdam.
                 username:
                     type: string
-                    example: Ut eveniet dolores ex repellendus aut.
+                    example: Ipsum aut nihil.
             description: Per-workspace initial Windows account, visible only to namespace editors/admins
             example:
-                cache_control: Laudantium aut temporibus omnis.
-                password: Deleniti consequatur necessitatibus.
-                username: Incidunt aut eos dolorum et.
+                cache_control: Exercitationem expedita sint et tenetur aut.
+                password: Pariatur corrupti sit et dolorem dicta velit.
+                username: Quis non ullam.
             required:
                 - username
                 - password
@@ -7282,13 +7400,13 @@ components:
             properties:
                 password:
                     type: string
-                    example: In maiores occaecati dolores velit.
+                    example: Voluptates porro aut.
                 username:
                     type: string
-                    example: Autem officia architecto praesentium aut cupiditate voluptas.
+                    example: Nisi rerum sit ratione fuga.
             example:
-                password: Et quibusdam molestiae autem repudiandae nostrum doloribus.
-                username: Expedita quam totam itaque nam asperiores.
+                password: Est quia ut.
+                username: Esse eveniet est eius quibusdam recusandae accusantium.
             required:
                 - username
                 - password
