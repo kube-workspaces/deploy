@@ -282,27 +282,19 @@ group "workspace types"
 # scratch → plain Deployment with generated pod names, selected by workspace-name.
 SCRATCH_NAME="e2e-scratch"
 kubectl delete workspace "$SCRATCH_NAME" -n "$NS" --ignore-not-found >/dev/null 2>&1 || true
-if kubectl apply --server-side -f - >/dev/null 2>&1 <<EOF
-apiVersion: kubeworkspaces.io/v1alpha1
-kind: Workspace
-metadata:
-  name: ${SCRATCH_NAME}
-  namespace: ${NS}
-spec:
-  type: scratch
-  template:
-    spec:
-      containers:
-        - name: ${SCRATCH_NAME}
-          image: ${E2E_IMAGE}
-          ports:
-            - containerPort: ${E2E_PORT}
-              name: workspace-port
-EOF
-then
-  pass "scratch Workspace CR created"
+# Use the real API boundary: a UI command used to be silently discarded by
+# its HTTP decoder, while direct CR application masked the missing contract.
+scratch_payload=$(jq -n --arg name "$SCRATCH_NAME" --arg ns "$NS" '{
+  name: $name, namespace: $ns, type: "scratch",
+  container: {name: $name, image: "alpine:latest", port: 80,
+    cpu_request: "10m", memory_request: "32Mi", cpu_limit: "200m", memory_limit: "128Mi",
+    command: ["sleep", "infinity"]}}')
+scratch_status=$(curl -sS --max-time 30 -o /dev/null -w '%{http_code}' \
+  -H 'Content-Type: application/json' -d "$scratch_payload" "${api}/v1/workspaces")
+if [ "$scratch_status" = 201 ]; then
+  pass "scratch Workspace created through API with a keep-alive command"
 else
-  fail "scratch Workspace CR created"
+  fail "scratch Workspace API create (HTTP ${scratch_status})"
 fi
 
 if kubectl rollout status "deployment/${SCRATCH_NAME}" -n "$NS" \
@@ -318,6 +310,9 @@ check_equals "scratch Service selects workspace-name" "$SCRATCH_NAME" "$scratch_
 scratch_ready=$(kubectl get workspace "$SCRATCH_NAME" -n "$NS" \
   -o jsonpath='{.status.readyReplicas}' 2>/dev/null)
 check_equals "scratch Workspace status.readyReplicas is 1" "1" "${scratch_ready:-0}"
+scratch_command=$(kubectl get pods -n "$NS" -l "workspace-name=${SCRATCH_NAME}" \
+  -o json | jq -c '.items[0].spec.containers[0].command')
+check_equals "scratch command reaches the running pod" '["sleep","infinity"]' "$scratch_command"
 
 # vm → KubeVirt VirtualMachine. Only exercised when the CRDs are installed.
 if kubectl get crd virtualmachines.kubevirt.io >/dev/null 2>&1; then
