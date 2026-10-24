@@ -310,6 +310,21 @@ second dial would silently sever the existing user. The API therefore runs a
 `sessionRegistry` (one slot per workspace per mode) that returns **409
 Conflict** while a session is held and exposes take-over/status endpoints.
 
+### Watching a VM start
+
+The workspace detail page exposes **Display console** and (for Linux guests)
+**Console** while the workspace is **Starting**. They remain disabled during
+disk import and scheduling, then enable once the backend sees a Running VMI
+with the respective console device enabled. Guest cloud-init, desktop services
+and the premium agent do not have to be ready. Windows boot access explicitly
+opens the VNC recovery display rather than the premium agent.
+
+`GET /v1/workspaces/{name}/console/status?namespace=example-team` reports
+`available` (serial), `displayAvailable` (graphical) and the existing `inUse`
+field. This check does not open a console or take over a held session. It uses
+the same editor/admin and namespace authorization as the console itself;
+stopped workspaces hide the controls. Existing take-over prompts still apply.
+
 ### Serial console — `GET /v1/workspaces/{name}/exec`
 
 Dispatch on `spec.type`: container → container exec into pod `{name}-0`;
