@@ -13,6 +13,9 @@ A VM workspace is nothing more than a `Workspace` CR with `spec.type: vm`. The
 rest of the platform shares its name, namespace, RBAC and start/stop model.
 VM disks and guest access have their own mappings, described below.
 
+For the direct-CDI-HTTP cloud-image path and GNOME/Wayland provisioning, see
+[Arch Linux GNOME cloud-image workspace](arch-linux-gnome-vm.md).
+
 Windows 11 guest support is being validated separately. Operators can use the
 [Windows proof tooling and prerequisites](windows-vm.md) for isolated direct
 KubeVirt VMs; an enabled Windows workspace catalog/profile is not yet shipped.
