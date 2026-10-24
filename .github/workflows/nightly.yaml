@@ -32,7 +32,7 @@ jobs:
         # argocd syncs from the git remote, so it can only test pushed commits —
         # and on a fork PR the SHA is not fetchable from the base repo at all.
         # auth is slower and exercises the OIDC-enabled paths.
-        method: [argocd, auth]
+        method: [argocd, auth, auth-local]
     steps:
       - uses: actions/checkout@v5
 

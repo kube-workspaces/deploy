@@ -375,6 +375,12 @@ before applying the overlay and retain them on subsequent applies. See the
 [OIDC overlay prerequisites](../kustomize/overlays/auth/README.md) and
 [local overlay prerequisites](../kustomize/overlays/auth-local/README.md).
 
+When upgrading an older GitOps installation whose overlay owned these Secrets,
+retain the existing values and transfer Secret ownership to the chosen secret
+manager before enabling pruning of the new overlay. Removing a Secret from Git
+must not cause the reconciler to delete the live signing key. Plain
+`kubectl apply -k` without pruning leaves existing Secrets in place.
+
 ## Option 2: External Dex
 
 If you already have Dex deployed separately, just configure the OIDC settings to point to it.
