@@ -282,6 +282,7 @@ group "workspace types"
 # scratch → plain Deployment with generated pod names, selected by workspace-name.
 SCRATCH_NAME="e2e-scratch"
 kubectl delete workspace "$SCRATCH_NAME" -n "$NS" --ignore-not-found >/dev/null 2>&1 || true
+pf_start kube-workspaces-api "$API_PORT" 80 || die "port-forward for scratch create"
 # Use the real API boundary: a UI command used to be silently discarded by
 # its HTTP decoder, while direct CR application masked the missing contract.
 scratch_payload=$(jq -n --arg name "$SCRATCH_NAME" --arg ns "$NS" '{
@@ -313,6 +314,7 @@ check_equals "scratch Workspace status.readyReplicas is 1" "1" "${scratch_ready:
 scratch_command=$(kubectl get pods -n "$NS" -l "workspace-name=${SCRATCH_NAME}" \
   -o json | jq -c '.items[0].spec.containers[0].command')
 check_equals "scratch command reaches the running pod" '["sleep","infinity"]' "$scratch_command"
+pf_stop_all
 
 # vm → KubeVirt VirtualMachine. Only exercised when the CRDs are installed.
 if kubectl get crd virtualmachines.kubevirt.io >/dev/null 2>&1; then
