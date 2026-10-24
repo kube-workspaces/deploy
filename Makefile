@@ -206,10 +206,11 @@ deploy-kustomize: ## Deploy via Kustomize (base)
 deploy-crds: ## Deploy only CRDs via Kustomize
 	kubectl apply --server-side -k kustomize/crds/
 
-# Edit kustomize/overlays/auth/ CHANGEME values first.
+# Provision auth Secrets and configure the issuer first (see overlay README).
 deploy-auth: ## Deploy via Kustomize with auth overlay
 	kubectl apply --server-side -k kustomize/overlays/auth/
 
+# Provision the session signing Secret first (see overlay README).
 # A default admin user is auto-created — retrieve its password with
 # 'make get-admin-password'.
 deploy-auth-local: ## Deploy via Kustomize with local auth overlay

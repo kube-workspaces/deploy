@@ -37,6 +37,9 @@ case "$METHOD" in
 esac
 
 require_tools kubectl kustomize curl
+if [[ "$METHOD" == auth || "$METHOD" == auth-local ]]; then
+  require_tools openssl
+fi
 [ "$METHOD" = "kustomize" ] || [ "$METHOD" = "auth" ] || [ "$METHOD" = "auth-local" ] || require_tools helm
 
 cd "$REPO_ROOT"
@@ -96,6 +99,16 @@ deploy_kustomize_common() {
   check "apply CRDs (server-side)" \
     kubectl apply --server-side -k kustomize/crds/
   wait_for_crds 120s
+  if [[ "$overlay" == kustomize/overlays/auth/* || "$overlay" == kustomize/overlays/auth-local/* ]]; then
+    # Fresh disposable kind cluster only: production overlays never own keys.
+    kubectl create namespace "$KW_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+    check "provision test signing Secret" kubectl create secret generic kube-workspaces-session \
+      -n "$KW_NAMESPACE" --from-literal=signing-key="$(openssl rand -base64 32)"
+    if [[ "$overlay" == kustomize/overlays/auth/* ]]; then
+      check "provision test OIDC Secret" kubectl create secret generic kube-workspaces-oidc \
+        -n "$KW_NAMESPACE" --from-literal=client-secret="$(openssl rand -base64 32)"
+    fi
+  fi
   check "apply ${overlay} (server-side)" \
     kubectl apply --server-side -k "$overlay"
   apply_images

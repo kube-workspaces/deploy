@@ -3,9 +3,9 @@
 # This is the "quick way" to get authentication running with zero external
 # dependencies: no OIDC provider, no Dex, no client secrets. A default admin
 # user is auto-created on first reconcile with a randomly generated password
-# stored in a Kubernetes Secret (see session-secret.yaml's neighbor,
-# kw-user-admin-at-local-local-auth, created by the controller — not this
-# overlay). Retrieve it with:
+# stored in kw-user-admin-at-local-local-auth, created by the controller.
+# Provision the separate session signing Secret first (see README.md).
+# Retrieve the bootstrap password with:
 #
 #   kubectl get secret kw-user-admin-at-local-local-auth \
 #     -n kube-workspaces-system -o jsonpath='{.data.password}' | base64 -d

@@ -20,6 +20,8 @@ check "Windows proof hardware/storage regression tests" \
   python3 -m unittest discover -s scripts -p 'test_windows_vm_proof.py'
 check "Execution storage profiles and real subchart wiring" \
   python3 -m unittest discover -s scripts -p 'test_execution_storage.py'
+check "Auth key custody and custom namespace prerequisites" \
+  python3 -m unittest discover -s scripts -p 'test_auth_secrets.py'
 endgroup
 
 # Kubernetes version to validate manifests against. Keep in step with the

@@ -3,7 +3,7 @@ kind: Kustomization
 
 resources:
   - ../../base
-  - auth-secrets.yaml
+  # Signing/OIDC Secrets are provisioned separately; see README.md.
   # NOTE: workspace-roles.yaml is NOT listed here — ../../base already
   # includes it. Duplicating it makes `kustomize build` fail with
   # "may not add resource with an already registered id".

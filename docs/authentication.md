@@ -317,6 +317,64 @@ kubectl get authconfig default -o yaml
 
 ---
 
+## Stable signing keys for GitOps
+
+All authentication methods need the same stable session-signing Secret. Preserve
+it through upgrades, restores and local/OIDC configuration changes. Intentional
+rotation invalidates existing credentials; do not generate a new value during
+each reconciliation.
+
+Helm CLI installs can generate a key and use cluster `lookup` to preserve it on
+upgrade. Offline renderers such as ArgoCD cannot rely on `lookup`: rendering with
+`create: true` and no explicit value generates a different key each time. For
+GitOps, provision a persistent Secret through your encrypted-secret or
+external-secret controller and reference it:
+
+```yaml
+auth:
+  enabled: true
+  session:
+    signingKey:
+      create: false
+      secretName: kube-workspaces-session
+      secretKey: signing-key
+  oidc:
+    clientSecret:
+      create: false
+      secretName: kube-workspaces-oidc
+      secretKey: client-secret
+```
+
+The OIDC Secret is needed only when OIDC is configured. Local-only deployments
+still need the signing Secret. Do not store plaintext keys in a values file or
+check them into Git. Configure dependency ordering so the Secrets exist before
+auth-enabled components start.
+
+### Namespace prerequisites
+
+Secrets must be in the component deployment namespace, not in personal workspace
+namespaces. For Helm, create them in the namespace passed to `--namespace`;
+API and proxy resolve signing/OIDC Secrets in that namespace. Check rendered
+references before applying.
+
+Account identity reservations and local-password Secrets currently use the fixed
+`kube-workspaces-system` namespace, even with a custom Helm release namespace.
+Create that namespace first as well. The chart renders namespaced Roles and
+RoleBindings there for the release's API/controller and proxy ServiceAccounts;
+the installer needs permission to create those RBAC objects. Do not relocate or
+delete existing account/password Secrets when moving a release.
+
+The supplied Kustomize overlays target `kube-workspaces-system`. A custom
+Kustomize installation must also adapt component namespace environment values,
+ServiceAccount/RoleBinding subjects and Secret creation commands; setting only a
+Kustomize `namespace` transformer does not rewrite arbitrary environment values.
+Use the Helm namespace option when no custom overlay is maintained.
+
+Kustomize auth overlays never create signing or OIDC Secrets. Create them once
+before applying the overlay and retain them on subsequent applies. See the
+[OIDC overlay prerequisites](../kustomize/overlays/auth/README.md) and
+[local overlay prerequisites](../kustomize/overlays/auth-local/README.md).
+
 ## Option 2: External Dex
 
 If you already have Dex deployed separately, just configure the OIDC settings to point to it.
@@ -530,13 +588,17 @@ both configured for the same email).
 
 ```bash
 kubectl apply --server-side -k deploy/kustomize/crds/
+# First installation only; reuse existing namespace and signing Secret on upgrades.
+kubectl create namespace kube-workspaces-system
+kubectl create secret generic kube-workspaces-session -n kube-workspaces-system \
+  --from-literal=signing-key="$(openssl rand -base64 32)"
 kubectl apply --server-side -k deploy/kustomize/overlays/auth-local/
 ```
 
 This creates:
 - An `AuthConfig` with `spec.enabled: true` and `spec.localAuth.enabled: true` (no OIDC)
-- A session signing key Secret (`kube-workspaces-session`) — required for all
-  sessions regardless of auth method, so it must exist even for local-only setups
+- A reference to the pre-created session signing Secret (`kube-workspaces-session`).
+  The overlay never creates or overwrites signing material.
 
 Within a few seconds, the controller auto-creates a default admin `User`
 (`admin@local` by default) with a randomly generated password stored in a
