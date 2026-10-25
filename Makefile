@@ -248,32 +248,12 @@ auth-disable: ## Disable authentication on the cluster
 # has already been changed or is otherwise unknown.
 ADMIN_EMAIL ?= admin@local
 get-admin-password: ## Retrieve bootstrap local admin password
-	@slug=$$(echo "$(ADMIN_EMAIL)" | tr '[:upper:]' '[:lower:]' | sed -e 's/@/-at-/' -e 's/\./-/g' -e 's/_/-/g'); \
-	secret="kw-user-$${slug}-local-auth"; \
-	pw=$$(kubectl get secret "$$secret" -n kube-workspaces-system -o jsonpath='{.data.password}' 2>/dev/null | base64 -d); \
-	if [ -z "$$pw" ]; then \
-		echo "error: no plaintext password found in secret/$$secret (already changed, or auth not enabled yet)."; \
-		echo "       Use 'make reset-admin-password' to generate and set a new one."; \
-		exit 1; \
-	fi; \
-	echo "$$pw"
+	@python3 scripts/local-admin-password.py get --email "$(ADMIN_EMAIL)"
 
 # Resets to a random password and sets mustChangePassword=true so the admin is
 # prompted to pick a permanent one on next login.
 reset-admin-password: ## Reset bootstrap local admin password
-	@command -v python3 >/dev/null 2>&1 || { echo "error: python3 is required"; exit 1; }; \
-	python3 -c "import bcrypt" 2>/dev/null || { echo "error: python3 bcrypt module required (pip install bcrypt)"; exit 1; }; \
-	slug=$$(echo "$(ADMIN_EMAIL)" | tr '[:upper:]' '[:lower:]' | sed -e 's/@/-at-/' -e 's/\./-/g' -e 's/_/-/g'); \
-	secret="kw-user-$${slug}-local-auth"; \
-	new_pw=$$(cat /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 20); \
-	new_hash=$$(python3 -c "import bcrypt,sys; print(bcrypt.hashpw(sys.argv[1].encode(), bcrypt.gensalt(12)).decode())" "$$new_pw"); \
-	kubectl patch secret "$$secret" -n kube-workspaces-system --type=merge \
-		-p "{\"stringData\":{\"password\":\"$$new_pw\",\"passwordHash\":\"$$new_hash\"}}" >/dev/null; \
-	kubectl patch user "$$slug" --type=merge \
-		-p '{"spec":{"localAuth":{"mustChangePassword":true}}}' >/dev/null; \
-	echo "Password reset for $(ADMIN_EMAIL)"; \
-	echo "New password: $$new_pw"; \
-	echo "(you will be prompted to change it on next login)"
+	@python3 scripts/local-admin-password.py reset --email "$(ADMIN_EMAIL)"
 
 port-forward-frontend: ## Port-forward frontend to localhost:3000
 	kubectl port-forward -n kube-workspaces-system svc/kube-workspaces-frontend 3000:80

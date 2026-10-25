@@ -47,7 +47,8 @@ that are not in this trusted browser list.
 - The signing key is stored in a Kubernetes Secret, and is used for sessions
   regardless of which authentication method issued them
 - Local user passwords are bcrypt-hashed and stored in a per-user Kubernetes
-  Secret (`kw-user-<slug>-local-auth`), referenced from the `User` CR
+  Secret (`kw-password-<digest>`), owned by the persisted User UID and referenced
+  from the `User` CR. Existing legacy references remain readable during upgrade.
 - User state is stored in `User` CRDs (cluster-scoped)
 - Configuration is stored in an `AuthConfig` CRD (singleton named `default`)
 
@@ -92,15 +93,15 @@ Relinking the same identity does not reactivate old sessions or device tokens.
 Unlinking your current session's method requires signing in again through a
 remaining method.
 
-### Adopting an existing unbound OIDC-only account
+### Administrator-authorized linking for another account
 
 An administrator can explicitly authorize adoption without giving the user a
 temporary local password or changing their role:
 
 1. Sign in with a UID-bound administrator session, completing any required
    password change first.
-2. Open **Admin → Users** and select **Authorize OIDC adoption** on the existing,
-   enabled account with no local password or external identity binding.
+2. Open **Admin → Users** and select **Authorize OIDC linking** on the existing,
+   enabled account. OIDC-only, local-only and already-linked accounts are supported.
 3. Share the generated invitation securely with that account's owner. It is
    single-use and expires five minutes after authorization, including the time
    spent signing in to the provider. Merely opening its landing page does not
@@ -111,21 +112,24 @@ temporary local password or changing their role:
 5. After linking, sign in through ordinary SSO. Linking itself does not replace
    an existing browser session. Refresh the Users page to see **OIDC linked**.
 
-Approval is bound to the exact existing User UID, email, provider and client.
+Approval is bound to the exact existing User UID, email, provider, client and
+complete account specification at approval time.
 The API rechecks the approving administrator's current session/authority and
 target account before starting and completing the provider round trip. Disabled,
-replaced, renamed-email, already-bound or newly local-enabled targets are
-rejected. Duplicate/case-variant account emails require operator resolution.
+replaced or concurrently edited targets are rejected; issue a fresh invitation
+after reviewing the current account. Duplicate/case-variant account emails require operator resolution.
 Issuer/subject is learned only from the verified OIDC token, not from invitation
 input or an email-only login. Existing roles, grants, namespaces and workspaces
-are preserved. General delegated linking for local/dual-method accounts remains
-separate work.
+are preserved. Existing methods are retained; an identity reserved for another
+UID cannot be reassigned by invitation.
 
 The HTTP contract is `POST /auth/oidc/adoptions` with JSON
-`{"userName":"existing-user"}` and header
-`X-KW-Link-Intent: adopt-legacy-identity`, authenticated as the administrator.
+`{"userName":"existing-user","userUID":"<exact-user-uid>"}` and header
+`X-KW-Link-Intent: link-account-identity`, authenticated as the administrator.
 It returns a relative `adoptionURL`, approved `email` and Unix `expiresAt`.
 Use the returned invitation in the browser; do not manually edit User bindings.
+Older invitations using `adopt-legacy-identity` remain limited to unbound
+OIDC-only accounts; they do not acquire the broader linking authority on upgrade.
 
 Native-token and browser-session handoff codes also revalidate the current
 account and credential at redemption, not only when issued. A failed redemption
@@ -177,11 +181,52 @@ reservations and unlink operations use explicit random revisions. Hash/revision
 and temporary-password policy replacements are written atomically in the
 password Secret, with the User flag also able to tighten restrictions.
 
-These checks apply to new requests and stream handshakes. Established
-WebSocket/stream termination is not yet guaranteed by the server; end the
-connection or restart the relevant component when immediate stream termination
-is required. Rolling back to older API/proxy code also rolls back these
-enforcement rules; do not describe a rollback as preserving revocation behavior.
+Established API bridges/watch SSE and proxy WebSocket/SSE connections periodically
+revalidate current credentials (default **5 seconds**, configurable with positive
+Go duration `KW_CREDENTIAL_REVALIDATION_INTERVAL`). Confirmed revocation terminates
+the stream; three consecutive verification failures also terminate it fail-closed.
+Lookup and teardown latency add to the interval. API WebSockets close with **4001**;
+updated browser/native clients stop automatic retries and request sign-in. The
+transparent proxy closes the transport and does not promise a 4001 close frame.
+State is read from Kubernetes, allowing another replica to observe revocation.
+Rolling back to older API/proxy code also rolls back enforcement; do not describe
+a rollback as preserving revocation behavior.
+
+### Password credential migration and recovery ownership
+
+New account creation, enabling local login, bootstrap and administrative resets
+use collision-resistant Secrets bound to the persisted User UID. The API/proxy
+reject owned credentials referenced by another UID. User creation first persists
+the account, then installs credentials; if interrupted, use **Enable local
+password** on that same account rather than deleting/recreating it.
+
+Existing email-derived/custom Secret references remain readable. Migrate them
+deliberately with **Reset password**, the reset API, or `make reset-admin-password
+ADMIN_EMAIL=owner@example.com`. This rotates the selected account to a fresh
+UID-owned Secret and requires a password change. It preserves the User UID,
+namespace, workspaces, grants and OIDC methods. The previous Secret is not changed
+or deleted, so another legacy account sharing it keeps its own credential. A
+self-service password change on shared material is refused until an administrator
+performs this migration. Review the inventory before and after migrating each
+account; retain old unowned Secrets until no User references them and rollback
+needs are resolved. New UID-owned Secrets are garbage-collected with their User.
+Unreferenced owned Secrets from a conflicted/failed operation may be removed after
+checking references; never adopt them into a different User.
+
+Back up Users and credential Secrets together. A reset revokes local credentials
+when its reference update succeeds; a failed conditional User update leaves the
+previous credential active and returns no password as a success. Retry after
+refreshing account state. Do not restore an old User password reference merely to
+roll back binaries: that would intentionally restore the old password. Older code
+can read the standard `passwordSecretRef`, but lacks the new ownership checks.
+
+Personal namespace ownership is stamped with `kubeworkspaces.io/user-uid`.
+Existing controller-labelled namespaces can be upgraded only for the account
+whose persisted `status.personalNamespace`, name and email agree. Unlabelled or
+other-UID namespaces are not adopted, and cleanup never deletes an unclaimed or
+other-UID namespace. Template changes preserve an existing personal namespace.
+For a legacy mismatch, restore the original User/namespace metadata from backup
+after verifying ownership; do not recreate a User or assign another account's UID.
 
 ### Upgrade and migration ordering
 
@@ -608,7 +653,7 @@ This creates:
 
 Within a few seconds, the controller auto-creates a default admin `User`
 (`admin@local` by default) with a randomly generated password stored in a
-Secret named `kw-user-admin-at-local-local-auth` in `kube-workspaces-system`.
+UID-owned Secret referenced by that User in `kube-workspaces-system`.
 
 ### Quick start (Helm)
 
@@ -638,7 +683,8 @@ and currently remain in `kube-workspaces-system`.
 ```bash
 make get-admin-password
 # or directly:
-kubectl get secret kw-user-admin-at-local-local-auth \
+secret=$(kubectl get user admin-at-local -o jsonpath='{.spec.localAuth.passwordSecretRef.name}')
+kubectl get secret "$secret" \
   -n kube-workspaces-system -o jsonpath='{.data.password}' | base64 -d
 ```
 
@@ -775,8 +821,8 @@ role — `spec.role` applies regardless of how they signed in.
 kubectl patch user jane-doe --type=merge -p '{"spec":{"disabled":true}}'
 ```
 
-Disabling blocks both OIDC and local login for that user, and pauses
-reconciliation of their namespace/RBAC.
+Disabling blocks both OIDC and local login and removes managed namespace grants,
+while preserving the account, namespace, workspaces and desired access settings.
 
 ### Granting shared namespace access
 
@@ -794,6 +840,16 @@ personal namespace (if enabled) — namespace access must be granted explicitly.
 ## Troubleshooting
 
 ### AuthConfig shows IssuerUnreachable
+
+AuthConfig reports `OIDCReady` (issuer reachability) and `LocalAuthReady` (a usable
+local recovery administrator) independently. `Ready=True/LocalRecoveryAvailable`
+means OIDC is down but local recovery remains available. A reachable issuer does
+not itself prove a complete provider sign-in. `BootstrapAdminUnavailable` explains
+skipped bootstrap with no usable local admin, a disabled/locked or missing-password
+administrator, or a name/Secret collision. An editor account alone does not suppress
+administrator bootstrap. Existing accounts/credentials are never silently promoted
+or adopted. Recover them in place; an interrupted new bootstrap can resume only
+for the exact AuthConfig and User UID that created its pending transaction.
 
 ```bash
 kubectl get authconfig default -o jsonpath='{.status.conditions[0].message}'
@@ -856,18 +912,17 @@ the existing local credential in place:
 1. Identify the exact `users.kubeworkspaces.io` object, its UID and its
    `spec.localAuth.passwordSecretRef` (name and hash key). Confirm local login
    is enabled in AuthConfig and on the intended administrator account.
-2. Verify the referenced Secret in `kube-workspaces-system` belongs only to that
-   account. Review other Users' credential references first; do not reset a
-   shared/colliding Secret as if it were uniquely owned.
-3. Replace only the referenced bcrypt password hash with a hash for a new
-   password (bcrypt cost 12; password at least 12 characters). Remove any stale
-   plaintext `password` entry.
-   Use a local password prompt and pipe the patch through stdin; do not put the
-   password in command arguments or committed manifests.
-4. Set `spec.localAuth.mustChangePassword: true` on that same User. Clear any
+2. Run `make reset-admin-password ADMIN_EMAIL=owner@example.com` from the deploy
+   repo (Python 3 and its `bcrypt` module are required). This resolves the actual
+   User/reference instead of deriving names from email, refuses ambiguous emails,
+   creates a fresh UID-owned credential and conditionally updates that same User.
+   The printed temporary password is returned only after the User update succeeds.
+   Old/shared Secrets and other accounts are not modified. Keep the password out
+   of committed manifests and command arguments.
+3. Clear any
    failed-login lockout in its status, as described above. Retain its role,
    namespace access, external identities, UID and personal namespace.
-5. Sign in locally and change the temporary password. Recheck account access
+4. Sign in locally and change the temporary password. Recheck account access
    and keep a usable recovery administrator independent of the provider.
 
 Changing the referenced password hash invalidates local-derived credentials on

@@ -144,7 +144,7 @@ case "$METHOD" in
     check "bootstrap admin User was created" \
       bash -c 'for i in $(seq 1 30); do kubectl get user admin-at-local >/dev/null 2>&1 && exit 0; sleep 2; done; exit 1'
     check "bootstrap admin password secret was created" \
-      kubectl get secret kw-user-admin-at-local-local-auth -n "$KW_NAMESPACE"
+      bash -c 'for i in $(seq 1 30); do secret=$(kubectl get user admin-at-local -o jsonpath="{.spec.localAuth.passwordSecretRef.name}"); if [ -n "$secret" ]; then kubectl get secret "$secret" -n kube-workspaces-system && exit 0; fi; sleep 2; done; exit 1'
     endgroup
     ;;
 

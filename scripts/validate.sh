@@ -22,6 +22,8 @@ check "Execution storage profiles and real subchart wiring" \
   python3 -m unittest discover -s scripts -p 'test_execution_storage.py'
 check "Auth key custody and custom namespace prerequisites" \
   python3 -m unittest discover -s scripts -p 'test_auth_secrets.py'
+check "UID-owned non-destructive account recovery" \
+  python3 -m unittest discover -s scripts -p 'test_local_admin_password.py'
 endgroup
 
 # Kubernetes version to validate manifests against. Keep in step with the

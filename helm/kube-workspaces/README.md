@@ -293,7 +293,7 @@ guide with provider-specific notes — this table covers only the Helm values.
 Enabling `auth.localAuth.enabled` with no OIDC configured is the fastest path to
 a working login with zero external dependencies — a default admin `User` is
 auto-created with a randomly generated password stored in a Kubernetes Secret
-(`kw-user-admin-at-local-local-auth` by default):
+(the persisted User references its UID-owned Secret):
 
 ```bash
 helm install kube-workspaces oci://ghcr.io/kube-workspaces/charts/kube-workspaces \
@@ -301,7 +301,8 @@ helm install kube-workspaces oci://ghcr.io/kube-workspaces/charts/kube-workspace
   --set auth.enabled=true \
   --set auth.localAuth.enabled=true
 
-kubectl get secret kw-user-admin-at-local-local-auth \
+secret=$(kubectl get user admin-at-local -o jsonpath='{.spec.localAuth.passwordSecretRef.name}')
+kubectl get secret "$secret" \
   -n kube-workspaces-system -o jsonpath='{.data.password}' | base64 -d
 ```
 
