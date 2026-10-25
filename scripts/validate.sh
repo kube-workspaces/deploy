@@ -283,7 +283,7 @@ crd_stream="${RENDER_DIR}/crds.yaml"
 kustomize build kustomize/crds > "$crd_stream" 2>/dev/null
 
 crd_count=$(yq -N 'select(.kind=="CustomResourceDefinition") | .metadata.name' "$crd_stream" | wc -l | tr -d ' ')
-check_equals "kustomize/crds renders 7 CRDs" "7" "$crd_count"
+check_equals "kustomize/crds renders 8 CRDs" "8" "$crd_count"
 
 # Every CRD must be in our group, have a schema, and a status subresource —
 # a CRD without a schema accepts anything, silently.

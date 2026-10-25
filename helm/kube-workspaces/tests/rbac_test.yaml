@@ -76,15 +76,12 @@ tests:
       path: kind
       value: ClusterRole
     asserts:
-      - equal:
-          path: rules[9].resources[0]
-          value: secrets
       - contains:
-          path: rules[9].verbs
-          content: create
-      - contains:
-          path: rules[9].verbs
-          content: delete
+          path: rules
+          content:
+            apiGroups: [""]
+            resources: ["secrets"]
+            verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
 
   - it: renders cross-namespace Role and RoleBinding in kube-workspaces-system when local auth is enabled and release namespace differs
     set:

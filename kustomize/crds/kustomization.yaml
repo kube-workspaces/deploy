@@ -8,3 +8,4 @@ resources:
   - kubeworkspaces.io_platformconfigs.yaml
   - kubeworkspaces.io_poddefaults.yaml
   - kubeworkspaces.io_sshkeys.yaml
+  - kubeworkspaces.io_imagerepositories.yaml
