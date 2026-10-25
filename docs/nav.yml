@@ -12,6 +12,8 @@
   items:
     - proxy
     - vm
+    - gpu
+    - container-gpu
     - display-tiers
     - shared-display
     - desktop-client

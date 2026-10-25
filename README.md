@@ -23,6 +23,8 @@ Modelled on the Kubeflow Notebooks architecture but as a standalone, lightweight
 ## Features
 
 - Full PodSpec flexibility per workspace (like Kubeflow Notebook CRD)
+- [GPU support](docs/gpu.md) — host-driven GPUs for container applications and
+  optional KubeVirt GPU assignment for VMs; includes an [Intel/Craft Apps recipe](docs/container-gpu.md)
 - Browser-based access to workspaces via built-in [reverse proxy](#workspace-proxy) (WebSocket support)
 - **Optional [authentication](#authentication)** via OIDC (Dex, Okta, Auth0, or any OIDC provider)
 - **Kubernetes-native [RBAC](#roles)** — three roles: admin, editor, viewer

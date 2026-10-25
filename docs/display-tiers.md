@@ -5,6 +5,13 @@ This page summarises what each tier does, which client plays it, what audio
 you get, and what the guest and the client machine each need. Operational
 detail for enabling and rolling back Tier 1 lives at the bottom of this page.
 
+Display tier and GPU acceleration are separate choices. Application rendering,
+desktop composition and stream encoding may each use hardware or software.
+See [GPU support](gpu.md) for how to verify those layers. Container images such
+as Craft Apps can serve their own Selkies browser desktop through the workspace
+proxy without a VM or KubeVirt console; their GPU setup is documented under
+[Container GPUs](container-gpu.md).
+
 ## Terminology
 
 Four words that are easy to mix up:

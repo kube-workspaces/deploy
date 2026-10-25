@@ -44,6 +44,10 @@ State lives in CRDs and Secrets; there is no separate database to run or back up
 
 - **Full PodSpec flexibility** — a workspace wraps a complete Kubernetes
   `PodSpec`, so any container configuration works.
+- **GPU-enabled containers** — allocate host GPU devices through Kubernetes
+  device plugins for compatible graphics, compute and video workloads. The
+  [GPU guide](gpu.md) distinguishes container allocation, VM assignment and
+  application/desktop/encoder validation.
 - **Virtual machines** — KubeVirt-backed `vm` workspaces with serial console,
   web SSH console, and noVNC display; persistent root disks (CDI DataVolumes),
   GPU passthrough, and virtio-gpu displays.
@@ -84,6 +88,8 @@ into the deployment manifests and exposed through the UI.
 - [Customizing your domain](domains.md) — hostnames and ingress routing
 - [Proxy](proxy.md) — how workspace traffic is routed
 - [Virtual Machines](vm.md) — KubeVirt VM workspaces, serial console, noVNC display, and web SSH
+- [GPU support](gpu.md) — choose the right allocation path and exact resource name
+- [Container GPUs](container-gpu.md) — device-plugin setup, Craft Apps and PhotoCraft verification
 - [Security](security.md) — what is hardened by default
 - [Releasing](releasing.md) — how releases are cut
 - [Testing](testing.md) — the test suite and how to run it

@@ -76,8 +76,10 @@ Every workspace declares how it should be run via `spec.type` (default
 reuses the existing PodSpec schema (image, resources, ports, tolerations,
 nodeSelector), so validation and the API payloads are unchanged. The API rejects
 `shared_memory` for `vm` workspaces. `volume_mounts` reference reusable CDI
-data disks and guest mount paths for VMs (see below); `gpu_request` is allowed
-and flows into the VM (see [GPU passthrough](#gpu-passthrough)).
+data disks and guest mount paths for VMs (see below). General VMs accept a
+generic GPU request with the resource-name mapping described under
+[GPU passthrough](#gpu-passthrough); managed Windows uses a separate
+[GPU profile](windows-vm.md#experimental-render-only-gpu-profiles).
 
 ---
 
@@ -204,10 +206,32 @@ KubeVirt `domain.devices.gpus[]` entry (`deviceName` = resource, `name` =
 `gpuN`). The workspace's `nodeSelector`/`tolerations` are carried into the VMI
 template so the `virt-launcher` pod can land on dedicated/tainted GPU nodes.
 
-For the device to be attachable, the operator must also: enable IOMMU on the
-host, run a device plugin advertising the resource, and allowlist the device in
-the KubeVirt CR via the chart's `kubevirt.gpuPassthrough.permittedHostDevices`.
-See [Installation](install.md) for the operator steps.
+This describes the **general VM** mapping, which emits one device entry per
+recognised resource key. It does not expand an arbitrary quantity into multiple
+GPU device entries. Use a single-device request for this path unless the
+resulting VM/device allocation has been separately qualified. Resources such as
+`gpu.intel.com/i915`, `gpu.intel.com/xe`, or
+`kubeworkspaces.io/intel-render` are container device resources and do not match
+this mapping; adding their limits is not a KubeVirt GPU attachment.
+
+For attachment, prepare the host PCI function for IOMMU/VFIO assignment or
+configure the supported mediated-device mechanism, advertise the matching
+resource, and allowlist it in KubeVirt via the chart's
+`kubevirt.gpuPassthrough.permittedHostDevices`. Integrated GPUs and SR-IOV VFs
+can be candidates as well as discrete GPUs, subject to their driver/isolation
+requirements. Install the compatible guest driver separately. See
+[Installation](install.md#optional-gpu-support) for the operator steps.
+
+Managed Windows uses the explicit, versioned
+[render-only GPU profile](windows-vm.md#experimental-render-only-gpu-profiles)
+instead of generic container GPU quantities. Its profile supports exact
+operator-defined resource names and stopped-root-preserving hardware changes.
+
+Hardware rendering, guest display/capture and hardware video encoding are
+independent capabilities. A virtual display or an allocated device alone does
+not establish application acceleration. See [GPU support](gpu.md) for the
+validation model, and [Container GPUs](container-gpu.md) for host-driven pod
+access that does not involve KubeVirt.
 
 ### Display device
 

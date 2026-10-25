@@ -369,6 +369,13 @@ CRDs before declaring a profile or requesting a GPU. The controller, API and
 browser must also include the matching implementation; chart adoption alone
 does not install a Windows driver or make GPU streaming ready.
 
+These are **VM hardware-assignment** profiles. Container GPUs use host-driven
+device allocation and the container resource fields instead; see
+[GPU support](gpu.md) and [Container GPUs](container-gpu.md). A container render
+device is not interchangeable with a VFIO/KubeVirt resource. A Linux-driven
+physical function can remain available to containers while a separate supported
+SR-IOV VF serves a VM; verify resource contention and coexistence for that setup.
+
 An operator can declare a **versioned** profile in `PlatformConfig/default`:
 
 ```yaml

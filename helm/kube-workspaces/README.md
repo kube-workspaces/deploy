@@ -166,7 +166,7 @@ links back to the section explaining it in context.
 | `kubevirt.enabled` | `false` | Install the vendored KubeVirt operator + KubeVirt CR (required for `spec.type: vm` workspaces). Not needed for container/scratch workspaces |
 | `kubevirt.useEmulation` | `false` | Run guests with software emulation — enable on nodes without `/dev/kvm` (kind, CI). Slow |
 | `kubevirt.cdi.enabled` | `true` | Install the vendored CDI (Containerized Data Importer) + CDI CR, required for `persistentRootDisk` DataVolume-backed VM root disks (e.g. `debian-xfce`) |
-| `kubevirt.gpuPassthrough.permittedHostDevices` | `{}` | Allowlist host GPU/PCI devices in the KubeVirt CR (`pciHostDevices`/`mediatedDevices`) so VMs can attach them via `gpu_request`. Requires IOMMU/VFIO and a device plugin advertising the resource — see [install.md](../../docs/install.md) |
+| `kubevirt.gpuPassthrough.permittedHostDevices` | `{}` | VM-only KubeVirt GPU/PCI allowlist (`pciHostDevices`/`mediatedDevices`). Requires compatible host device preparation, an advertised resource and guest driver. General VMs use recognised GPU requests; managed Windows uses GPU profiles. See [GPU support](../../docs/gpu.md). Container GPU allocation is separately operator-managed. |
 | `nameOverride` / `fullnameOverride` | unset | Standard Helm chart naming overrides |
 
 ### Controller, API, Proxy, Frontend

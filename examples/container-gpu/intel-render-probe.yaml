@@ -1,0 +1,35 @@
+# Uses the same userspace graphics stack as Craft Apps, without starting its
+# desktop or mounting any existing user's home volume. Delete after inspection.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: intel-render-probe
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  containers:
+    - name: probe
+      image: linuxserver/craft-apps:latest
+      command: ["/bin/bash", "-lc"]
+      args:
+        - |
+          set -eu
+          test -c /dev/dri/renderD128
+          stat -c '%a %u:%g %n' /dev/dri/renderD128
+          unset DISPLAY WAYLAND_DISPLAY
+          export XDG_RUNTIME_DIR=/tmp
+          export VK_DRIVER_FILES=/usr/share/vulkan/icd.d/intel_icd.json
+          vulkaninfo --summary
+          if command -v vainfo >/dev/null 2>&1; then
+            vainfo --display drm --device /dev/dri/renderD128
+          else
+            printf '%s\n' 'vainfo is not installed; VA-API capability is unverified.'
+          fi
+      resources:
+        limits:
+          kubeworkspaces.io/intel-render: "1"
+          cpu: "1"
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 128Mi

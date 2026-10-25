@@ -21,20 +21,38 @@ No images need to be built: the manifests reference the published
 `ghcr.io/kube-workspaces/*` images.
 
 **Optional — VM workspaces.** `spec.type: vm` requires
-[KubeVirt](https://kubevirt.io) to be installed in the cluster first (it is not
-bundled). On a local/kind cluster without nested virtualization, enable
+[KubeVirt](https://kubevirt.io) in the cluster. Install it separately or enable the
+chart's vendored operator/CR with `kubevirt.enabled: true`. On a local/kind
+cluster without nested virtualization, enable
 software emulation in the KubeVirt CR (`spec.configuration.developerConfiguration.useEmulation: true`).
 The controller detects the KubeVirt CRDs and reports a `KubeVirtNotInstalled`
 status condition on any `vm` workspace created without them; container and
 scratch workspaces work regardless.
 
-**Optional — GPU passthrough for VM workspaces.** VM workspaces accept a
-`gpu_request` (same field as container workspaces). To actually pass a GPU
-through to a guest, three conditions must hold:
+### Optional GPU support
 
-1. **Host IOMMU + VFIO.** The GPU-bearing nodes must boot with IOMMU enabled
-   (`intel_iommu=on` / `amd_iommu=on`), and the GPU bound to `vfio-pci`. This is
-   the standard KubeVirt host-device prerequisite.
+Choose the allocation path for the workspace type; see the [GPU guide](gpu.md)
+for a comparison and exact resource names.
+
+**Container and scratch workspaces:** install a compatible host GPU driver,
+container device plugin and any required runtime integration, then request its
+advertised resource through `container.gpu_request` / `container.gpu_vendor` or
+the Workspace PodSpec. The application image needs matching userspace libraries
+and device permissions. These host-driven GPUs do not require KubeVirt, IOMMU
+PCI assignment, or binding the GPU to VFIO. The optional
+[Intel render-node recipe](container-gpu.md) includes allocation manifests and
+Craft Apps / PhotoCraft verification. GPU drivers and that container plugin are
+separately operator-managed, not installed by the chart.
+
+**VM GPU assignment:** general VMs accept a generic GPU request;
+[managed Windows VMs](windows-vm.md#experimental-render-only-gpu-profiles) use
+an operator-declared GPU profile instead. To assign hardware to a guest:
+
+1. **Host device preparation.** For PCI assignment, GPU-bearing nodes need
+   IOMMU enabled (`intel_iommu=on` / `amd_iommu=on` where applicable), suitable
+   isolation and the **assigned PCI function** bound to `vfio-pci`. This can be
+   a physical function or an SR-IOV VF. Mediated GPUs use their supported host
+   driver/mdev setup instead; the whole physical GPU is not bound to VFIO.
 2. **A device plugin advertising the resource.** The GPU resource (e.g.
    `nvidia.com/gpu`) must be allocatable on the nodes. For NVIDIA this is the
    GPU Operator (sandbox device plugin / vGPU manager). For bare PCI/mediated
@@ -62,29 +80,33 @@ through to a guest, three conditions must hold:
     `nvidia.com/gpu`, asking for it by name still requires it to be permitted
     here before it can be assigned to a VM.)
 
-    Intel GVT-g shared integrated GPUs follow the same mediated-device path
-    (host needs `i915.enable_gvt=1` and the `kvmgt` module; e.g.
+    Compatible older Intel GVT-g integrated GPUs follow the mediated-device path
+    (where supported, the host needs `i915.enable_gvt=1` and the `kvmgt` module; e.g.
     `mdevNameSelector: "GVTg_V5_4"` with `resourceName: "intel.com/GVTg_V5_4"`).
-    Created mediated devices do not survive a host reboot — recreate them after
-    maintenance before scheduling GPU VMs. Guest-driver support is
+    Configure host/KubeVirt-mediated device creation so devices are recreated
+    after a host reboot. Newer Intel GPUs may use a separate SR-IOV path; GVT-g
+    settings are not a universal Intel GPU recipe. Guest-driver support is
     OS-specific; Windows guests need a signed driver that recognises the vGPU,
     which is a separate acceptance gate from exposing the resource.
 
-The controller translates a workspace's `gpu_request` into a KubeVirt
-`domain.devices.gpus` passthrough declaration plus the matching resource limit;
-without the prerequisites above the VM will fail to schedule and the error
-surfaces in the workspace status.
+For generic VMs, the controller maps recognised GPU resource names into
+KubeVirt `domain.devices.gpus` plus scheduling limits; arbitrary container
+resource names do not automatically become VM attachments. Managed Windows
+profiles name the resource explicitly. See [VM GPU passthrough](vm.md#gpu-passthrough)
+for the mapping limits. Allowlisting and resource capacity are prerequisites,
+not evidence that a guest driver or application actually uses the device.
 
-**GPU display without a physical GPU — virtio-gpu.** Real GPU passthrough needs
-the IOMMU/VFIO/device-plugin setup above and a discrete GPU on the host. When
-you only want a faster, paravirtual **display** for a desktop guest (no host
-GPU), set `videoDevice: virtio` on the Image CR. The controller then emits
+**VM display without assigned hardware — virtio-gpu.** Integrated and discrete
+GPUs can both be hardware-assignment candidates when compatible. When you only
+want a paravirtual **display** without assigning host GPU hardware, set
+`videoDevice: virtio` on the Image CR. The controller then emits
 `domain.devices.video: {type: virtio}` on the VM (the virtio-gpu display,
 enabled by default in KubeVirt's `VideoConfig` feature gate), giving better
 noVNC performance and arbitrary guest-set resolutions than VGA emulation. The
 `debian-xfce` example image ships with `videoDevice: virtio`; see the
 [Image catalog](https://github.com/kube-workspaces/image-catalog) for the field
-reference.
+reference. This virtual display configuration alone does not enable host-GPU
+3D rendering, compute or hardware video encoding in the guest.
 
 > **CRDs must use server-side apply.** The `Workspace` CRD embeds a full
 > Kubernetes `PodSpec` and is ~658 KiB, far over the 256 KiB
