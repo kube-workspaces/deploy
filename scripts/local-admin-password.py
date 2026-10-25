@@ -25,7 +25,7 @@ def kubectl(*args, payload=None):
 
 
 def account(email):
-    users = kubectl("get", "users", "-o", "json")["items"]
+    users = kubectl("get", "users.kubeworkspaces.io", "-o", "json")["items"]
     matches = [u for u in users if u.get("spec", {}).get("email", "").casefold() == email.casefold()]
     if len(matches) != 1:
         raise RuntimeError("exactly one matching User is required; resolve duplicate/case-variant emails first")
@@ -78,7 +78,7 @@ def run(action, email):
     ]
     # The plaintext exists only in the new Secret and this process. Passing the
     # patch on stdin keeps credentials out of argv; no old/shared Secret is changed.
-    kubectl("patch", "user", metadata["name"], "--type=json", "--patch-file=/dev/stdin", "-o", "json", payload=patch)
+    kubectl("patch", "users.kubeworkspaces.io", metadata["name"], "--type=json", "--patch-file=/dev/stdin", "-o", "json", payload=patch)
     return password
 
 

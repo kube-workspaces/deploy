@@ -301,7 +301,7 @@ helm install kube-workspaces oci://ghcr.io/kube-workspaces/charts/kube-workspace
   --set auth.enabled=true \
   --set auth.localAuth.enabled=true
 
-secret=$(kubectl get user admin-at-local -o jsonpath='{.spec.localAuth.passwordSecretRef.name}')
+secret=$(kubectl get users.kubeworkspaces.io admin-at-local -o jsonpath='{.spec.localAuth.passwordSecretRef.name}')
 kubectl get secret "$secret" \
   -n kube-workspaces-system -o jsonpath='{.data.password}' | base64 -d
 ```

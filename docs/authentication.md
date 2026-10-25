@@ -683,7 +683,7 @@ and currently remain in `kube-workspaces-system`.
 ```bash
 make get-admin-password
 # or directly:
-secret=$(kubectl get user admin-at-local -o jsonpath='{.spec.localAuth.passwordSecretRef.name}')
+secret=$(kubectl get users.kubeworkspaces.io admin-at-local -o jsonpath='{.spec.localAuth.passwordSecretRef.name}')
 kubectl get secret "$secret" \
   -n kube-workspaces-system -o jsonpath='{.data.password}' | base64 -d
 ```
@@ -818,7 +818,7 @@ role — `spec.role` applies regardless of how they signed in.
 ### Disabling a user
 
 ```bash
-kubectl patch user jane-doe --type=merge -p '{"spec":{"disabled":true}}'
+kubectl patch users.kubeworkspaces.io jane-doe --type=merge -p '{"spec":{"disabled":true}}'
 ```
 
 Disabling blocks both OIDC and local login and removes managed namespace grants,
@@ -827,7 +827,7 @@ while preserving the account, namespace, workspaces and desired access settings.
 ### Granting shared namespace access
 
 ```bash
-kubectl patch user jane-doe --type=json -p '[
+kubectl patch users.kubeworkspaces.io jane-doe --type=json -p '[
   {"op": "add", "path": "/spec/namespaceAccess/-", "value": {"namespace": "team-alpha", "role": "editor"}}
 ]'
 ```
@@ -877,20 +877,20 @@ Ensure:
 
 - Check that `personalNamespaces.enabled: true` in AuthConfig
 - Look at the User controller logs: `kubectl logs -l app.kubernetes.io/component=controller -n kube-workspaces-system`
-- Verify the User CR status: `kubectl get user <name> -o yaml`
+- Verify the User CR status: `kubectl get users.kubeworkspaces.io <name> -o yaml`
 
 ### Local login returns "account_locked"
 
 The account has 5 or more consecutive failed login attempts. Check:
 
 ```bash
-kubectl get user <name> -o jsonpath='{.status.failedLoginAttempts} {.status.lockedUntil}'
+kubectl get users.kubeworkspaces.io <name> -o jsonpath='{.status.failedLoginAttempts} {.status.lockedUntil}'
 ```
 
 Wait for `lockedUntil` to pass, or clear it manually:
 
 ```bash
-kubectl patch user <name> --subresource=status --type=merge \
+kubectl patch users.kubeworkspaces.io <name> --subresource=status --type=merge \
   -p '{"status":{"failedLoginAttempts":0,"lockedUntil":null}}'
 ```
 

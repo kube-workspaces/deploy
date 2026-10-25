@@ -26,7 +26,7 @@ class LocalPasswordRecoveryTests(unittest.TestCase):
 
         def kubectl(*args, payload=None):
             calls.append(args)
-            if args[:2] == ("get", "users"):
+            if args[:2] == ("get", "users.kubeworkspaces.io"):
                 return {"items": [self.user]}
             return {"metadata": {"annotations": {"kubeworkspaces.io/user-uid": "original-uid"}}, "data": {"password": base64.b64encode(b"one-time-password").decode()}}
 
@@ -55,7 +55,7 @@ class LocalPasswordRecoveryTests(unittest.TestCase):
 
                 def kubectl(*args, payload=None):
                     calls.append((args, copy.deepcopy(payload)))
-                    if args[:2] == ("get", "users"):
+                    if args[:2] == ("get", "users.kubeworkspaces.io"):
                         return {"items": [self.user]}
                     if args[0] == "patch" and conflict:
                         raise RuntimeError("concurrent User update")
