@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'helm/kube-workspaces/**'
+      - '!helm/kube-workspaces/README.md'
       - '.github/workflows/helm-publish.yaml'
   release:
     types:
@@ -110,8 +111,10 @@ jobs:
             exit 0
           fi
 
+          # README corrections ship as repository documentation, not a runtime
+          # chart release. Keep the immutable-version guard for packaged code.
           if git rev-parse HEAD~1 >/dev/null 2>&1 \
-             && ! git diff --quiet HEAD~1 HEAD -- helm/kube-workspaces/; then
+             && ! git diff --quiet HEAD~1 HEAD -- helm/kube-workspaces/ ':(exclude)helm/kube-workspaces/README.md'; then
             echo "::error::chart version ${VERSION} is already published to ghcr.io/${repo}, but this push modified helm/kube-workspaces/."
             echo "Bump 'version' in helm/kube-workspaces/Chart.yaml before merging."
             exit 1
