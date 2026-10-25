@@ -11,6 +11,52 @@ after deploying. Before going to production, set your own hostnames — the
 manifests use the placeholder domain `workspaces.example.com`, which is not
 issued by real ACME providers; see [Customizing your domain](domains.md).
 
+## Git-backed image catalogs
+
+An ImageRepository can be added under **Admin → Image Repositories** or as a
+cluster-scoped CR. Its first sync imports missing images and **adopts any existing
+Image CR with the same metadata.name**, including images installed by Helm or
+manually. The repository manifest replaces the complete image spec and records
+the repository name, Git URL/ref/commit, and file path. The Images page can then
+filter by source repository. Images with no imported source remain “Not recorded”.
+
+For a fresh Helm installation, use these values to let Git manage the catalog:
+
+```yaml
+installExampleImages: false
+installCatalogImages: false
+imageRepositories:
+  - name: image-catalog
+    url: https://github.com/kube-workspaces/image-catalog.git
+    ref: main
+    paths: [images]
+    syncInterval: 10m
+```
+
+Paths are scanned **non-recursively**. Add separate repositories or list additional
+paths for `images/kasm/core`, `images/kasm/desktop`, or `images/linuxserver`.
+Avoid overlapping image names between repositories: the last sync wins ownership.
+After successful imports, removing an image from the owning repository's paths
+prunes that Image CR. Removing the ImageRepository itself leaves imported images.
+
+For an existing installation, add the repository and trigger a sync to backfill
+provenance without deleting/recreating the Image CRs:
+
+```bash
+kubectl annotate imagerepositories.kubeworkspaces.io --all \
+  kubeworkspaces.io/sync="$(date -u +%s)" --overwrite
+kubectl get imagerepositories.kubeworkspaces.io
+kubectl get images.kubeworkspaces.io -L kubeworkspaces.io/image-repository
+```
+
+Stop reconciling adopted Image specs from static Helm/ArgoCD manifests so they
+do not compete with Git sync. When removing static manifests from an existing
+release, use your deployment tool's retain/orphan mechanism to hand them over
+without pruning them. Image adoption preserves Kubernetes identity and unrelated
+metadata and does not recreate running workspaces. The API must also be upgraded
+to a build exposing `source_repository`; recording labels alone is not enough
+for the frontend filter.
+
 ## Prerequisites
 
 - `kubectl` with access to your target cluster

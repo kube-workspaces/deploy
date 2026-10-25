@@ -287,6 +287,20 @@ installExampleImages: true
 # when true.
 installCatalogImages: false
 
+# Git-backed catalogs reconciled by the controller. A sync creates missing Images
+# and adopts/overwrites same-named Images, recording repository provenance.
+# For a repository-managed catalog, disable installExampleImages and
+# installCatalogImages so Helm/ArgoCD does not also reconcile the image specs.
+# Each entry requires name and url; all other ImageRepository spec fields pass
+# through (ref, paths, syncInterval, suspend, auth).
+# imageRepositories:
+#   - name: image-catalog
+#     url: https://github.com/kube-workspaces/image-catalog.git
+#     ref: main
+#     paths: [images]
+#     syncInterval: 10m
+imageRepositories: []
+
 # Additional/custom workspace images (become Image CRs), on top of whichever
 # catalog set is enabled above. `name` becomes the Image CR object name and
 # MUST be RFC 1123 compliant (lowercase alphanumerics and '-'). `displayName`

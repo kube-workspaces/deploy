@@ -1,0 +1,12 @@
+{{- range .Values.imageRepositories }}
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: ImageRepository
+metadata:
+  name: {{ required "each entry in .Values.imageRepositories requires a 'name'" .name | quote }}
+spec:
+  url: {{ required "each entry in .Values.imageRepositories requires a 'url'" .url | quote }}
+  {{- with omit . "name" "url" }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{- end }}

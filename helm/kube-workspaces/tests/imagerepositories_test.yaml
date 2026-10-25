@@ -1,0 +1,76 @@
+suite: image repositories
+templates:
+  - imagerepositories.yaml
+tests:
+  - it: does not enable repository syncing by default
+    asserts:
+      - hasDocuments:
+          count: 0
+  - it: renders cluster-scoped repositories and preserves sync configuration
+    set:
+      imageRepositories:
+        - name: image-catalog
+          url: https://github.com/kube-workspaces/image-catalog.git
+          ref: main
+          paths: [images, images/kasm/desktop]
+          syncInterval: 5m
+          suspend: false
+          auth:
+            secretRef:
+              name: catalog-token
+        - name: custom
+          url: https://example.com/catalog.git
+          paths: [custom]
+    asserts:
+      - hasDocuments:
+          count: 2
+      - documentIndex: 0
+        isKind:
+          of: ImageRepository
+      - documentIndex: 0
+        isNull:
+          path: metadata.namespace
+      - documentIndex: 0
+        equal:
+          path: metadata.name
+          value: image-catalog
+      - documentIndex: 0
+        equal:
+          path: spec
+          value:
+            url: https://github.com/kube-workspaces/image-catalog.git
+            ref: main
+            paths: [images, images/kasm/desktop]
+            syncInterval: 5m
+            suspend: false
+            auth:
+              secretRef:
+                name: catalog-token
+      - documentIndex: 1
+        equal:
+          path: metadata.name
+          value: custom
+  - it: requires a repository name
+    set:
+      imageRepositories:
+        - url: https://example.com/catalog.git
+    asserts:
+      - failedTemplate:
+          errorMessage: "each entry in .Values.imageRepositories requires a 'name'"
+  - it: allows controller defaults for ref paths and interval
+    set:
+      imageRepositories:
+        - name: catalog
+          url: https://example.com/catalog.git
+    asserts:
+      - equal:
+          path: spec
+          value:
+            url: https://example.com/catalog.git
+  - it: requires a repository URL
+    set:
+      imageRepositories:
+        - name: catalog
+    asserts:
+      - failedTemplate:
+          errorMessage: "each entry in .Values.imageRepositories requires a 'url'"
