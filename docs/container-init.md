@@ -6,10 +6,12 @@ VM cloud-init continues to use the existing KubeVirt path.
 
 ## Enable the installer
 
-Publish or select a multi-architecture installer image from container-init's
-Build workflow. Main pushes publish `ghcr.io/kube-workspaces/container-init:sha-<full-commit>`;
-exact release tags additionally publish `:<version>`. Pin a digest or immutable
-commit reference in operator configuration:
+Helm configures `ghcr.io/kube-workspaces/container-init:latest` by default;
+no application values override is required. Workspaces still explicitly opt into
+initialization through their Image defaults or Workspace configuration.
+Container-init's Build workflow publishes multi-architecture `:latest` and
+`:sha-<full-commit>` images on main pushes; exact release tags additionally
+publish `:<version>`. To pin a digest or immutable commit reference, override:
 
 ```yaml
 # Helm values
@@ -19,8 +21,9 @@ controller:
 
 For Kustomize, patch the controller Deployment's `KW_CONTAINER_INIT_IMAGE`
 environment variable, or supply `--container-init-image=<reference>` when
-running the controller directly. Empty is the default and disables **injected**
-mode; **baked-in** mode needs no installer image. This image setting is separate
+running the controller directly. Kustomize/direct controller configuration
+defaults to empty; an explicitly empty Helm value also disables **injected**
+mode. **Baked-in** mode needs no installer image. This image setting is separate
 from the controller component image and the user's application image.
 
 Use the updated Image/Workspace CRDs, controller and API together. The catalog

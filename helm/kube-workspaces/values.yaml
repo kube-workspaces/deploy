@@ -131,9 +131,9 @@ rustfs:
       obs_log_directory: ""
 
 controller:
-  # Opt-in installer reference (use an immutable digest or sha-<full commit>
-  # tag published by container-init). Empty disables injected mode.
-  containerInitImage: ""
+  # Installer for workspaces that opt into injected initialization. Main builds
+  # publish :latest; override with a digest/sha tag to pin, or empty to disable.
+  containerInitImage: ghcr.io/kube-workspaces/container-init:latest
   image:
     repository: ghcr.io/kube-workspaces/controller
     # Empty means Chart.AppVersion, so the chart installs the component
