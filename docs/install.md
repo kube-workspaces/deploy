@@ -57,6 +57,53 @@ metadata and does not recreate running workspaces. The API must also be upgraded
 to a build exposing `source_repository`; recording labels alone is not enough
 for the frontend filter.
 
+The default sync interval is 10 minutes, with up to 20% additional jitter.
+`syncInterval` changes the base interval; **Sync now** bypasses it. Suspend pauses
+syncing until resumed. Clone/cluster failures retry with exponential backoff.
+An explicit `ref` may be a branch, tag or commit; a missing ref fails the sync
+instead of importing the default branch.
+
+Every configured path and YAML symlink must stay inside the cloned repository.
+Images are validated by Kubernetes against the installed Image CRD. Invalid
+manifests are skipped while valid manifests are imported; status reports
+`Ready=False` / `InvalidManifests`, the invalid count and first affected file.
+Pruning is withheld for that sync so an incomplete inventory cannot delete
+existing Images. Repair the files and sync again to resume pruning. The admin
+list/detail pages refresh sync status automatically and display diagnostics.
+
+For private HTTPS repositories, create a Secret in `kube-workspaces-system`
+(`default` is a compatibility fallback), then select **HTTPS basic / token**
+and enter the Secret name in the admin form:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: image-repository-auth
+  namespace: kube-workspaces-system
+type: Opaque
+stringData:
+  username: git
+  token: REPLACE_WITH_YOUR_TOKEN
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: ImageRepository
+metadata:
+  name: private-catalog
+spec:
+  url: https://git.example.com/team/catalog.git
+  ref: main
+  paths: [images, images/desktop]
+  auth:
+    type: basic
+    secretRef:
+      name: image-repository-auth
+```
+
+The Secret accepts `username` plus `password`, or `token` instead of `password`.
+An omitted username defaults to `git`. Keep credentials in the Secret rather
+than the repository URL. SSH-key authentication remains a future extension.
+
 ## Prerequisites
 
 - `kubectl` with access to your target cluster
