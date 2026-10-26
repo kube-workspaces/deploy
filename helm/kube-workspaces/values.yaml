@@ -133,7 +133,7 @@ rustfs:
 controller:
   # Opt-in installer reference (use an immutable digest or sha-<full commit>
   # tag published by container-init). Empty disables injected mode.
-  containerInitImage: ""
+  containerInitImage: ghcr.io/kube-workspaces/container-init
   image:
     repository: ghcr.io/kube-workspaces/controller
     # Empty means Chart.AppVersion, so the chart installs the component
