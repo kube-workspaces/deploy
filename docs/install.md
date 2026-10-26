@@ -256,6 +256,23 @@ Without this, the install fails with `invalid ownership metadata`. The
 **workspace** namespace is still created; control it with
 `namespaces.createWorkspaceNamespace`.
 
+### Upgrading the chart
+
+Helm installs the CRDs in the chart's `crds/` directory on `helm install` but
+does **not** upgrade them on `helm upgrade`. When a new chart version changes the
+CRDs, apply them first, then upgrade the chart:
+
+```bash
+kubectl apply --server-side -k https://github.com/kube-workspaces/deploy/kustomize/crds
+helm upgrade kube-workspaces \
+  oci://ghcr.io/kube-workspaces/charts/kube-workspaces \
+  --namespace kube-workspaces-system
+```
+
+The `Workspace` CRD is too large for client-side apply, so the CRDs must always
+be applied with `--server-side`. Add `--reuse-values` (or your usual values
+flags) if you customized the release.
+
 ## ArgoCD
 
 Argo CD deploys from the **git remote**, so it syncs the last pushed commit

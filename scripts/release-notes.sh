@@ -173,7 +173,11 @@ else
       cat <<EOF
 ## Upgrading
 
+Helm does not upgrade CRDs installed from the chart's \`crds/\` directory. Apply
+the CRDs first, then upgrade the chart:
+
 \`\`\`sh
+kubectl apply --server-side -k https://github.com/kube-workspaces/deploy/kustomize/crds
 helm upgrade kube-workspaces \\
   oci://ghcr.io/kube-workspaces/charts/kube-workspaces \\
   --version ${VERSION#v} --namespace kube-workspaces-system
