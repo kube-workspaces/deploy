@@ -149,6 +149,12 @@ This is also the check that tells you a version bump is genuinely releasable: th
 post-upgrade smoke run is strict, so hardening that only exists locally must
 actually take effect on an upgraded install.
 
+For published baselines `0.6.51` and `0.6.52`, the test sets
+`controller.containerInitImage=""`: their default installer CLI flag is not
+supported by their default controller image (`0.11.0`). This compatibility
+override is saved in the initial Helm revision and reused by rollback. The local
+chart is upgraded with its unmodified defaults.
+
 ## CI
 
 | Workflow | Trigger | Contents |

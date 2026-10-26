@@ -102,10 +102,23 @@ fi
 
 group "install ${FROM_VERSION}"
 
+# These published charts enabled a CLI flag absent from their default controller
+# image (0.11.0). Disable that optional setting only on the affected baselines;
+# Helm retains the override in revision 1, so rollback can also start. The local
+# chart is still tested with its unmodified defaults.
+baseline_args=()
+case "$FROM_VERSION" in
+  0.6.51|0.6.52)
+    info "disabling unsupported container-init flag in published ${FROM_VERSION} baseline"
+    baseline_args+=(--set-string controller.containerInitImage=)
+    ;;
+esac
+
 check "helm install ${FROM_VERSION}" \
   helm install "$HELM_RELEASE" "$CHART_REF" \
     --version "$FROM_VERSION" \
     --namespace "$KW_NAMESPACE" --create-namespace \
+    "${baseline_args[@]}" \
     --wait --timeout 5m
 
 wait_for_crds 120s
@@ -122,6 +135,7 @@ group "upgrade to ${LOCAL_VERSION}"
 check "helm upgrade to the local chart" \
   helm upgrade "$HELM_RELEASE" helm/kube-workspaces/ \
     --namespace "$KW_NAMESPACE" \
+    --reset-values \
     --wait --timeout 5m
 
 # Helm reports success even if it left a resource behind, so confirm the release
@@ -172,7 +186,11 @@ chart_back=$(helm list -n "$KW_NAMESPACE" -o json 2>/dev/null \
 check_equals "rollback restored the previous chart version" \
   "kube-workspaces-${FROM_VERSION}" "$chart_back"
 
-wait_for_deployments 300s
+for deployment in "${KW_DEPLOYMENTS[@]}"; do
+  check "rollback rollout ${deployment}" \
+    kubectl rollout status "deployment/${deployment}" \
+      -n "$KW_NAMESPACE" --timeout=300s
+done
 
 endgroup
 

@@ -19,13 +19,14 @@ permissions:
 env:
   KIND_NODE_IMAGE: kindest/node:v1.31.0
 
+# Pin the runner OS so image migrations do not change the cluster test host.
 jobs:
   # ---------------------------------------------------------------------------
   # Deployment methods that cannot sensibly run on a PR.
   # ---------------------------------------------------------------------------
   deploy:
     name: Deploy via ${{ matrix.method }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -68,7 +69,7 @@ jobs:
   # ---------------------------------------------------------------------------
   upgrade:
     name: Chart upgrade from published
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
 
@@ -104,7 +105,7 @@ jobs:
   # ---------------------------------------------------------------------------
   ingress:
     name: Ingress on k3d + Traefik
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
 
@@ -122,7 +123,7 @@ jobs:
   # ---------------------------------------------------------------------------
   k8s-versions:
     name: Kubernetes ${{ matrix.k8s }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -164,7 +165,7 @@ jobs:
   # ---------------------------------------------------------------------------
   e2e:
     name: Functional e2e
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
 
@@ -196,7 +197,7 @@ jobs:
   # ---------------------------------------------------------------------------
   drift:
     name: Report image drift
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
 
