@@ -62,7 +62,8 @@ def main():
             parser.error(f"missing prerequisite: {tool}")
     sources = args.sources.resolve()
     controller, api, runner, catalog = (sources / name for name in ("controller", "api", "container-init", "image-catalog"))
-    demo = json.loads(run("yq", "-o=json", ".", str(catalog / "images/alpine-container-init.yaml")).stdout)
+    demo = json.loads(run("yq", "-o=json", ".", str(catalog / "images/community/alpine-container-init.yaml")).stdout)
+    baked_demo = json.loads(run("yq", "-o=json", ".", str(catalog / "images/community/alpine-container-init-baked.yaml")).stdout)
     cluster = "container-init-proof-" + uuid.uuid4().hex[:8]
     installer = "container-init:" + cluster
     processes, logs = [], []
@@ -82,7 +83,12 @@ def main():
 
         def pod(name):
             items = json.loads(kubectl("get", "pods", "-n", "workspaces", "-l", "workspace-name=" + name, "-o", "json").stdout)["items"]
-            return next((p for p in items if not p["metadata"].get("deletionTimestamp") and p["status"].get("phase") == "Running"), None)
+            # Wait out rolling overlap instead of reading markers from one pod
+            # and then accidentally executing the assertion in its replacement.
+            if len(items) != 1:
+                return None
+            current = items[0]
+            return current if not current["metadata"].get("deletionTimestamp") and current["status"].get("phase") == "Running" else None
 
         def exec_in(name, *command):
             current = pod(name)
@@ -92,11 +98,20 @@ def main():
             return result.stdout if result.returncode == 0 else None
 
         def ready(name, marker="/run/container-init-demo-ready", old_uid=None):
+            stable = {"uid": None, "since": 0}
             def check():
                 current = pod(name)
                 if not current or current["metadata"]["uid"] == old_uid:
+                    stable["uid"] = None
                     return None
                 if exec_in(name, "test", "-f", marker) is None:
+                    return None
+                if (exec_in(name, "cat", "/proc/1/comm") or "").strip() != "sleep":
+                    return None
+                if stable["uid"] != current["metadata"]["uid"]:
+                    stable.update(uid=current["metadata"]["uid"], since=time.monotonic())
+                    return None
+                if time.monotonic() - stable["since"] < 2:
                     return None
                 return current
             return wait_for(name + " initialized", check)
@@ -169,6 +184,17 @@ def main():
                 assert secret["metadata"]["ownerReferences"][0]["uid"] == ws["metadata"]["uid"]
                 print("PASS API defaults, main-root package/file setup, readonly mounts and exec: " + kind, flush=True)
 
+            for kind in ("container", "scratch"):
+                name = "drop-" + kind
+                create(name, kind, container_init={"mode": "injected", "user_data": original_data,
+                                                  "default_user": "nobody", "run_as_user": "nobody"})
+                ready(name)
+                snapshot = get("workspace", name)["spec"]["containerInit"]
+                assert snapshot["defaultUser"] == "nobody" and snapshot["runAsUser"] == "nobody"
+                wait_for(name + " non-root PID 1", lambda: "Uid:\t65534\t65534\t65534\t65534" in (exec_in(name, "cat", "/proc/1/status") or ""))
+                assert "NoNewPrivs:\t1" in exec_in(name, "cat", "/proc/1/status")
+                print("PASS API identity snapshot and root-provision/non-root application: " + kind, flush=True)
+
             # Changing catalog data does not retrofit the existing snapshot.
             demo["spec"]["defaultUserData"] = "#cloud-config\nruncmd: []\n"
             apply(demo)
@@ -177,6 +203,23 @@ def main():
             ready("injected-container", old_uid=old)
             assert get("workspace", "injected-container")["spec"]["containerInit"]["userData"] == original_data
             print("PASS Pod replacement reapplies the original snapshotted cloud-config", flush=True)
+
+            for kind in ("container", "scratch"):
+                source = "injected-" + kind
+                clone = "clone-" + kind
+                request(f"/v1/workspaces/{source}/clone?namespace=workspaces", {"new_name": clone})
+                ready(clone)
+                ws = get("workspace", clone)
+                assert ws["spec"]["containerInit"]["userData"] == original_data
+                assert get("secret", clone + "-container-init")["metadata"]["ownerReferences"][0]["uid"] == ws["metadata"]["uid"]
+                assert ws["metadata"]["uid"] != get("workspace", source)["metadata"]["uid"]
+                try:
+                    request(f"/v1/workspaces/{source}/reset?namespace=workspaces", {})
+                except urllib.error.HTTPError as error:
+                    assert error.code == 400 and "only vm workspaces" in error.read().decode()
+                else:
+                    raise AssertionError("non-VM reset must remain explicitly unsupported")
+                print("PASS clone snapshots/independent Secrets and explicit non-VM reset rejection: " + kind, flush=True)
             old = pod("injected-scratch")["metadata"]["uid"]
             kubectl("annotate", "workspace", "injected-scratch", "-n", "workspaces", "kubeworkspaces.io/stopped=true", "--overwrite")
             wait_for("scratch stopped", lambda: not json.loads(kubectl("get", "pods", "-n", "workspaces", "-l", "workspace-name=injected-scratch", "-o", "json").stdout)["items"])
@@ -196,18 +239,58 @@ def main():
             assert not get("secret", "private-init")["metadata"].get("ownerReferences")
             print("PASS direct CR and independently owned Secret update/rollout", flush=True)
 
-            baked = json.loads(json.dumps(direct))
-            baked["metadata"]["name"] = "baked"
-            baked["spec"]["containerInit"] = {"mode": "baked-in", "userData": "#cloud-config\nwrite_files:\n  - path: /run/baked-ready\n    content: ready\n"}
-            main = baked["spec"]["template"]["spec"]["containers"][0]
-            main.update({"image": installer, "command": ["/usr/local/bin/container-init"], "args": ["--user-data", "/run/container-init/user-data", "--", "sleep", "infinity"]})
-            apply(baked)
-            current = ready("baked", marker="/run/baked-ready")
-            assert not current["spec"].get("initContainers")
-            assert exec_in("baked", "cat", "/proc/1/comm").strip() == "sleep"
-            print("PASS baked-in data-only delivery and unchanged entrypoint", flush=True)
+            for kind in ("container", "scratch"):
+                name = "baked-" + kind
+                baked_demo["spec"]["image"] = installer
+                apply(baked_demo)
+                create(name, kind, container={"name": "workspace", "image": installer, "port": 80},
+                       container_init={"mode": "baked-in", "user_data": original_data})
+                current = ready(name)
+                assert not current["spec"].get("initContainers")
+                assert exec_in(name, "cat", "/proc/1/comm").strip() == "sleep"
+                assert "Created by injected" in exec_in(name, "cat", "/etc/container-init-demo.txt")
+                assert "curl " in exec_in(name, "cat", "/run/container-init-demo-curl.txt")
+                print("PASS baked-in catalog startup, equivalent provisioning and unchanged entrypoint: " + kind, flush=True)
 
-            failure = create("failed", "container", container_init={"mode": "injected", "user_data": "#cloud-config\nruncmd: [[sh, -c, 'exit 7']]\n"})
+            shared = json.loads(json.dumps(direct))
+            shared["metadata"]["name"] = "shared-only"
+            shared["spec"]["containerInit"] = {"mode": "disabled"}
+            shared_spec = shared["spec"]["template"]["spec"]
+            shared_spec["volumes"] = [{"name": "shared", "emptyDir": {}}]
+            shared_spec["initContainers"] = [{"name": "prepare-shared", "image": "alpine:3.22",
+                "command": ["sh", "-ec", "touch /shared/ready /etc/init-container-only"],
+                "volumeMounts": [{"name": "shared", "mountPath": "/shared"}]}]
+            shared_spec["containers"][0]["volumeMounts"] = [{"name": "shared", "mountPath": "/shared"}]
+            apply(shared)
+            ready("shared-only", marker="/shared/ready")
+            assert exec_in("shared-only", "test", "!", "-e", "/etc/init-container-only") is not None
+            print("PASS shared-volume preparation does not provision the main root", flush=True)
+
+            apply({"apiVersion": "v1", "kind": "PersistentVolume", "metadata": {"name": "init-proof"},
+                   "spec": {"capacity": {"storage": "1Gi"}, "accessModes": ["ReadWriteOnce"], "storageClassName": "",
+                            "hostPath": {"path": "/tmp/container-init-proof-data", "type": "DirectoryOrCreate"}}})
+            apply({"apiVersion": "v1", "kind": "PersistentVolumeClaim", "metadata": {"name": "init-proof", "namespace": "workspaces"},
+                   "spec": {"accessModes": ["ReadWriteOnce"], "storageClassName": "", "volumeName": "init-proof",
+                            "resources": {"requests": {"storage": "1Gi"}}}})
+            persistent = json.loads(json.dumps(direct))
+            persistent["metadata"]["name"] = "persistent-proof"
+            persistent["spec"]["containerInit"] = {"mode": "injected", "userData": "#cloud-config\nwrite_files:\n  - path: /etc/root-ready\n    content: recreated\nruncmd:\n  - [sh, -ec, 'test -s /etc/root-ready; echo run >> /persistent/runs; touch /run/persistent-ready']\n"}
+            persistent_spec = persistent["spec"]["template"]["spec"]
+            persistent_spec["volumes"] = [{"name": "persistent", "persistentVolumeClaim": {"claimName": "init-proof"}}]
+            persistent_spec["containers"][0]["volumeMounts"] = [{"name": "persistent", "mountPath": "/persistent"}]
+            apply(persistent)
+            current = ready("persistent-proof", marker="/run/persistent-ready")
+            runs_before = len(exec_in("persistent-proof", "cat", "/persistent/runs").splitlines())
+            kubectl("delete", "pod", current["metadata"]["name"], "-n", "workspaces", "--wait=true")
+            ready("persistent-proof", marker="/run/persistent-ready", old_uid=current["metadata"]["uid"])
+            # Commands may run more than once during ordinary rolling replacement;
+            # the contract promises rerun, not exactly-once persistent side effects.
+            runs = exec_in("persistent-proof", "cat", "/persistent/runs").splitlines()
+            assert len(runs) > runs_before and all(line == "run" for line in runs)
+            assert exec_in("persistent-proof", "cat", "/etc/root-ready") == "recreated"
+            print("PASS persistent volume reuse never skips replacement root provisioning", flush=True)
+
+            failure = create("failed", "container", container_init={"mode": "injected", "user_data": "#cloud-config\nbootcmd: [[test, '!', -e, /etc/attempt-marker]]\nwrite_files:\n  - path: /etc/attempt-marker\n    content: fresh-root\nruncmd: [[sh, -c, 'exit 7']]\n"})
             assert failure
             def failed():
                 current = pod("failed")
@@ -219,6 +302,12 @@ def main():
                 log = kubectl("logs", "-n", "workspaces", current["metadata"]["name"], "-c", "workspace", "--previous", check=False)
                 return "runcmd[0]" in log.stdout and "exit status 7" in log.stdout
             wait_for("failed provisioning prevents application exec", failed)
+            print("PASS container restart retries provisioning against a fresh root filesystem", flush=True)
+            def failed_condition():
+                conditions = get("workspace", "failed").get("status", {}).get("conditions", [])
+                return any(c.get("type") == "ContainerInitialized" and c.get("reason") == "ContainerInitFailed"
+                           and "runcmd[0]" in c.get("message", "") for c in conditions)
+            wait_for("payload-free initialization failure condition", failed_condition)
             print("PASS injected Alpine milestone end-to-end", flush=True)
         finally:
             if created and sys.exc_info()[0] is not None:

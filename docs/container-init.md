@@ -67,6 +67,38 @@ For catalog-selected scratch images, leave the command override empty to keep
 catalog commands/args. Explicit overrides use JSON argv arrays rather than
 whitespace-split shell commands.
 
+Injected initialization also accepts `defaultUser` (explicit account for
+`users: default` and top-level SSH keys) and `runAsUser` (non-root application
+identity after root setup). Both belong inside `defaultContainerInit` on Images
+or `containerInit` on direct Workspaces; the REST override uses `default_user`
+and `run_as_user`. They are creation-time snapshots. Empty REST identity strings
+clear inherited values; disabled mode clears the whole initialization request.
+Identity options require injected mode; baked-in entrypoints own their CLI/identity
+handling. The account must already exist or be created by the document, and the
+container must initially run as root to drop supplementary groups/GID/UID.
+
+All twelve selected keys now have a documented supported subset in the
+[runner reference](https://github.com/kube-workspaces/container-init#accounts-ssh-trust-and-timezone-prerequisites).
+Account/CA/timezone prerequisites must be baked into the application image, because
+those phases precede package installation. Alpine needs shadow-compatible account
+tools (`shadow`), `ca-certificates` and `tzdata` for the corresponding modules;
+stock Alpine still works for the original package/file/command demo. Passwords
+use modern `chpasswd.users` with explicit text/hash semantics and stdin transport.
+
+The new-workspace form supports inherited/disabled/injected/baked-in mode,
+catalog/inline/Secret data, explicit identities and separate JSON command/args
+for both container types. An explicit `[]` args override clears catalog args;
+leaving an override blank preserves defaults. Inline data remains visible in the
+Workspace CR. Validation happens before dependent volume creation.
+
+Injected failures produce a payload-free Kubernetes termination diagnostic and
+`ContainerInitialized=False` / `ContainerInitFailed` condition naming only the
+failed phase. Workspace details show the condition message; inspect main-container
+logs for tool output. Success is established by application readiness/markers,
+not merely by Pod Ready. Standalone/baked-in runners can also use `--status-file`
+for atomic, mode-0600 diagnostic state; it never skips provisioning or claims
+that root-filesystem changes survive a replacement.
+
 `defaultContainerInit.mode` is `disabled`, `injected` or `baked-in`:
 
 - Omitted/disabled: ordinary startup; user-data alone has no effect.

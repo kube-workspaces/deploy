@@ -415,107 +415,6 @@ spec:
 apiVersion: kubeworkspaces.io/v1alpha1
 kind: Image
 metadata:
-  name: kasm
-  annotations:
-    catalog.kubeworkspaces.io/example: "true"
-spec:
-  defaultEnv:
-  - name: KASM_PORT
-    value: '3000'
-  defaultPath: /
-  defaultPort: 3000
-  description: Full Kasm Workspaces platform with Docker-in-Docker. Requires privileged
-    mode. Access the setup wizard first, then the main interface.
-  category: Desktop
-  tags:
-  - vnc
-  - linux
-  displayName: Kasm Workspaces
-  homepageURL: https://kasmweb.com
-  icon: https://cdn.simpleicons.org/linuxserver/DA3B8A
-  image: linuxserver/kasm:1.19.0
-  defaultImagePullPolicy: Always
-  imageHomepageURL: https://hub.docker.com/r/linuxserver/kasm
-  privileged: true
-  defaultSharedMemory: true
-  proxyConfig:
-    needsNoopSW: true
-    rewriteHostAbsolutePaths: true
-    scheme: https
-    tlsSkipVerify: true
-  sourceURL: https://github.com/linuxserver/docker-kasm
----
-apiVersion: kubeworkspaces.io/v1alpha1
-kind: Image
-metadata:
-  name: kasmweb-chrome
-  annotations:
-    catalog.kubeworkspaces.io/example: "true"
-spec:
-  defaultCredentials:
-    password: password
-    username: kasm_user
-  defaultEnv:
-  - name: VNC_PW
-    value: password
-  defaultPath: /
-  defaultPort: 6901
-  description: Chrome browser streamed via KasmVNC
-  category: Browser
-  displayName: Kasm Chrome
-  homepageURL: https://kasmweb.com
-  icon: https://cdn.simpleicons.org/googlechrome/4285F4
-  image: kasmweb/chrome:1.19.0
-  imageHomepageURL: https://hub.docker.com/r/kasmweb/chrome
-  privileged: true
-  proxyConfig:
-    needsNoopSW: true
-    rewriteHostAbsolutePaths: true
-    scheme: https
-    tlsSkipVerify: true
-    websocketPaths:
-    - /websockify
-  sourceURL: https://github.com/kasmtech
-  defaultUser: kasm_user
-  defaultHomedir: /home/kasm_user
----
-apiVersion: kubeworkspaces.io/v1alpha1
-kind: Image
-metadata:
-  name: kasmweb-desktop
-  annotations:
-    catalog.kubeworkspaces.io/example: "true"
-spec:
-  defaultCredentials:
-    password: password
-    username: kasm_user
-  defaultEnv:
-  - name: VNC_PW
-    value: password
-  defaultPath: /
-  defaultPort: 6901
-  description: Ubuntu desktop streamed via KasmVNC
-  category: Desktop
-  displayName: Kasm Desktop
-  homepageURL: https://kasmweb.com
-  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kasm.svg
-  image: kasmweb/desktop:1.19.0
-  imageHomepageURL: https://hub.docker.com/r/kasmweb/desktop
-  privileged: true
-  proxyConfig:
-    needsNoopSW: true
-    rewriteHostAbsolutePaths: true
-    scheme: https
-    tlsSkipVerify: true
-    websocketPaths:
-    - /websockify
-  sourceURL: https://github.com/kasmtech
-  defaultUser: kasm_user
-  defaultHomedir: /home/kasm_user
----
-apiVersion: kubeworkspaces.io/v1alpha1
-kind: Image
-metadata:
   annotations:
     catalog.kubeworkspaces.io/example: "true"
   name: ms-dos-622
@@ -537,3 +436,123 @@ spec:
   videoDevice: virtio
   workspaceTypes:
     - vm
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: kasmweb-chrome
+  annotations:
+    catalog.kubeworkspaces.io/example: 'true'
+spec:
+  defaultCredentials:
+    password: password
+    username: kasm_user
+  defaultEnv:
+  - name: VNC_PW
+    value: password
+  defaultPath: /
+  defaultPort: 6901
+  description: Google Chrome is a cross-platform web browser developed by Google.
+  category: Browser
+  displayName: Chrome
+  homepageURL: https://kasm.com/images
+  icon: https://registry.kasmweb.com/1.1/icons/chrome.png
+  image: kasmweb/chrome:1.19.0
+  imageHomepageURL: https://hub.docker.com/r/kasmweb/chrome
+  privileged: true
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    scheme: https
+    tlsSkipVerify: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/kasmtech/workspaces-images/blob/develop/dockerfile-kasm-chrome
+  defaultUser: kasm_user
+  defaultHomedir: /home/kasm-user
+  defaultSharedMemory: true
+  defaultShell: /bin/bash
+  tags:
+  - browser
+  - desktop
+  - kasm
+  - kasmvnc
+  - linux
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: kasmweb-desktop
+  annotations:
+    catalog.kubeworkspaces.io/example: 'true'
+spec:
+  defaultCredentials:
+    password: password
+    username: kasm_user
+  defaultEnv:
+  - name: VNC_PW
+    value: password
+  defaultPath: /
+  defaultPort: 6901
+  description: Ubuntu desktop for Kasm Workspaces
+  category: Desktop
+  displayName: Ubuntu Desktop
+  homepageURL: https://kasm.com/images
+  icon: https://registry.kasmweb.com/1.1/icons/ubuntu.png
+  image: kasmweb/desktop:1.19.0
+  imageHomepageURL: https://hub.docker.com/r/kasmweb/desktop
+  privileged: true
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    scheme: https
+    tlsSkipVerify: true
+    websocketPaths:
+    - /websockify
+  sourceURL: https://github.com/kasmtech/workspaces-images/blob/develop/dockerfile-kasm-desktop
+  defaultUser: kasm_user
+  defaultHomedir: /home/kasm-user
+  defaultSharedMemory: true
+  defaultShell: /bin/bash
+  tags:
+  - desktop
+  - kasm
+  - kasmvnc
+  - linux
+---
+apiVersion: kubeworkspaces.io/v1alpha1
+kind: Image
+metadata:
+  name: kasm
+  annotations:
+    catalog.kubeworkspaces.io/example: 'true'
+spec:
+  defaultEnv:
+  - name: KASM_PORT
+    value: '3000'
+  defaultPath: /
+  defaultPort: 3000
+  description: Full Kasm Workspaces platform with Docker-in-Docker. Requires privileged mode.
+    Access the setup wizard first, then the main interface.
+  category: Desktop
+  tags:
+  - linuxserver
+  - vnc
+  - linux
+  displayName: Kasm Workspaces
+  homepageURL: https://kasmweb.com
+  icon: https://kasm-ci.s3.amazonaws.com/kasm_wide.png
+  image: linuxserver/kasm:1.19.0
+  defaultImagePullPolicy: Always
+  imageHomepageURL: https://hub.docker.com/r/linuxserver/kasm
+  privileged: true
+  defaultSharedMemory: true
+  proxyConfig:
+    needsNoopSW: true
+    rewriteHostAbsolutePaths: true
+    scheme: https
+    tlsSkipVerify: true
+  sourceURL: https://github.com/linuxserver/docker-kasm
+  workspaceTypes:
+  - container
+  - scratch

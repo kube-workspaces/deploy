@@ -55,11 +55,19 @@ spec:
                     ContainerInit is resolved at creation and applied to the main container.
                     Direct Workspace CRs can supply it without an Image catalog lookup.
                   properties:
+                    defaultUser:
+                      description: 'DefaultUser explicitly resolves users: default and top-level SSH keys.'
+                      pattern: ^[a-z_][a-z0-9_-]{0,31}$
+                      type: string
                     mode:
                       enum:
                         - disabled
                         - injected
                         - baked-in
+                      type: string
+                    runAsUser:
+                      description: RunAsUser is an explicit non-root account for application exec after setup.
+                      pattern: ^[a-z_][a-z0-9_-]{0,31}$
                       type: string
                     userData:
                       description: |-
@@ -94,6 +102,10 @@ spec:
                       rule: '!(has(self.userData) && has(self.userDataSecretRef))'
                     - message: Enabled container initialization requires user-data
                       rule: self.mode == 'disabled' || (has(self.userData) && size(self.userData) > 0) || has(self.userDataSecretRef)
+                    - message: Identity options require injected mode
+                      rule: (!has(self.defaultUser) && !has(self.runAsUser)) || self.mode == 'injected'
+                    - message: runAsUser must be non-root
+                      rule: '!has(self.runAsUser) || self.runAsUser != ''root'''
                 executionRevocationEpoch:
                   default: 0
                   description: |-
@@ -8111,6 +8123,10 @@ spec:
                     DefaultContainerInit opts container/scratch workspaces into initialization.
                     DefaultUserData alone does not enable container initialization.
                   properties:
+                    defaultUser:
+                      description: 'DefaultUser explicitly resolves users: default and top-level SSH keys.'
+                      pattern: ^[a-z_][a-z0-9_-]{0,31}$
+                      type: string
                     mode:
                       description: |-
                         Mode selects normal startup, injected entrypoint wrapping, or data-only
@@ -8120,9 +8136,20 @@ spec:
                         - injected
                         - baked-in
                       type: string
+                    runAsUser:
+                      description: |-
+                        RunAsUser drops privileges after provisioning, before application exec.
+                        The resolved account must be non-root. Injected mode only.
+                      pattern: ^[a-z_][a-z0-9_-]{0,31}$
+                      type: string
                   required:
                     - mode
                   type: object
+                  x-kubernetes-validations:
+                    - message: Identity options require injected mode
+                      rule: (!has(self.defaultUser) && !has(self.runAsUser)) || self.mode == 'injected'
+                    - message: runAsUser must be non-root
+                      rule: '!has(self.runAsUser) || self.runAsUser != ''root'''
                 defaultCredentials:
                   description: DefaultCredentials are the default login credentials for this image.
                   properties:
