@@ -9,6 +9,11 @@ VM cloud-init continues to use the existing KubeVirt path.
 Helm configures `ghcr.io/kube-workspaces/container-init:latest` by default;
 no application values override is required. Workspaces still explicitly opt into
 initialization through their Image defaults or Workspace configuration.
+The chart passes the setting as `KW_CONTAINER_INIT_IMAGE`, allowing older
+controller images to start without an unsupported CLI flag. Initialization
+requires the updated controller/API; the historical 0.11.0 images do not support
+it. Installations following main should use the component `image.tag: latest`
+settings alongside the updated CRDs.
 Container-init's Build workflow publishes multi-architecture `:latest` and
 `:sha-<full-commit>` images on main pushes; exact release tags additionally
 publish `:<version>`. To pin a digest or immutable commit reference, override:

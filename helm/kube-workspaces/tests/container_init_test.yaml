@@ -5,8 +5,13 @@ tests:
   - it: configures the latest installer by default
     asserts:
       - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_CONTAINER_INIT_IMAGE
+            value: ghcr.io/kube-workspaces/container-init:latest
+      - equal:
           path: spec.template.spec.containers[0].args
-          content: --container-init-image=ghcr.io/kube-workspaces/container-init:latest
+          value: ["--leader-elect", "--metrics-bind-address=:8080", "--metrics-secure=false"]
   - it: leaves injection disabled when configured empty
     set:
       controller.containerInitImage: ""
@@ -14,10 +19,14 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].args
           value: ["--leader-elect", "--metrics-bind-address=:8080", "--metrics-secure=false"]
+      - notExists:
+          path: spec.template.spec.containers[0].env
   - it: passes the configured immutable installer reference
     set:
       controller.containerInitImage: ghcr.io/kube-workspaces/container-init:sha-example
     asserts:
       - contains:
-          path: spec.template.spec.containers[0].args
-          content: --container-init-image=ghcr.io/kube-workspaces/container-init:sha-example
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_CONTAINER_INIT_IMAGE
+            value: ghcr.io/kube-workspaces/container-init:sha-example

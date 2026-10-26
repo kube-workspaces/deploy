@@ -33,9 +33,13 @@ spec:
             - --leader-elect
             - --metrics-bind-address=:8080
             - --metrics-secure=false
-            {{- if .Values.controller.containerInitImage }}
-            - {{ printf "--container-init-image=%s" .Values.controller.containerInitImage | quote }}
-            {{- end }}
+          {{- if .Values.controller.containerInitImage }}
+          # Environment configuration is ignored by older controller images,
+          # whereas the equivalent new CLI flag prevents them from starting.
+          env:
+            - name: KW_CONTAINER_INIT_IMAGE
+              value: {{ .Values.controller.containerInitImage | quote }}
+          {{- end }}
           ports:
             - containerPort: 8081
               name: health
