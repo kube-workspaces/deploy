@@ -2,18 +2,11 @@ suite: opt-in container-init installer configuration
 templates:
   - controller-deployment.yaml
 tests:
-  - it: enables injection by default
+  - it: leaves injection disabled by default
     asserts:
-      - contains:
+      - notContains:
           path: spec.template.spec.containers[0].args
-          content: --container-init-image=ghcr.io/kube-workspaces/container-init
-  - it: leaves injection disabled when configured empty
-    set:
-      controller.containerInitImage: ""
-    asserts:
-      - equal:
-          path: spec.template.spec.containers[0].args
-          value: ["--leader-elect", "--metrics-bind-address=:8080", "--metrics-secure=false"]
+          content: --container-init-image
   - it: passes the configured immutable installer reference
     set:
       controller.containerInitImage: ghcr.io/kube-workspaces/container-init:sha-example
