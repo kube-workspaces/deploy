@@ -27,7 +27,7 @@ ref_sum=$(md5sum < "$REFERENCE" | cut -d' ' -f1)
 checked=0
 drifted=""
 
-for r in controller api proxy frontend desktop-client workspace-agent; do
+for r in controller api proxy frontend desktop-client workspace-agent container-init; do
   f="${SIBLINGS}/${r}/.github/release.yml"
   if [ ! -f "$f" ]; then
     continue
