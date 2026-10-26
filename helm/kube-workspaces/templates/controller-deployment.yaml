@@ -33,6 +33,9 @@ spec:
             - --leader-elect
             - --metrics-bind-address=:8080
             - --metrics-secure=false
+            {{- if .Values.controller.containerInitImage }}
+            - {{ printf "--container-init-image=%s" .Values.controller.containerInitImage | quote }}
+            {{- end }}
           ports:
             - containerPort: 8081
               name: health

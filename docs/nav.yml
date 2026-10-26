@@ -14,6 +14,7 @@
     - vm
     - gpu
     - container-gpu
+    - container-init
     - display-tiers
     - shared-display
     - desktop-client

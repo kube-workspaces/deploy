@@ -818,6 +818,14 @@ When a workspace is created with this image:
 
 ---
 
+## Container initialization
+
+Images can opt into injected or baked-in cloud-config initialization for
+container/scratch workspaces with `defaultContainerInit` and `defaultUserData`.
+Injected mode requires an explicit application command and an operator-selected
+installer image. See [Container initialization](container-init.md) for the
+Alpine demo, Secret delivery, lifecycle and direct Workspace configuration.
+
 ## Additional Ports (`additionalPorts`)
 
 The Image CR `additionalPorts` field specifies extra container ports beyond the primary `defaultPort`. These are injected into the workspace pod's container spec at creation time, and the controller's `generateService` exposes them on the Kubernetes Service.
