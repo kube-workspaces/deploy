@@ -41,6 +41,11 @@ spec:
               path: /healthz
               port: http
           env:
+            # Duration settings alone must never enable destructive workers.
+            - name: KW_EXECUTION_RETENTION_ENABLED
+              value: "false"
+            - name: KW_EXECUTION_METADATA_RETENTION_ENABLED
+              value: "false"
             - name: KW_MONITORING_PLATFORM
               value: kube-workspaces-system/kube-workspaces
             - name: POD_NAMESPACE

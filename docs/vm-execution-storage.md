@@ -7,8 +7,9 @@ separate permissions; selecting a storage mode does not grant either permission.
 
 **Implementation status:** deployment/configuration, database migrations,
 encrypted recording stores, protected playback and admission foundations are
-implemented. Guest-authenticated transport, recording-spool integration and
-execution runners remain pending. Provisioned services or accepted
+implemented. Bounded root/SYSTEM commands/scripts are available through the
+separately enabled QGA pilot; dedicated enrollment/mTLS, general operation
+lifecycle and interactive shells remain separate work. Provisioned services or accepted
 configuration do not establish execution readiness. These examples do not enable
 `PlatformConfig.spec.vmExecution` or expose a guest shell by themselves.
 
@@ -59,7 +60,7 @@ credentials and recording-key Secrets in the release namespace. References:
 |---|---|
 | `execution-postgresql` | `database-url`: PostgreSQL URL using a dedicated app role/database and `sslmode=verify-full`. |
 | `execution-s3` | `access-key`, `secret-key`: credentials restricted to the execution bucket/prefix. |
-| `execution-recording-key` | `key`: base64 text encoding a random 32-byte recording master key. |
+| `execution-recording-key` | `key`: base64 text encoding a random 32-byte recording key, or the API's versioned active/read-only keyring JSON. |
 
 Set `execution.storage.s3.endpoint`, bucket and region for the provider. Custom
 Secret key names and path-style requests are configurable. For a private S3 CA,
@@ -101,7 +102,7 @@ kubectl -n kube-workspaces-system create secret generic execution-rustfs \
   --from-literal=RUSTFS_ACCESS_KEY="$(openssl rand -hex 16)" \
   --from-literal=RUSTFS_SECRET_KEY="$(openssl rand -hex 32)"
 kubectl -n kube-workspaces-system create secret generic execution-recording-key \
-  --from-literal=key="$(openssl rand -base64 32)"
+  --from-file=key=/secure/operator-owned/recording-key
 ```
 
 Then render/review the bundled profile before the separately coordinated chart
@@ -112,6 +113,10 @@ to be supplied in the installation's other values files.
 helm template kw helm/kube-workspaces -n kube-workspaces-system \
   -f examples/execution-storage/bundled.yaml
 ```
+
+The recording-key file above is a separately generated, access-restricted file,
+not a literal placeholder key or a Helm value. Preserve it under operator key
+custody. The chart never generates it or exposes its content in rendered manifests.
 
 The test profile explicitly opts into internal PostgreSQL/TCP and S3/HTTP via
 `execution.storage.allowInsecureTransport: true`. Recording content must be
@@ -138,19 +143,82 @@ incompatible database major versions or silently reinitialize missing history.
 
 ## Retention, keys and readiness
 
-Initial configurable defaults are 720 hours of recording and 8760 hours of
-metadata. Metadata retention must cover recording retention so replay/index and
-deletion evidence are not removed before their recording objects. Full input
+Initial configurable durations are 720 hours of recording and 8760 hours of
+metadata. **They do not enable deletion and are not an approved permanent policy.**
+Metadata retention must cover recording retention so replay/index and deletion
+evidence are not removed before their recording objects. Full input
 recording includes echo-disabled credentials: replay is a separate permission and
 must itself be audited. Content never belongs in ordinary application/debug logs.
 
 Retained data must remain decryptable across API restarts; a persistent recording
-key is mandatory. The current configuration loads one key and derives its ID.
-Key-ring rotation/migration is still pending: do not replace that key while
-recordings encrypted with it remain. Back up keys separately with controlled
+key is mandatory. The API accepts the original single key or a bounded versioned
+keyring with one active writer key and up to eight read-only keys; the existing
+Secret mount carries either format. Stage new read keys across every API replica
+before changing the writer key, and retain old keys for evidence/recovery/backup
+and rollback requirements. See [API recording-key rotation](https://github.com/kube-workspaces/api/blob/main/internal/execution/storage/KEY_ROTATION.md).
+Back up keys separately with controlled
 access; neither PostgreSQL/S3 availability nor a chart install alone establishes
 recording health. Admission must verify both stores, the encryption key, write
 authorization and available recording capacity before any process starts.
+
+### Explicit retention workers
+
+Both workers are **off by default** in Helm and Kustomize. These Helm values are
+independent of storage durations and do not enable workspace execution policy:
+
+| `execution.storage.retention` field | Default | Meaning |
+|---|---|---|
+| `recordingsEnabled` | `false` | Render `KW_EXECUTION_RETENTION_ENABLED`; delete eligible terminal command/script recordings. Requires persistent storage. |
+| `metadataEnabled` | `false` | Render `KW_EXECUTION_METADATA_RETENTION_ENABLED`; additionally expire eligible execution/audit metadata after recording cleanup. Requires recordings enabled. |
+| `policyAcknowledged` | `false` | Required before either worker can be armed, after reviewing durations, custody and rollout prerequisites. This acknowledgement alone enables nothing. |
+| `recordings` | `720h` | Recording age cutoff, subject to explicit operator policy. |
+| `metadata` | `8760h` | Minimum metadata/audit age; must cover recording duration. Every recent audit event prolongs protection. |
+
+With enforcement enabled, chart durations must be positive **whole-hour strings**
+from `1h` through `2562047h` (the whole-hour Go duration limit). This restricted
+chart policy format allows overflow-safe render-time comparison. Duration-only
+legacy configurations are unchanged while both workers are off; custom API
+deployments still accept the runtime's broader Go duration format.
+
+For an already reviewed persistent profile, the optional
+`examples/execution-storage/retention.yaml` demonstrates both switches and
+**illustrative**, not recommended/pre-approved, `24h`/`168h` values. Render only:
+
+```sh
+helm template kw helm/kube-workspaces -n kube-workspaces-system \
+  -f examples/execution-storage/external.yaml \
+  -f examples/execution-storage/retention.yaml
+```
+
+Substitute the bundled profile if desired. Do not include the destructive overlay
+in an installation until operator approval and coordinated chart adoption. The
+chart rejects disabled/ephemeral storage, metadata-only enforcement, unacknowledged
+policy, non-boolean switches, invalid/overflowing hours and metadata shorter than
+recordings. API startup independently validates persistent mode and durations.
+Kustomize's base explicitly sets both runtime switches to `"false"`; an operator's
+persistent-storage overlay must deliberately replace selected switches and supply
+reviewed durations and all existing storage/authentication prerequisites.
+
+Before enabling, upgrade every reader replica to retention-aware API binaries
+(including metadata schema 000008), use an **unversioned** recording bucket and
+grant narrowly scoped bucket versioning-read/list/delete permissions in addition
+to normal recording access. Object-store policy is never changed by the worker.
+Chart field availability is versioned separately: adopt a chart release containing
+these fields; changing a values file alone does not update a pinned older chart.
+
+Recording expiry commits a shared replay fence/audit before bounded deletion;
+failed/partial cleanup remains fenced and resumable, including after a longer
+later duration. Metadata expiry waits for completed recording cleanup and **all**
+audit events' retention windows, then atomically deletes original history and
+writes a minimal lifetime ID/deletion receipt. Original actor/scope/invocation/
+result payloads are not copied to that receipt. Old IDs remain reserved; neither
+expiry path reruns a guest command or reinterprets unknown as success. Active/
+pending recovery, shell/upgrade and referenced upgrade evidence remain protected.
+Ephemeral/orphan cleanup and deletion of backups/external copies are not included.
+
+Rendering/tests are not deployed storage/rotation/retention acceptance. Review
+irreversibility, minimal-ledger capacity, rollback and staging proof in the full
+[API retention contract](https://github.com/kube-workspaces/api/blob/main/internal/execution/storage/RETENTION.md).
 
 ## Opt-in management issuer
 

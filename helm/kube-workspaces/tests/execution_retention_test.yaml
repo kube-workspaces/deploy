@@ -1,0 +1,155 @@
+suite: execution retention safety
+templates:
+  - api-deployment.yaml
+tests:
+  - it: omits retention workers with disabled execution
+    documentSelector:
+      path: kind
+      value: Deployment
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_RETENTION_ENABLED
+          any: true
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_METADATA_RETENTION_ENABLED
+          any: true
+
+  - it: explicitly disables both workers in ephemeral mode
+    documentSelector:
+      path: kind
+      value: Deployment
+    set:
+      auth.enabled: true
+      execution.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_RETENTION_ENABLED
+            value: "false"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_METADATA_RETENTION_ENABLED
+            value: "false"
+
+  - it: refuses enforcement without enabled persistent storage
+    set:
+      execution.storage.retention.recordingsEnabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: retention enforcement requires enabled external or bundled execution storage
+
+  - it: refuses ephemeral enforcement even with policy acknowledgement
+    set:
+      auth.enabled: true
+      execution.enabled: true
+      execution.storage.retention.recordingsEnabled: true
+      execution.storage.retention.policyAcknowledged: true
+    asserts:
+      - failedTemplate:
+          errorMessage: retention enforcement requires enabled external or bundled execution storage
+
+  - it: requires recording cleanup before metadata expiry
+    set:
+      execution.storage.retention.metadataEnabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: metadata retention requires execution.storage.retention.recordingsEnabled=true
+
+  - it: refuses unacknowledged persistent policy
+    set:
+      auth.enabled: true
+      execution.enabled: true
+      execution.storage.external.enabled: true
+      execution.storage.retention.recordingsEnabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: retention enforcement requires execution.storage.retention.policyAcknowledged=true after reviewing durations and custody
+
+  - it: rejects truthy string switches
+    set:
+      execution.storage.retention.recordingsEnabled: "false"
+    asserts:
+      - failedTemplate:
+          errorMessage: execution.storage.retention.recordingsEnabled must be a boolean
+
+  - it: refuses zero duration
+    set:
+      auth.enabled: true
+      execution.enabled: true
+      execution.storage.external.enabled: true
+      execution.storage.retention.recordingsEnabled: true
+      execution.storage.retention.policyAcknowledged: true
+      execution.storage.retention.recordings: 0h
+    asserts:
+      - failedTemplate:
+          errorMessage: execution.storage.retention.recordings must be a positive whole-hour duration when enforcement is enabled
+
+  - it: refuses duration overflow
+    set:
+      auth.enabled: true
+      execution.enabled: true
+      execution.storage.external.enabled: true
+      execution.storage.retention.recordingsEnabled: true
+      execution.storage.retention.policyAcknowledged: true
+      execution.storage.retention.metadata: 2562048h
+    asserts:
+      - failedTemplate:
+          errorMessage: execution.storage.retention.metadata exceeds the Go duration limit of 2562047h
+
+  - it: protects metadata for at least the recording duration
+    set:
+      auth.enabled: true
+      execution.enabled: true
+      execution.storage.external.enabled: true
+      execution.storage.retention.recordingsEnabled: true
+      execution.storage.retention.policyAcknowledged: true
+      execution.storage.retention.recordings: 48h
+      execution.storage.retention.metadata: 24h
+    asserts:
+      - failedTemplate:
+          errorMessage: metadata retention duration must cover recording retention
+
+  - it: wires independent persistent flags and reviewed durations into the API
+    documentSelector:
+      path: kind
+      value: Deployment
+    set:
+      auth.enabled: true
+      execution.enabled: true
+      execution.storage.external.enabled: true
+      execution.storage.external.postgresql.existingSecret: database
+      execution.storage.encryption.existingSecret: recording-key
+      execution.storage.s3.endpoint: https://s3.example.com
+      execution.storage.s3.existingSecret: objects
+      execution.storage.retention.recordingsEnabled: true
+      execution.storage.retention.metadataEnabled: true
+      execution.storage.retention.policyAcknowledged: true
+      execution.storage.retention.recordings: 24h
+      execution.storage.retention.metadata: 168h
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_RETENTION_ENABLED
+            value: "true"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_METADATA_RETENTION_ENABLED
+            value: "true"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_RETENTION_RECORDINGS
+            value: 24h
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KW_EXECUTION_RETENTION_METADATA
+            value: 168h

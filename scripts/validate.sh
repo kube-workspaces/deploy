@@ -119,6 +119,10 @@ render_case auth-local-and-oidc \
 render_case execution-ephemeral -f examples/execution-storage/ephemeral.yaml
 render_case execution-external -f examples/execution-storage/external.yaml
 render_case execution-bundled -f examples/execution-storage/bundled.yaml
+render_case execution-external-retention \
+  -f examples/execution-storage/external.yaml -f examples/execution-storage/retention.yaml
+render_case execution-bundled-retention \
+  -f examples/execution-storage/bundled.yaml -f examples/execution-storage/retention.yaml
 render_case execution-qga-pilot \
   --set auth.enabled=true \
   --set execution.enabled=true \

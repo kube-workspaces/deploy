@@ -19,6 +19,7 @@ ephemeral
 
 {{- define "kube-workspaces.execution.validate" -}}
 {{- $mode := include "kube-workspaces.execution.storageMode" . -}}
+{{- include "kube-workspaces.execution.validateRetention" . -}}
 {{- if .Values.execution.qgaPilot.enabled -}}
 {{- if eq $mode "disabled" -}}
 {{- fail "execution.qgaPilot.enabled requires execution.enabled=true" -}}
@@ -59,11 +60,54 @@ ephemeral
 {{- end -}}
 {{- end -}}
 
+{{- define "kube-workspaces.execution.validateRetention" -}}
+{{- $mode := include "kube-workspaces.execution.storageMode" . -}}
+{{- $retention := .Values.execution.storage.retention -}}
+{{- if not (kindIs "map" $retention) -}}
+{{- fail "execution.storage.retention must be a map" -}}
+{{- end -}}
+{{- range $name := list "recordingsEnabled" "metadataEnabled" "policyAcknowledged" -}}
+{{- if not (kindIs "bool" (index $retention $name)) -}}
+{{- fail (printf "execution.storage.retention.%s must be a boolean" $name) -}}
+{{- end -}}
+{{- end -}}
+{{- if and $retention.metadataEnabled (not $retention.recordingsEnabled) -}}
+{{- fail "metadata retention requires execution.storage.retention.recordingsEnabled=true" -}}
+{{- end -}}
+{{- if or $retention.recordingsEnabled $retention.metadataEnabled -}}
+{{- if not (or (eq $mode "external") (eq $mode "bundled")) -}}
+{{- fail "retention enforcement requires enabled external or bundled execution storage" -}}
+{{- end -}}
+{{- if not $retention.policyAcknowledged -}}
+{{- fail "retention enforcement requires execution.storage.retention.policyAcknowledged=true after reviewing durations and custody" -}}
+{{- end -}}
+{{- range $name := list "recordings" "metadata" -}}
+{{- $duration := index $retention $name -}}
+{{- if not (kindIs "string" $duration) -}}
+{{- fail (printf "execution.storage.retention.%s must be a positive whole-hour duration when enforcement is enabled" $name) -}}
+{{- end -}}
+{{- if not (regexMatch "^[1-9][0-9]{0,6}h$" $duration) -}}
+{{- fail (printf "execution.storage.retention.%s must be a positive whole-hour duration when enforcement is enabled" $name) -}}
+{{- end -}}
+{{- if gt (int64 (trimSuffix "h" $duration)) (int64 2562047) -}}
+{{- fail (printf "execution.storage.retention.%s exceeds the Go duration limit of 2562047h" $name) -}}
+{{- end -}}
+{{- end -}}
+{{- if lt (int64 (trimSuffix "h" $retention.metadata)) (int64 (trimSuffix "h" $retention.recordings)) -}}
+{{- fail "metadata retention duration must cover recording retention" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "kube-workspaces.execution.env" -}}
 {{- $mode := include "kube-workspaces.execution.storageMode" . -}}
 {{- if ne $mode "disabled" }}
 - name: KW_EXECUTION_STORAGE_MODE
   value: {{ $mode | quote }}
+- name: KW_EXECUTION_RETENTION_ENABLED
+  value: {{ .Values.execution.storage.retention.recordingsEnabled | quote }}
+- name: KW_EXECUTION_METADATA_RETENTION_ENABLED
+  value: {{ .Values.execution.storage.retention.metadataEnabled | quote }}
 - name: KW_EXECUTION_RETENTION_RECORDINGS
   value: {{ .Values.execution.storage.retention.recordings | quote }}
 - name: KW_EXECUTION_RETENTION_METADATA

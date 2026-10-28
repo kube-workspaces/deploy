@@ -29,6 +29,65 @@ def api_environment(documents):
 
 
 class ExecutionStorageTests(unittest.TestCase):
+    def test_duration_defaults_do_not_enable_retention_in_any_mode(self):
+        for profile in ("ephemeral", "external", "bundled"):
+            with self.subTest(profile=profile):
+                _, _, env = api_environment(render(profile))
+                self.assertEqual(env["KW_EXECUTION_RETENTION_ENABLED"]["value"], "false")
+                self.assertEqual(env["KW_EXECUTION_METADATA_RETENTION_ENABLED"]["value"], "false")
+
+    def test_reviewed_overlay_wires_persistent_workers_without_enabling_guest_policy(self):
+        for profile in ("external", "bundled"):
+            with self.subTest(profile=profile):
+                documents = render(profile, "-f", "examples/execution-storage/retention.yaml")
+                _, _, env = api_environment(documents)
+                self.assertEqual(env["KW_EXECUTION_RETENTION_ENABLED"]["value"], "true")
+                self.assertEqual(env["KW_EXECUTION_METADATA_RETENTION_ENABLED"]["value"], "true")
+                self.assertEqual(env["KW_EXECUTION_RETENTION_RECORDINGS"]["value"], "24h")
+                self.assertEqual(env["KW_EXECUTION_RETENTION_METADATA"]["value"], "168h")
+                self.assertFalse(any(doc["spec"].get("vmExecution", {}).get("enabled", False)
+                                     for doc in documents if doc["kind"] == "PlatformConfig"))
+                for doc in documents:
+                    if doc["kind"] == "Deployment" and not doc["metadata"]["name"].endswith("-api"):
+                        for container in doc["spec"]["template"]["spec"]["containers"]:
+                            self.assertFalse(any(item["name"].startswith("KW_EXECUTION_") for item in container.get("env", [])))
+
+    def test_recording_only_and_maximum_duration_policy(self):
+        _, _, env = api_environment(render("external", "-f", "examples/execution-storage/retention.yaml",
+                                           "--set", "execution.storage.retention.metadataEnabled=false",
+                                           "--set", "execution.storage.retention.recordings=2562047h",
+                                           "--set", "execution.storage.retention.metadata=2562047h"))
+        self.assertEqual(env["KW_EXECUTION_RETENTION_ENABLED"]["value"], "true")
+        self.assertEqual(env["KW_EXECUTION_METADATA_RETENTION_ENABLED"]["value"], "false")
+
+    def test_retention_rejects_unsafe_policies_before_deployment(self):
+        for setting in ("recordings=0h", "recordings=-1h", "recordings=1h30m", "recordings=1.5h",
+                        "recordings=999999999999999999999h", "metadata=2562048h",
+                        "recordings=", "metadata=1h", "policyAcknowledged=false",
+                        "recordingsEnabled=false"):
+            with self.subTest(setting=setting):
+                with self.assertRaises(subprocess.CalledProcessError):
+                    render("external", "-f", "examples/execution-storage/retention.yaml",
+                           "--set", f"execution.storage.retention.{setting}")
+        for flag in ("recordingsEnabled", "metadataEnabled", "policyAcknowledged"):
+            with self.subTest(flag=flag):
+                with self.assertRaises(subprocess.CalledProcessError):
+                    render("external", "--set-string", f"execution.storage.retention.{flag}=false")
+        with self.assertRaises(subprocess.CalledProcessError):
+            render("ephemeral", "-f", "examples/execution-storage/retention.yaml")
+
+    def test_duration_only_legacy_configuration_remains_non_destructive(self):
+        _, _, env = api_environment(render("external", "--set", "execution.storage.retention.recordings=1h30m"))
+        self.assertEqual(env["KW_EXECUTION_RETENTION_RECORDINGS"]["value"], "1h30m")
+        self.assertEqual(env["KW_EXECUTION_RETENTION_ENABLED"]["value"], "false")
+
+    def test_kustomize_base_never_enables_retention(self):
+        result = subprocess.run(["kustomize", "build", "kustomize/base"], cwd=ROOT,
+                                capture_output=True, text=True, check=True)
+        _, _, env = api_environment([doc for doc in yaml.safe_load_all(result.stdout) if doc])
+        self.assertEqual(env["KW_EXECUTION_RETENTION_ENABLED"]["value"], "false")
+        self.assertEqual(env["KW_EXECUTION_METADATA_RETENTION_ENABLED"]["value"], "false")
+
     def test_ephemeral_needs_no_database_object_store_or_pvc(self):
         documents = render("ephemeral")
         deployment, pod, env = api_environment(documents)

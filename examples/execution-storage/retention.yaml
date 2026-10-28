@@ -1,0 +1,12 @@
+# OPTIONAL, DESTRUCTIVE overlay for an already configured external/bundled mode.
+# Render/review only until the operator approves policy and coordinated adoption.
+# Durations below are illustrative, NOT a recommended or pre-approved policy.
+# Upgrade all API readers and review bucket/key/backup custody before enabling.
+execution:
+  storage:
+    retention:
+      recordingsEnabled: true
+      metadataEnabled: true
+      policyAcknowledged: true
+      recordings: 24h
+      metadata: 168h

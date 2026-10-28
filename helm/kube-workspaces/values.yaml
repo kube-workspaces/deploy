@@ -41,7 +41,8 @@ execution:
       sizeLimit: 1Gi
       maxBytes: "536870912"
     # Required in persistent modes: Secret key holding a base64-encoded 32-byte
-    # recording master key. Keep this Secret across restarts and storage changes.
+    # recording key or the API's versioned active/read-only keyring JSON.
+    # Keep all still-needed keys across restarts and storage changes.
     encryption:
       existingSecret: ""
       key: key
@@ -61,6 +62,14 @@ execution:
       # Optional private CA bundle (key ca.crt) for the S3 TLS endpoint.
       caSecret: ""
     retention:
+      # Destructive workers are independent opt-ins; durations alone do not arm
+      # deletion. Review policy/custody and upgrade every API reader first.
+      recordingsEnabled: false
+      metadataEnabled: false
+      policyAcknowledged: false
+      # While either worker is enabled, the chart accepts positive whole-hour
+      # durations (1h..2562047h), with metadata >= recordings. No default duration
+      # is an approved permanent policy. See docs/vm-execution-storage.md.
       recordings: 720h
       metadata: 8760h
   # Opt-in QGA pod-exec pilot transport behind POST /v1/executions/start:
